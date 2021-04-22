@@ -1,0 +1,55 @@
+diff -x .git -ur usd.orig/cmake/defaults/Packages.cmake external_usd/cmake/defaults/Packages.cmake
+--- usd.orig/cmake/defaults/Packages.cmake	2019-10-24 22:39:53.000000000 +0200
++++ external_usd/cmake/defaults/Packages.cmake	2019-11-28 13:00:33.185957483 +0100
+@@ -64,7 +64,7 @@
+ endif()
+ 
+ # --TBB
+-find_package(TBB REQUIRED COMPONENTS tbb)
++find_package(TBB)
+ add_definitions(${TBB_DEFINITIONS})
+ 
+ # --math
+diff -Naur external_usd_base/cmake/macros/Public.cmake external_usd/cmake/macros/Public.cmake
+--- external_usd_base/cmake/macros/Public.cmake	2019-10-24 14:39:53 -0600
++++ external_usd/cmake/macros/Public.cmake	2020-01-11 13:33:29 -0700
+@@ -996,6 +996,12 @@
+     foreach(lib ${PXR_OBJECT_LIBS})
+         string(TOUPPER ${lib} uppercaseName)
+         list(APPEND exports "${uppercaseName}_EXPORTS=1")
++        # When building for blender, we do NOT want to export all symbols on windows.
++        # This is a dirty hack, but USD makes it impossible to do the right thing
++        # with the default options exposed.
++        if (WIN32)
++            list(APPEND exports "PXR_STATIC=1")
++        endif()
+     endforeach()
+     foreach(lib ${PXR_OBJECT_LIBS})
+         set(objects "${objects};\$<TARGET_OBJECTS:${lib}>")
+diff -ru USD-20.11/pxr/base/tf/pxrLZ4/lz4.cpp external_usd/pxr/base/tf/pxrLZ4/lz4.cpp
+--- USD-20.11/pxr/base/tf/pxrLZ4/lz4.cpp        2020-10-14 19:25:19.000000000 +0100
++++ external_usd/pxr/base/tf/pxrLZ4/lz4.cpp     2021-02-09 09:28:51.496190085 +0000
+@@ -614,6 +614,15 @@
+ /*-************************************
+ *  Internal Definitions used in Tests
+ **************************************/
++
++/*******************************************************************
++ * Disabled in Blender. The BLOSC library also exposes these
++ * functions, and this causes 'duplicate symbol' linker errors.
++ *
++ * This problem has been reported upstream at
++ * https://github.com/PixarAnimationStudios/USD/issues/1447
++ *
++ *******************************************************************
+ #if defined (__cplusplus)
+ extern "C" {
+ #endif
+@@ -627,6 +636,7 @@
+ #if defined (__cplusplus)
+ }
+ #endif
++********************************************************************/
+ 
+ /*-******************************
+ *  Compression functions
