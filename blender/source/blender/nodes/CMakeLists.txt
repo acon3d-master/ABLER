@@ -80,6 +80,7 @@ set(SRC
   composite/nodes/node_composite_flip.c
   composite/nodes/node_composite_gamma.c
   composite/nodes/node_composite_glare.c
+  composite/nodes/node_composite_glsl.c
   composite/nodes/node_composite_hueSatVal.c
   composite/nodes/node_composite_huecorrect.c
   composite/nodes/node_composite_idMask.c

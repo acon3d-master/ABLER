@@ -159,6 +159,9 @@ static void wm_free_reports(wmWindowManager *wm)
   BKE_reports_clear(&wm->reports);
 }
 
+void wm_window_create_main_queue();
+void wm_window_free_main_queue();
+
 static bool wm_start_with_console = false;
 
 void WM_init_state_start_with_console_set(bool value)
@@ -224,7 +227,7 @@ static void sound_jack_sync_callback(Main *bmain, int mode, double time)
 /* only called once, for startup */
 void WM_init(bContext *C, int argc, const char **argv)
 {
-
+  wm_window_create_main_queue();
   if (!G.background) {
     wm_ghost_init(C); /* note: it assigns C to ghost! */
     wm_init_cursor_data();
@@ -474,6 +477,7 @@ void WM_exit_ex(bContext *C, const bool do_python)
 {
   wmWindowManager *wm = C ? CTX_wm_manager(C) : NULL;
 
+  wm_window_free_main_queue();
   /* first wrap up running stuff, we assume only the active WM is running */
   /* modal handlers are on window level freed, others too? */
   /* note; same code copied in wm_files.c */

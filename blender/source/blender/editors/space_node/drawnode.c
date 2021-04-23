@@ -2673,6 +2673,24 @@ static void node_composit_buts_cornerpin(uiLayout *UNUSED(layout),
 {
 }
 
+static void node_composit_buts_glsl(uiLayout *layout, bContext *UNUSED(C), PointerRNA *ptr)
+{
+    uiLayout *row;
+    uiItemL(layout, IFACE_("Fragment shader:"), ICON_NONE);
+    row = uiLayoutRow(layout, false);
+    uiItemR(row, ptr, "mode", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+
+    row = uiLayoutRow(layout, true);
+
+    if (RNA_enum_get(ptr, "mode") == NODE_IES_INTERNAL) {
+      uiItemR(row, ptr, "fragment", 0, "", ICON_NONE);
+    }
+    else {
+      uiItemR(row, ptr, "filepath", 0, "", ICON_NONE);
+    }
+    uiItemR(layout, ptr, "gamma", 0, NULL, ICON_NONE);
+}
+
 static void node_composit_buts_sunbeams(uiLayout *layout, bContext *UNUSED(C), PointerRNA *ptr)
 {
   uiItemR(layout, ptr, "source", DEFAULT_FLAGS | UI_ITEM_R_EXPAND, "", ICON_NONE);
@@ -2989,6 +3007,10 @@ static void node_composit_set_butfunc(bNodeType *ntype)
       break;
     case CMP_NODE_SUNBEAMS:
       ntype->draw_buttons = node_composit_buts_sunbeams;
+      break;
+    case CMP_NODE_GLSL:
+      ntype->draw_buttons = node_composit_buts_glsl;
+      ntype->width += 50;
       break;
     case CMP_NODE_CRYPTOMATTE:
       ntype->draw_buttons = node_composit_buts_cryptomatte;

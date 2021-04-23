@@ -1,0 +1,95 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library not found for -lSystem
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" failed.
+Compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ 
+Build flags: 
+Id flags:  
+
+The output was:
+1
+ld: library not found for -lc++
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
+Performing C++ SOURCE FILE Test SUPPORT_NEON_BUILD failed with the following output:
+Change Dir: /Users/sdkfile/Desktop/RND_aconBlender/build_darwin/CMakeFiles/CMakeTmp
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_0bf73/fast && /Applications/Xcode.app/Contents/Developer/usr/bin/make  -f CMakeFiles/cmTC_0bf73.dir/build.make CMakeFiles/cmTC_0bf73.dir/build
+Building CXX object CMakeFiles/cmTC_0bf73.dir/src.cxx.o
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -DSUPPORT_NEON_BUILD  -mmacosx-version-min=10.13  -arch x86_64 -isysroot /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.1.sdk -mmacosx-version-min=10.13 -MD -MT CMakeFiles/cmTC_0bf73.dir/src.cxx.o -MF CMakeFiles/cmTC_0bf73.dir/src.cxx.o.d -o CMakeFiles/cmTC_0bf73.dir/src.cxx.o -c /Users/sdkfile/Desktop/RND_aconBlender/build_darwin/CMakeFiles/CMakeTmp/src.cxx
+In file included from /Users/sdkfile/Desktop/RND_aconBlender/build_darwin/CMakeFiles/CMakeTmp/src.cxx:1:
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:28:2: error: "NEON support not enabled"
+#error "NEON support not enabled"
+ ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:48:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(8))) int8_t int8x8_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:49:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(16))) int8_t int8x16_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:50:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(4))) int16_t int16x4_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:51:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(8))) int16_t int16x8_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:52:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(2))) int32_t int32x2_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:53:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(4))) int32_t int32x4_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:54:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(1))) int64_t int64x1_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:55:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(2))) int64_t int64x2_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:56:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(8))) uint8_t uint8x8_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:57:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(16))) uint8_t uint8x16_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:58:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(4))) uint16_t uint16x4_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:59:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(8))) uint16_t uint16x8_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:60:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(2))) uint32_t uint32x2_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:61:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(4))) uint32_t uint32x4_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:62:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(1))) uint64_t uint64x1_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:63:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(2))) uint64_t uint64x2_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:64:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(4))) float16_t float16x4_t;
+                       ^
+/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/12.0.0/include/arm_neon.h:65:24: error: 'neon_vector_type' attribute is not supported for this target
+typedef __attribute__((neon_vector_type(8))) float16_t float16x8_t;
+                       ^
+fatal error: too many errors emitted, stopping now [-ferror-limit=]
+20 errors generated.
+make[2]: *** [CMakeFiles/cmTC_0bf73.dir/src.cxx.o] Error 1
+make[1]: *** [cmTC_0bf73/fast] Error 2
+
+
+Source file was:
+#include <arm_neon.h>
+       int main() {return vaddvq_s32(vdupq_n_s32(1));}

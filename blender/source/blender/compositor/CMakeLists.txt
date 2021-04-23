@@ -26,7 +26,9 @@ set(INC
   ../blenkernel
   ../blenlib
   ../blentranslation
+  ../gpu
   ../depsgraph
+  ../draw
   ../imbuf
   ../makesdna
   ../makesrna
@@ -37,12 +39,13 @@ set(INC
   ../render
   ../render/intern
   ../../../extern/clew/include
+  ../../../intern/glew-mx
   ../../../intern/atomic
   ../../../intern/guardedalloc
 )
 
 set(INC_SYS
-
+  ${GLEW_INCLUDE_PATH}
 )
 
 set(SRC
@@ -279,6 +282,13 @@ set(SRC
   nodes/COM_VectorBlurNode.h
   operations/COM_VectorBlurOperation.cc
   operations/COM_VectorBlurOperation.h
+
+  # GLSL
+  nodes/COM_GlslNode.cc
+  nodes/COM_GlslNode.h
+  operations/COM_GlslOperation.cc
+  operations/COM_GlslOperation.h
+
   nodes/COM_BlurNode.cc
   nodes/COM_BlurNode.h
   nodes/COM_BokehBlurNode.cc

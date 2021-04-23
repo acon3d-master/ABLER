@@ -366,6 +366,7 @@ compositor_node_categories = [
         NodeItem("CompositorNodeInpaint"),
         NodeItem("CompositorNodeDBlur"),
         NodeItem("CompositorNodePixelate"),
+        NodeItem("CompositorNodeGlsl"),
         NodeItem("CompositorNodeSunBeams"),
         NodeItem("CompositorNodeDenoise"),
         NodeItem("CompositorNodeAntiAliasing"),

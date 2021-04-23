@@ -4203,6 +4203,30 @@ static void rna_CompositorNodeScale_update(Main *bmain, Scene *scene, PointerRNA
   rna_Node_update(bmain, scene, ptr);
 }
 
+static void rna_CompositorNodeGlsl_mode_set(PointerRNA *ptr, int value)
+{
+  bNode *node = (bNode *)ptr->data;
+  NodeGlsl *nglsl = node->storage;
+
+  if (nglsl->mode != value) {
+    nglsl->mode = value;
+    nglsl->filepath[0] = '\0';
+
+    /* replace text datablock by filepath */
+    if (node->id) {
+      Text *text = (Text *)node->id;
+
+      if (value == NODE_GLSL_EXTERNAL && text->name) {
+        BLI_strncpy(nglsl->filepath, text->name, sizeof(nglsl->filepath));
+        BLI_path_rel(nglsl->filepath, BKE_main_blendfile_path_from_global());
+      }
+
+      id_us_min(node->id);
+      node->id = NULL;
+    }
+  }
+}
+
 static PointerRNA rna_ShaderNodePointDensity_psys_get(PointerRNA *ptr)
 {
   bNode *node = ptr->data;
@@ -4470,6 +4494,12 @@ static EnumPropertyItem node_ies_mode_items[] = {
     {0, NULL, 0, NULL, NULL},
 };
 
+static EnumPropertyItem node_glsl_mode_items[] = {
+    {NODE_GLSL_INTERNAL, "INTERNAL", 0, "Internal", "Use internal text datablock"},
+    {NODE_GLSL_EXTERNAL, "EXTERNAL", 0, "External", "Use external .frag file"},
+    {0, NULL, 0, NULL, NULL},
+};
+
 static const EnumPropertyItem node_principled_distribution_items[] = {
     {SHD_GLOSSY_GGX, "GGX", 0, "GGX", ""},
     {SHD_GLOSSY_MULTI_GGX, "MULTI_GGX", 0, "Multiscatter GGX", ""},
@@ -4519,6 +4549,36 @@ static void def_group_output(StructRNA *srna)
   RNA_def_property_ui_text(
       prop, "Active Output", "True if this node is used as the active group output");
   RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
+}
+
+static void def_cmp_glsl(StructRNA *srna)
+{
+    PropertyRNA *prop;
+
+    prop = RNA_def_property(srna, "fragment", PROP_POINTER, PROP_NONE);
+    RNA_def_property_pointer_sdna(prop, NULL, "id");
+    RNA_def_property_struct_type(prop, "Text");
+    RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_REFCOUNT);
+    RNA_def_property_ui_text(prop, "fragment Text", "Internal fragment file");
+    RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
+
+    RNA_def_struct_sdna_from(srna, "NodeGlsl", "storage");
+
+    prop = RNA_def_property(srna, "filepath", PROP_STRING, PROP_FILEPATH);
+    RNA_def_property_string_sdna(prop, NULL, "filepath");
+    RNA_def_property_ui_text(prop, "Shader file", "fragment file path");
+    RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
+
+    prop = RNA_def_property(srna, "mode", PROP_ENUM, PROP_NONE);
+    RNA_def_property_enum_funcs(prop, NULL, "rna_CompositorNodeGlsl_mode_set", NULL);
+    RNA_def_property_enum_items(prop, node_glsl_mode_items);
+    RNA_def_property_ui_text(prop, "Source", "Whether the fragment file is loaded from disk or from a Text datablock");
+    RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
+
+    prop = RNA_def_property(srna, "gamma", PROP_BOOLEAN, PROP_NONE);
+    RNA_def_property_boolean_sdna(prop, NULL, "flag", CMP_NODE_GLSL_GAMMA);
+    RNA_def_property_ui_text(prop, "Gamma correction", "Apply gamma correction to result image");
+    RNA_def_property_update(prop, NC_NODE | NA_EDITED, "rna_Node_update");
 }
 
 static void def_group(StructRNA *srna)
