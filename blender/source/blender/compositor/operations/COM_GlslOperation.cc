@@ -234,7 +234,7 @@ namespace blender::compositor {
             GlslChannelInput *input = &data->inputs[i];
             GPUTexture *tex = NULL;
             if (input->rgba) {
-                tex = GPU_texture_create_2d("glslNodeTexture " + i, input->width, input->height, 1, GPU_RGBA16F, NULL);
+                tex = GPU_texture_create_2d("glslNodeTexture " + i, input->width, input->height, 1, GPU_RGBA16F, error);
                 if (tex) {
                     GPU_texture_bind(tex, 0);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
