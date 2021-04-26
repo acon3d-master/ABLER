@@ -271,7 +271,7 @@ namespace blender::compositor {
         if (shader) {
             char error[256];
             DRW_opengl_context_enable(); /* Offscreen creation needs to be done in DRW context. */
-            GPUOffScreen *offscreen = GPU_offscreen_create(data->width, data->height, 0, false, false, error);
+            GPUOffScreen *offscreen = GPU_offscreen_create(data->width, data->height, false, false, error);
             DRW_opengl_context_disable();
 
             bool resized = false;
@@ -291,7 +291,7 @@ namespace blender::compositor {
                 if (!resized) {
                     drawImage(shader, data, &textures);
 
-                    GPU_offscreen_read_pixels(offscreen, GL_FLOAT, data->output);
+                    GPU_offscreen_read_pixels(offscreen, GPU_DATA_FLOAT, data->output);
                 }
                 GPU_offscreen_unbind(offscreen, true);
 
