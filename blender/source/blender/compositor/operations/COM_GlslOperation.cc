@@ -197,7 +197,7 @@ namespace blender::compositor {
                 // int slot = GPU_shader_get_texture_binding(shader, name);
                 GPU_texture_bind(textures->at(i), i);
                 // GPU_shader_uniform_texture(shader, loc, textures->at(i));
-                GPU_shader_uniform_1i(shader, name, slot);
+                GPU_shader_uniform_1i(shader, name.c_str(), slot);
             }
         }
 
