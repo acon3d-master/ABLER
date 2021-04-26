@@ -147,7 +147,7 @@ namespace blender::compositor {
 
     void setFloat(GPUShader *shader, const char *name, const float *value, int length)
     {
-    	int location = GPU_shader_get_uniform_ensure(shader, name);
+    	int location = GPU_shader_get_uniform(shader, name);
         if (location != -2) {
             GPU_shader_uniform_vector(shader, location, length, 1, value);
         }
@@ -178,7 +178,7 @@ namespace blender::compositor {
             resolutions[index + 1] = data->inputs[i].height;
             resolutions[index + 2] = 1;
         }
-        GPU_shader_uniform_vector(shader, GPU_shader_get_uniform_ensure(shader, "iChannelResolution"), 3, GLSL_CHANNELS, resolutions);
+        GPU_shader_uniform_vector(shader, GPU_shader_get_uniform(shader, "iChannelResolution"), 3, GLSL_CHANNELS, resolutions);
 
         setFloat(shader, "userInput", data->params->input0, 4);
     }
@@ -191,7 +191,7 @@ namespace blender::compositor {
 
         for (int i = 0; i < textures->size(); i++) {
             std::string name = "iChannel" + std::to_string(i);
-            int loc = GPU_shader_get_uniform_ensure(shader, name.c_str());
+            int loc = GPU_shader_get_uniform(shader, name.c_str());
             if (textures->at(i) && loc != -1) {
                 GPU_texture_bind(textures->at(i), i);
                 GPU_shader_uniform_texture(shader, loc, textures->at(i));
