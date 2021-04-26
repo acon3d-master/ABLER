@@ -348,16 +348,16 @@ namespace blender::compositor {
                 input->width = 1;
                 input->height = 1;
                 input->rgba = input->pixel;
-                reader->readSampled(input->rgba, 0, 0, COM_PS_NEAREST);
+                reader->readSampled(input->rgba, 0, 0, PixelSampler::Nearest);
             }
         }
 
         float value[4] = {};
-        getInputSocketReader(GLSL_CHANNELS)->readSampled(value, 0, 0, COM_PS_NEAREST);
+        getInputSocketReader(GLSL_CHANNELS)->readSampled(value, 0, 0, PixelSampler::Nearest);
         m_params.frameTime = value[0];
 
         for (int i = 0; i < 4; i++) {
-            getInputSocketReader(GLSL_CHANNELS + 1 + i)->readSampled(value, 0, 0, COM_PS_NEAREST);
+            getInputSocketReader(GLSL_CHANNELS + 1 + i)->readSampled(value, 0, 0, PixelSampler::Nearest);
             m_params.input0[i] = value[0];
         }
 
