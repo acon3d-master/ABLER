@@ -312,7 +312,7 @@ namespace blender::compositor {
         rect.ymin = 0;
         rect.xmax = source->xmax;
         rect.ymax = source->ymax;
-        MemoryBuffer *result = new MemoryBuffer(DataType::Color, &rect);
+        MemoryBuffer *result = new MemoryBuffer(DataType::Color, rect);
 
         const float invalid[] = { 1, 0, 0, 1 };
         for (int y = 0; y < rect.ymax; y++) {
