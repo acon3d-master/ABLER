@@ -4216,8 +4216,8 @@ static void rna_CompositorNodeGlsl_mode_set(PointerRNA *ptr, int value)
     if (node->id) {
       Text *text = (Text *)node->id;
 
-      if (value == NODE_GLSL_EXTERNAL && text->name) {
-        BLI_strncpy(nglsl->filepath, text->name, sizeof(nglsl->filepath));
+      if (value == NODE_GLSL_EXTERNAL && text->id) {
+        BLI_strncpy(nglsl->filepath, text->id, sizeof(nglsl->filepath));
         BLI_path_rel(nglsl->filepath, BKE_main_blendfile_path_from_global());
       }
 
