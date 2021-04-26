@@ -194,7 +194,7 @@ namespace blender::compositor {
             int loc = GPU_shader_get_uniform(shader, name.c_str());
             if (textures->at(i) && loc != -1) {
                 GPU_texture_bind(textures->at(i), i);
-                GPU_shader_uniform_texture(shader, loc, textures->at(i));
+                // GPU_shader_uniform_texture(shader, loc, textures->at(i));
             }
         }
 
@@ -234,7 +234,7 @@ namespace blender::compositor {
             GlslChannelInput *input = &data->inputs[i];
             GPUTexture *tex = NULL;
             if (input->rgba) {
-                tex = GPU_texture_create_2d(input->width, input->height, GPU_RGBA16F, input->rgba, error);
+                tex = GPU_texture_create_2d("glslNodeTexture " + i, input->width, input->height, 1, GPU_RGBA16F, NULL);
                 if (tex) {
                     GPU_texture_bind(tex, 0);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
