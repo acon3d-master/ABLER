@@ -228,13 +228,13 @@ namespace blender::compositor {
     std::vector<GPUTexture*> createTextures(ThreadResult *data)
     {
         std::vector<GPUTexture*> results;
-        char error[256];
+        // char error[256];
 
         for (int i = 0; i < GLSL_CHANNELS; i++) {
             GlslChannelInput *input = &data->inputs[i];
             GPUTexture *tex = NULL;
             if (input->rgba) {
-                tex = GPU_texture_create_2d("glslNodeTexture " + i, input->width, input->height, 1, GPU_RGBA16F, error);
+                tex = GPU_texture_create_2d("glslNodeTexture " + i, input->width, input->height, 1, GPU_RGBA16F, NULL);
                 if (tex) {
                     GPU_texture_bind(tex, 0);
                     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
