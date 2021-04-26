@@ -32,13 +32,13 @@ namespace blender::compositor {
     GlslOperation::GlslOperation() : SingleThreadedOperation()
     {
         for (int i = 0; i < GLSL_CHANNELS; i++) {
-            this->addInputSocket(COM_DT_COLOR);
+            this->addInputSocket(DataType::Color);
             this->m_channelLinked[i] = false;
         }
         for (int i = 0; i < GLSL_VALUE_SOCKETS; i++) {
-            this->addInputSocket(COM_DT_VALUE);
+            this->addInputSocket(DataType::Value);
         }
-        this->addOutputSocket(COM_DT_COLOR);
+        this->addOutputSocket(DataType::Color);
         this->setResolutionInputSocketIndex(0);
         this->m_data = NULL;
     }
@@ -312,7 +312,7 @@ namespace blender::compositor {
         rect.ymin = 0;
         rect.xmax = source->xmax;
         rect.ymax = source->ymax;
-        MemoryBuffer *result = new MemoryBuffer(COM_DT_COLOR, &rect);
+        MemoryBuffer *result = new MemoryBuffer(DataType::Color, &rect);
 
         const float invalid[] = { 1, 0, 0, 1 };
         for (int y = 0; y < rect.ymax; y++) {
