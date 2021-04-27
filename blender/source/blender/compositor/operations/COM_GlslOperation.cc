@@ -198,7 +198,7 @@ namespace blender::compositor {
                 // int slot = GPU_shader_get_texture_binding(shader, name);
                 GPU_texture_bind(textures->at(i), i);
                 // GPU_shader_uniform_texture(shader, loc, textures->at(i));
-                std::cout << std::to_string(textures.length) << std::endl;
+                std::cout << std::to_string(textures.size()) << std::endl;
                 // std::string hame = "hihi" + std::to_string(i) + " " + std::to_string(slot);
                 // std::cout << hame << std::endl;
                 // GPU_shader_uniform_1i(shader, name.c_str(), slot);
