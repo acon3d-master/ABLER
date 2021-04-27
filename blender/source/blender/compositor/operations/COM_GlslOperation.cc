@@ -194,7 +194,7 @@ namespace blender::compositor {
             std::string name = "iChannel" + std::to_string(i);
             int loc = GPU_shader_get_uniform(shader, name.c_str());
             // int slot = GPU_shader_get_texture_binding(shader, name.c_str());
-            if (textures->at(i) && slot != -1) {
+            if (textures->at(i) && loc != -1) {
                 // int slot = GPU_shader_get_texture_binding(shader, name);
                 GPU_texture_bind(textures->at(i), i);
                 // GPU_shader_uniform_texture(shader, loc, textures->at(i));
