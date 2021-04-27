@@ -26,6 +26,7 @@
 #include "GPU_matrix.h"
 
 #include "COM_GlslOperation.h"
+#include <iostream>
 
 namespace blender::compositor {
 
