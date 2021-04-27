@@ -208,7 +208,7 @@ namespace blender::compositor {
                 std::cout << "integer: " + std::to_string(GPU_texture_format(textures->at(i))) << std::endl;
                 // std::cout << "integer: " + std::to_string(GPU_texture_(textures->at(i))) << std::endl;
                 // std::cout << "integer: " + std::to_string(GPU_texture_integer(textures->at(i))) << std::endl;
-                GPU_shader_uniform_int(shader, loc, slot);
+                GPU_shader_uniform_int(shader, loc, GPU_texture_format(textures->at(i)));
             }
         }
 
