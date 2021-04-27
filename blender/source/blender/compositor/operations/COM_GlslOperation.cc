@@ -20,6 +20,7 @@
 #include "WM_api.h"
 #include "GPU_framebuffer.h"
 #include "GPU_texture.h"
+#include "gl_texture.hh"
 #include "GPU_shader.h"
 #include "GPU_glew.h"
 #include "DRW_engine.h"
