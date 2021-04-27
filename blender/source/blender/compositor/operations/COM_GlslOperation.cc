@@ -20,7 +20,6 @@
 #include "WM_api.h"
 #include "GPU_framebuffer.h"
 #include "GPU_texture.h"
-#include "gl_texture.hh"
 #include "GPU_shader.h"
 #include "GPU_glew.h"
 #include "DRW_engine.h"
@@ -204,8 +203,8 @@ namespace blender::compositor {
                 // std::cout << std::to_string(textures->size()) << std::endl;
                 // std::string hame = "hihi" + std::to_string(loc) + " " + std::to_string((textures->at(i))->number);
                 // std::cout << hame << std::endl;
-                int idid = (reinterpret_cast<Texture *>(textures->at(i)))->tex_id_;
-                std::cout << std::to_string(idid) << std::endl;
+                // int idid = (reinterpret_cast<Texture *>(textures->at(i)))->tex_id_;
+                // std::cout << std::to_string(idid) << std::endl;
                 std::cout << "integer: " + std::to_string(GPU_texture_format(textures->at(i))) << std::endl;
                 // std::cout << "integer: " + std::to_string(GPU_texture_(textures->at(i))) << std::endl;
                 // std::cout << "integer: " + std::to_string(GPU_texture_integer(textures->at(i))) << std::endl;
