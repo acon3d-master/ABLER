@@ -194,15 +194,16 @@ namespace blender::compositor {
             std::string name = "iChannel" + std::to_string(i);
             int loc = GPU_shader_get_uniform(shader, name.c_str());
             int slot = GPU_shader_get_texture_binding(shader, name.c_str());
-            std::string hame = "hihi" + std::to_string(loc) + " " + std::to_string(slot);
-            std::cout << hame << std::endl;
+            
 
             if (textures->at(i) && loc != -1 && slot != -1) {
                 // int slot = GPU_shader_get_texture_binding(shader, name);
                 GPU_texture_bind(textures->at(i), i);
                 // GPU_shader_uniform_texture(shader, loc, textures->at(i));
                 // std::cout << std::to_string(textures->size()) << std::endl;
-                GPU_shader_uniform_int(shader, loc, slot);
+                std::string hame = "hihi" + std::to_string(loc) + " " + std::to_string((textures->at(i))->number);
+                std::cout << hame << std::endl;
+                GPU_shader_uniform_int(shader, loc, (textures->at(i))->number);
             }
         }
 
