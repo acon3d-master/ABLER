@@ -779,7 +779,7 @@ static const EnumPropertyItem *rna_userdef_audio_device_itemf(bContext *UNUSED(C
     RNA_enum_item_add(&item, &totitem, &new_item);
   }
 
-#  ifndef NDEBUG
+#  if !defined(NDEBUG) || !defined(WITH_AUDASPACE)
   if (i == 0) {
     EnumPropertyItem new_item = {i, "SOUND_NONE", 0, "No Sound", ""};
     RNA_enum_item_add(&item, &totitem, &new_item);
@@ -1072,10 +1072,9 @@ static void rna_UserDef_studiolight_solid_lights_begin(CollectionPropertyIterato
   rna_iterator_array_begin(iter, sl->light, sizeof(*sl->light), ARRAY_SIZE(sl->light), 0, NULL);
 }
 
-static int rna_UserDef_studiolight_solid_lights_length(PointerRNA *ptr)
+static int rna_UserDef_studiolight_solid_lights_length(PointerRNA *UNUSED(ptr))
 {
-  StudioLight *sl = (StudioLight *)ptr->data;
-  return ARRAY_SIZE(sl->light);
+  return ARRAY_SIZE(((StudioLight *)NULL)->light);
 }
 
 /* StudioLight.light_ambient */
@@ -6160,7 +6159,7 @@ static void rna_def_userdef_filepaths(BlenderRNA *brna)
       prop,
       "Python Scripts Directory",
       "Alternate script path, matching the default layout with subdirectories: "
-      "startup, add-ons and modules (requires restart)");
+      "startup, addons, modules, and presets (requires restart)");
   /* TODO, editing should reset sys.path! */
 
   prop = RNA_def_property(srna, "i18n_branches_directory", PROP_STRING, PROP_DIRPATH);
@@ -6276,6 +6275,14 @@ static void rna_def_userdef_experimental(BlenderRNA *brna)
   RNA_def_property_ui_text(
       prop, "New Point Cloud Type", "Enable the new point cloud type in the ui");
 
+  prop = RNA_def_property(srna, "use_full_frame_compositor", PROP_BOOLEAN, PROP_NONE);
+  RNA_def_property_boolean_sdna(prop, NULL, "use_full_frame_compositor", 1);
+  RNA_def_property_ui_text(prop,
+                           "Full Frame Compositor",
+                           "Enable compositor full frame execution mode option (no tiling, "
+                           "reduces execution time and memory usage)");
+  RNA_def_property_update(prop, 0, "rna_userdef_update");
+
   prop = RNA_def_property(srna, "use_new_hair_type", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_boolean_sdna(prop, NULL, "use_new_hair_type", 1);
   RNA_def_property_ui_text(prop, "New Hair Type", "Enable the new hair type in the ui");
@@ -6288,11 +6295,6 @@ static void rna_def_userdef_experimental(BlenderRNA *brna)
   prop = RNA_def_property(srna, "use_sculpt_vertex_colors", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_boolean_sdna(prop, NULL, "use_sculpt_vertex_colors", 1);
   RNA_def_property_ui_text(prop, "Sculpt Vertex Colors", "Use the new Vertex Painting system");
-
-  prop = RNA_def_property(srna, "use_switch_object_operator", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "use_switch_object_operator", 1);
-  RNA_def_property_ui_text(
-      prop, "Switch Object Operator", "Enable the operator to switch objects by pressing D");
 
   prop = RNA_def_property(srna, "use_sculpt_tools_tilt", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_boolean_sdna(prop, NULL, "use_sculpt_tools_tilt", 1);

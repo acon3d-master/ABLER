@@ -278,15 +278,11 @@ def _template_items_uv_select_mode(params):
     else:
         return [
             *_template_items_editmode_mesh_select_mode(params),
+            # Hack to prevent fall-through, when sync select isn't enabled (and the island button isn't visible).
             ("mesh.select_mode", {"type": 'FOUR', "value": 'PRESS'}, None),
-            ("wm.context_set_enum", {"type": 'ONE', "value": 'PRESS'},
-             {"properties": [("data_path", 'tool_settings.uv_select_mode'), ("value", 'VERTEX')]}),
-            ("wm.context_set_enum", {"type": 'TWO', "value": 'PRESS'},
-             {"properties": [("data_path", 'tool_settings.uv_select_mode'), ("value", 'EDGE')]}),
-            ("wm.context_set_enum", {"type": 'THREE', "value": 'PRESS'},
-             {"properties": [("data_path", 'tool_settings.uv_select_mode'), ("value", 'FACE')]}),
-            ("wm.context_set_enum", {"type": 'FOUR', "value": 'PRESS'},
-             {"properties": [("data_path", 'tool_settings.uv_select_mode'), ("value", 'ISLAND')]}),
+            *(("wm.context_set_enum", {"type": NUMBERS_1[i], "value": 'PRESS'},
+               {"properties": [("data_path", 'tool_settings.uv_select_mode'), ("value", ty)]})
+              for i, ty in enumerate(('VERTEX', 'EDGE', 'FACE', 'ISLAND')))
         ]
 
 
@@ -1082,12 +1078,7 @@ def km_view3d(params):
          {"properties": [("use_all_regions", True), ("center", False)]}),
         ("view3d.view_all", {"type": 'C', "value": 'PRESS', "shift": True},
          {"properties": [("center", True)]}),
-        op_menu_pie(
-            "VIEW3D_MT_view_pie" if params.v3d_tilde_action == 'VIEW' else "VIEW3D_MT_transform_gizmo_pie",
-            {"type": 'ACCENT_GRAVE', "value": params.pie_value},
-        ),
-        *(() if not params.use_pie_click_drag else
-          (("view3d.navigate", {"type": 'ACCENT_GRAVE', "value": 'CLICK'}, None),)),
+        op_menu_pie("VIEW3D_MT_view_pie", {"type": 'D', "value": 'CLICK_DRAG'}),
         ("view3d.navigate", {"type": 'ACCENT_GRAVE', "value": 'PRESS', "shift": True}, None),
         # Numpad views.
         ("view3d.view_camera", {"type": 'NUMPAD_0', "value": 'PRESS'}, None),
@@ -1330,6 +1321,32 @@ def km_view3d(params):
         items.extend([
             op_tool_cycle("builtin.select_box", {"type": 'W', "value": 'PRESS'}),
         ])
+
+    # Tilda key.
+    if params.use_pie_click_drag:
+        items.extend([
+            ("object.transfer_mode",
+             {"type": 'ACCENT_GRAVE', "value": 'CLICK' if params.use_pie_click_drag else 'PRESS'},
+             None),
+            op_menu_pie(
+                "VIEW3D_MT_transform_gizmo_pie",
+                {"type": 'ACCENT_GRAVE', "value": 'CLICK_DRAG'},
+            )
+        ])
+    else:
+        if params.v3d_tilde_action == 'OBJECT_SWITCH':
+            items.append(
+                ("object.transfer_mode",
+                 {"type": 'ACCENT_GRAVE', "value": 'PRESS'},
+                 {"properties": [("use_eyedropper", False)]})
+            )
+        else:
+            items.append(
+                op_menu_pie(
+                    "VIEW3D_MT_transform_gizmo_pie",
+                    {"type": 'ACCENT_GRAVE', "value": 'PRESS'},
+                )
+            )
 
     return keymap
 
@@ -2009,8 +2026,7 @@ def km_file_browser_main(params):
     )
 
     items.extend([
-        ("file.execute", {"type": 'LEFTMOUSE', "value": 'DOUBLE_CLICK'},
-         {"properties": [("need_active", True)]}),
+        ("file.mouse_execute", {"type": 'LEFTMOUSE', "value": 'DOUBLE_CLICK'}, None),
         # Both .execute and .select are needed here. The former only works if
         # there's a file operator (i.e. not in regular editor mode) but is
         # needed to load files. The latter makes selection work if there's no
@@ -2528,6 +2544,7 @@ def km_sequencercommon(params):
          {"properties": [("data_path", 'scene.sequence_editor.show_overlay')]}),
         ("wm.context_toggle_enum", {"type": 'TAB', "value": 'PRESS', "ctrl": True},
          {"properties": [("data_path", 'space_data.view_type'), ("value_1", 'SEQUENCER'), ("value_2", 'PREVIEW')]}),
+        ("sequencer.refresh_all", {"type": 'R', "value": 'PRESS', "ctrl": True}, None),
     ])
 
     if params.select_mouse == 'LEFTMOUSE' and not params.legacy:
@@ -2568,7 +2585,6 @@ def km_sequencer(params):
         ("sequencer.reload", {"type": 'R', "value": 'PRESS', "alt": True}, None),
         ("sequencer.reload", {"type": 'R', "value": 'PRESS', "shift": True, "alt": True},
          {"properties": [("adjust_length", True)]}),
-        ("sequencer.refresh_all", {"type": 'R', "value": 'PRESS', "ctrl": True}, None),
         ("sequencer.offset_clear", {"type": 'O', "value": 'PRESS', "alt": True}, None),
         ("sequencer.duplicate_move", {"type": 'D', "value": 'PRESS', "shift": True}, None),
         ("sequencer.delete", {"type": 'X', "value": 'PRESS'}, None),
@@ -2576,7 +2592,7 @@ def km_sequencer(params):
         ("sequencer.copy", {"type": 'C', "value": 'PRESS', "ctrl": True}, None),
         ("sequencer.paste", {"type": 'V', "value": 'PRESS', "ctrl": True}, None),
         ("sequencer.paste", {"type": 'V', "value": 'PRESS', "ctrl": True, "shift": True},
-        {"properties": [("keep_offset", True)]}),
+         {"properties": [("keep_offset", True)]}),
         ("sequencer.images_separate", {"type": 'Y', "value": 'PRESS'}, None),
         ("sequencer.meta_toggle", {"type": 'TAB', "value": 'PRESS'}, None),
         ("sequencer.meta_make", {"type": 'G', "value": 'PRESS', "ctrl": True}, None),
@@ -3382,6 +3398,11 @@ def km_grease_pencil_stroke_paint_mode(params):
         # Brush size
         ("wm.radial_control", {"type": 'F', "value": 'PRESS'},
          {"properties": [("data_path_primary", 'tool_settings.gpencil_paint.brush.size')]}),
+        # Increase/Decrease brush size
+        ("brush.scale_size", {"type": 'LEFT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 0.9)]}),
+        ("brush.scale_size", {"type": 'RIGHT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 1.0 / 0.9)]}),
         # Draw delete menu
         op_menu("GPENCIL_MT_gpencil_draw_delete", {"type": 'X', "value": 'PRESS'}),
         # Animation menu
@@ -3549,6 +3570,11 @@ def km_grease_pencil_stroke_sculpt_mode(params):
         # Brush size
         ("wm.radial_control", {"type": 'F', "value": 'PRESS'},
          {"properties": [("data_path_primary", 'tool_settings.gpencil_sculpt_paint.brush.size')]}),
+        # Increase/Decrease brush size
+        ("brush.scale_size", {"type": 'LEFT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 0.9)]}),
+        ("brush.scale_size", {"type": 'RIGHT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 1.0 / 0.9)]}),
         # Copy
         ("gpencil.copy", {"type": 'C', "value": 'PRESS', "ctrl": True}, None),
         # Display
@@ -3763,6 +3789,11 @@ def km_grease_pencil_stroke_weight_mode(params):
         # Brush size
         ("wm.radial_control", {"type": 'F', "value": 'PRESS'},
          {"properties": [("data_path_primary", 'tool_settings.gpencil_weight_paint.brush.size')]}),
+        # Increase/Decrease brush size
+        ("brush.scale_size", {"type": 'LEFT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 0.9)]}),
+        ("brush.scale_size", {"type": 'RIGHT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 1.0 / 0.9)]}),
         # Display
         *_grease_pencil_display(),
         # Keyframe menu
@@ -3820,6 +3851,11 @@ def km_grease_pencil_stroke_vertex_mode(params):
         # Brush size
         ("wm.radial_control", {"type": 'F', "value": 'PRESS'},
          {"properties": [("data_path_primary", 'tool_settings.gpencil_vertex_paint.brush.size')]}),
+        # Increase/Decrease brush size
+        ("brush.scale_size", {"type": 'LEFT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 0.9)]}),
+        ("brush.scale_size", {"type": 'RIGHT_BRACKET', "value": 'PRESS', "repeat": True},
+         {"properties": [("scalar", 1.0 / 0.9)]}),
         # Display
         *_grease_pencil_display(),
         # Tools
@@ -4054,7 +4090,7 @@ def km_pose(params):
         ("pose.bone_layers", {"type": 'M', "value": 'PRESS'}, None),
         ("transform.bbone_resize", {"type": 'S', "value": 'PRESS', "ctrl": True, "alt": True}, None),
         ("anim.keyframe_insert_menu", {"type": 'I', "value": 'PRESS'}, None),
-        ("anim.keyframe_delete_v3d", {"type": 'I', "value": 'PRESS', "alt": True}, None),
+        ("anim.keyframe_delete", {"type": 'I', "value": 'PRESS', "alt": True}, None),
         ("anim.keying_set_active_set", {"type": 'I', "value": 'PRESS', "shift": True, "ctrl": True, "alt": True}, None),
         ("poselib.browse_interactive", {"type": 'L', "value": 'PRESS', "alt": True}, None),
         ("poselib.pose_add", {"type": 'L', "value": 'PRESS', "shift": True}, None),
@@ -4126,7 +4162,7 @@ def km_object_mode(params):
         ("wm.context_toggle", {"type": 'PERIOD', "value": 'PRESS', "ctrl": True},
          {"properties": [("data_path", 'tool_settings.use_transform_data_origin')]}),
         ("anim.keyframe_insert_menu", {"type": 'I', "value": 'PRESS'}, None),
-        ("anim.keyframe_delete_v3d", {"type": 'I', "value": 'PRESS', "alt": True}, None),
+        ("anim.keyframe_delete", {"type": 'I', "value": 'PRESS', "alt": True}, None),
         ("anim.keying_set_active_set", {"type": 'I', "value": 'PRESS', "shift": True, "ctrl": True, "alt": True}, None),
         ("collection.create", {"type": 'G', "value": 'PRESS', "ctrl": True}, None),
         ("collection.objects_remove", {"type": 'G', "value": 'PRESS', "ctrl": True, "alt": True}, None),
@@ -4469,8 +4505,6 @@ def km_sculpt(params):
     )
 
     items.extend([
-        # Switch Object (release to avoid conflict with grease pencil drawing).
-        ("object.switch_object", {"type": 'D', "value": 'RELEASE'}, None),
         # Brush strokes
         ("sculpt.brush_stroke", {"type": 'LEFTMOUSE', "value": 'PRESS'},
          {"properties": [("mode", 'NORMAL')]}),
@@ -4594,8 +4628,6 @@ def km_mesh(params):
     )
 
     items.extend([
-        # Switch Object (release to avoid conflict with grease pencil drawing).
-        ("object.switch_object", {"type": 'D', "value": 'RELEASE'}, None),
         # Tools.
         ("mesh.loopcut_slide", {"type": 'R', "value": 'PRESS', "ctrl": True},
          {"properties": [("TRANSFORM_OT_edge_slide", [("release_confirm", False)],)]}),
@@ -5012,32 +5044,30 @@ def km_object_non_modal(params):
              {"properties": [("mode", 'VERTEX_PAINT'), ("toggle", True)]}),
             ("object.mode_set", {"type": 'TAB', "value": 'PRESS', "ctrl": True},
              {"properties": [("mode", 'WEIGHT_PAINT'), ("toggle", True)]}),
-        ])
-    elif params.use_pie_click_drag:
-        items.extend([
-            ("object.mode_set", {"type": 'TAB', "value": 'CLICK'},
-             {"properties": [("mode", 'EDIT'), ("toggle", True)]}),
-            op_menu_pie("VIEW3D_MT_object_mode_pie", {"type": 'TAB', "value": 'CLICK_DRAG'}),
-            ("view3d.object_mode_pie_or_toggle", {"type": 'TAB', "value": 'PRESS', "ctrl": True}, None),
-        ])
-    elif not params.use_v3d_tab_menu:
-        items.extend([
-            ("object.mode_set", {"type": 'TAB', "value": 'PRESS'},
-             {"properties": [("mode", 'EDIT'), ("toggle", True)]}),
-            ("view3d.object_mode_pie_or_toggle", {"type": 'TAB', "value": 'PRESS', "ctrl": True}, None),
-        ])
-    else:
-        # Swap Tab/Ctrl-Tab
-        items.extend([
-            ("object.mode_set", {"type": 'TAB', "value": 'PRESS', "ctrl": True},
-             {"properties": [("mode", 'EDIT'), ("toggle", True)]}),
-            op_menu_pie("VIEW3D_MT_object_mode_pie", {"type": 'TAB', "value": 'PRESS'}),
-        ])
 
-    if params.legacy:
-        items.extend([
             ("object.origin_set", {"type": 'C', "value": 'PRESS', "shift": True, "ctrl": True, "alt": True}, None),
         ])
+    else:
+        if params.use_pie_click_drag:
+            items.extend([
+                ("object.mode_set", {"type": 'TAB', "value": 'CLICK'},
+                 {"properties": [("mode", 'EDIT'), ("toggle", True)]}),
+                op_menu_pie("VIEW3D_MT_object_mode_pie", {"type": 'TAB', "value": 'CLICK_DRAG'}),
+                ("view3d.object_mode_pie_or_toggle", {"type": 'TAB', "value": 'PRESS', "ctrl": True}, None),
+            ])
+        elif params.use_v3d_tab_menu:
+            # Swap Tab/Ctrl-Tab
+            items.extend([
+                ("object.mode_set", {"type": 'TAB', "value": 'PRESS', "ctrl": True},
+                 {"properties": [("mode", 'EDIT'), ("toggle", True)]}),
+                op_menu_pie("VIEW3D_MT_object_mode_pie", {"type": 'TAB', "value": 'PRESS'}),
+            ])
+        else:
+            items.extend([
+                ("object.mode_set", {"type": 'TAB', "value": 'PRESS'},
+                 {"properties": [("mode", 'EDIT'), ("toggle", True)]}),
+                ("view3d.object_mode_pie_or_toggle", {"type": 'TAB', "value": 'PRESS', "ctrl": True}, None),
+            ])
 
     return keymap
 

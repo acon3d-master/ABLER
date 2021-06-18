@@ -1409,7 +1409,7 @@ bool IMB_colormanagement_space_name_is_data(const char *name)
   return (colorspace && colorspace->is_data);
 }
 
-const float *IMB_colormangement_get_xyz_to_rgb()
+const float *IMB_colormanagement_get_xyz_to_rgb()
 {
   return &imbuf_xyz_to_rgb[0][0];
 }
@@ -3539,12 +3539,11 @@ typedef struct PartialThreadData {
   int xmin, ymin, xmax;
 } PartialThreadData;
 
-static void partial_buffer_update_rect_thread_do(void *data_v,
-                                                 int start_scanline,
-                                                 int num_scanlines)
+static void partial_buffer_update_rect_thread_do(void *data_v, int scanline)
 {
   PartialThreadData *data = (PartialThreadData *)data_v;
-  int ymin = data->ymin + start_scanline;
+  int ymin = data->ymin + scanline;
+  const int num_scanlines = 1;
   partial_buffer_update_rect(data->ibuf,
                              data->display_buffer,
                              data->linear_buffer,

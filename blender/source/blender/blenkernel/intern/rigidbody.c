@@ -260,10 +260,12 @@ static RigidBodyOb *rigidbody_copy_object(const Object *ob, const int flag)
   RigidBodyOb *rboN = NULL;
 
   if (ob->rigidbody_object) {
+    const bool is_orig = (flag & LIB_ID_COPY_SET_COPIED_ON_WRITE) == 0;
+
     /* just duplicate the whole struct first (to catch all the settings) */
     rboN = MEM_dupallocN(ob->rigidbody_object);
 
-    if ((flag & LIB_ID_CREATE_NO_MAIN) == 0) {
+    if (is_orig) {
       /* This is a regular copy, and not a CoW copy for depsgraph evaluation */
       rboN->shared = MEM_callocN(sizeof(*rboN->shared), "RigidBodyOb_Shared");
     }
@@ -1520,7 +1522,7 @@ void BKE_rigidbody_remove_object(Main *bmain, Scene *scene, Object *ob, const bo
   if (rbw) {
 
     /* remove object from array */
-    if (rbw && rbw->objects) {
+    if (rbw->objects) {
       for (i = 0; i < rbw->numbodies; i++) {
         if (rbw->objects[i] == ob) {
           rbw->objects[i] = NULL;

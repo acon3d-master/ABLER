@@ -153,6 +153,8 @@ static SpaceLink *action_duplicate(SpaceLink *sl)
 {
   SpaceAction *sactionn = MEM_dupallocN(sl);
 
+  memset(&sactionn->runtime, 0x0, sizeof(sactionn->runtime));
+
   /* clear or remove stuff from old */
 
   return (SpaceLink *)sactionn;
@@ -301,6 +303,11 @@ static void action_header_region_init(wmWindowManager *UNUSED(wm), ARegion *regi
 
 static void action_header_region_draw(const bContext *C, ARegion *region)
 {
+  /* The anim context is not actually used, but this makes sure the action being displayed is up to
+   * date. */
+  bAnimContext ac;
+  ANIM_animdata_get_context(C, &ac);
+
   ED_region_header(C, region);
 }
 

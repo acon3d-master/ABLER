@@ -4666,7 +4666,7 @@ static void achannel_setting_flush_widget_cb(bContext *C, void *ale_npoin, void 
     }
 
     /* UI updates */
-    WM_event_add_notifier(C, NC_GPENCIL | ND_DATA, NULL);
+    WM_event_add_notifier(C, NC_GPENCIL | ND_DATA | NA_EDITED, NULL);
   }
 
   /* Tag for full animation update, so that the settings will have an effect. */
@@ -4674,7 +4674,7 @@ static void achannel_setting_flush_widget_cb(bContext *C, void *ale_npoin, void 
     DEG_id_tag_update(ale_setting->id, ID_RECALC_ANIMATION);
   }
   if (ale_setting->adt && ale_setting->adt->action) {
-    /* Action is it's own datablock, so has to be tagged specifically. */
+    /* Action is its own datablock, so has to be tagged specifically. */
     DEG_id_tag_update(&ale_setting->adt->action->id, ID_RECALC_ANIMATION);
   }
 
@@ -5462,7 +5462,6 @@ void ANIM_channel_draw_widgets(const bContext *C,
             prop = RNA_struct_find_property(&ptr, "use_mask_layer");
             gp_rna_path = RNA_path_from_ID_to_property(&ptr, prop);
             if (RNA_path_resolve_property(&id_ptr, gp_rna_path, &ptr, &prop)) {
-              icon = ICON_LAYER_ACTIVE;
               if (gpl->flag & GP_LAYER_USE_MASK) {
                 icon = ICON_MOD_MASK;
               }

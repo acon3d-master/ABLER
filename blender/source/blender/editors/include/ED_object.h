@@ -247,6 +247,7 @@ void ED_object_texture_paint_mode_enter(struct bContext *C);
 void ED_object_texture_paint_mode_exit_ex(struct Main *bmain, struct Scene *scene, Object *ob);
 void ED_object_texture_paint_mode_exit(struct bContext *C);
 
+bool ED_object_particle_edit_mode_supported(const Object *ob);
 void ED_object_particle_edit_mode_enter_ex(struct Depsgraph *depsgraph,
                                            struct Scene *scene,
                                            Object *ob);
@@ -294,12 +295,12 @@ void ED_object_add_mesh_props(struct wmOperatorType *ot);
 bool ED_object_add_generic_get_opts(struct bContext *C,
                                     struct wmOperator *op,
                                     const char view_align_axis,
-                                    float loc[3],
-                                    float rot[3],
-                                    float scale[3],
-                                    bool *enter_editmode,
-                                    unsigned short *local_view_bits,
-                                    bool *is_view_aligned);
+                                    float r_loc[3],
+                                    float r_rot[3],
+                                    float r_scale[3],
+                                    bool *r_enter_editmode,
+                                    unsigned short *r_local_view_bits,
+                                    bool *r_is_view_aligned);
 
 struct Object *ED_object_add_type_with_obdata(struct bContext *C,
                                               const int type,

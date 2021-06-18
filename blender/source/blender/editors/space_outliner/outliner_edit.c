@@ -154,7 +154,9 @@ void OUTLINER_OT_highlight_update(wmOperatorType *ot)
 /** \name Toggle Open/Closed Operator
  * \{ */
 
-/* Open or close a tree element, optionally toggling all children recursively */
+/**
+ * Open or close a tree element, optionally toggling all children recursively.
+ */
 void outliner_item_openclose(SpaceOutliner *space_outliner,
                              TreeElement *te,
                              bool open,
@@ -665,6 +667,10 @@ static const EnumPropertyItem *outliner_id_itemf(bContext *C,
                                                  PropertyRNA *UNUSED(prop),
                                                  bool *r_free)
 {
+  if (C == NULL) {
+    return DummyRNA_NULL_items;
+  }
+
   EnumPropertyItem item_tmp = {0}, *item = NULL;
   int totitem = 0;
   int i = 0;
@@ -1595,8 +1601,10 @@ void OUTLINER_OT_show_one_level(wmOperatorType *ot)
 /** \name Show Hierarchy Operator
  * \{ */
 
-/* Helper function for tree_element_shwo_hierarchy() -
- * recursively checks whether subtrees have any objects. */
+/**
+ * Helper function for #tree_element_shwo_hierarchy() -
+ * recursively checks whether subtrees have any objects.
+ */
 static int subtree_has_objects(ListBase *lb)
 {
   LISTBASE_FOREACH (TreeElement *, te, lb) {

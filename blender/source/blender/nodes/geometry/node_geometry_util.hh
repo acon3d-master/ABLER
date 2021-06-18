@@ -36,7 +36,9 @@
 
 void geo_node_type_base(
     struct bNodeType *ntype, int type, const char *name, short nclass, short flag);
-bool geo_node_poll_default(struct bNodeType *ntype, struct bNodeTree *ntree);
+bool geo_node_poll_default(struct bNodeType *ntype,
+                           struct bNodeTree *ntree,
+                           const char **r_disabled_hint);
 
 namespace blender::nodes {
 void update_attribute_input_socket_availabilities(bNode &node,
@@ -59,5 +61,13 @@ Mesh *create_cylinder_or_cone_mesh(const float radius_top,
                                    const GeometryNodeMeshCircleFillType fill_type);
 
 Mesh *create_cube_mesh(const float size);
+
+/**
+ * Copies the point domain attributes from `in_component` that are in the mask to `out_component`.
+ */
+void copy_point_attributes_based_on_mask(const GeometryComponent &in_component,
+                                         GeometryComponent &result_component,
+                                         Span<bool> masks,
+                                         const bool invert);
 
 }  // namespace blender::nodes

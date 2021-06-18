@@ -642,8 +642,8 @@ typedef struct UserDef_Experimental {
    * when the release cycle is not alpha. */
   char use_new_hair_type;
   char use_new_point_cloud_type;
+  char use_full_frame_compositor;
   char use_sculpt_vertex_colors;
-  char use_switch_object_operator;
   char use_sculpt_tools_tilt;
   char use_asset_browser;
   char use_override_templates;

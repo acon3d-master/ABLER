@@ -246,10 +246,11 @@ class IMAGE_MT_image(Menu):
                 layout.separator()
                 layout.operator("image.pack", text="Pack")
 
-        if ima:
+        if ima and context.area.ui_type == 'IMAGE_EDITOR':
             layout.separator()
             layout.operator("palette.extract_from_image", text="Extract Palette")
             layout.operator("gpencil.image_to_grease_pencil", text="Generate Grease Pencil")
+
 
 class IMAGE_MT_image_flip(Menu):
     bl_label = "Flip"
@@ -908,6 +909,12 @@ class IMAGE_PT_active_mask_spline(MASK_PT_spline, Panel):
 
 
 class IMAGE_PT_active_mask_point(MASK_PT_point, Panel):
+    bl_space_type = 'IMAGE_EDITOR'
+    bl_region_type = 'UI'
+    bl_category = "Mask"
+
+
+class IMAGE_PT_mask_display(MASK_PT_display, Panel):
     bl_space_type = 'IMAGE_EDITOR'
     bl_region_type = 'UI'
     bl_category = "Mask"
@@ -1615,6 +1622,7 @@ classes = (
     IMAGE_PT_active_tool,
     IMAGE_PT_mask,
     IMAGE_PT_mask_layers,
+    IMAGE_PT_mask_display,
     IMAGE_PT_active_mask_spline,
     IMAGE_PT_active_mask_point,
     IMAGE_PT_snapping,

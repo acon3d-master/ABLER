@@ -98,7 +98,8 @@ void BKE_mesh_looptri_get_real_edges(const struct Mesh *mesh,
 void BKE_mesh_free(struct Mesh *me);
 void BKE_mesh_clear_geometry(struct Mesh *me);
 struct Mesh *BKE_mesh_add(struct Main *bmain, const char *name);
-void BKE_mesh_copy_settings(struct Mesh *me_dst, const struct Mesh *me_src);
+void BKE_mesh_copy_parameters_for_eval(struct Mesh *me_dst, const struct Mesh *me_src);
+void BKE_mesh_copy_parameters(struct Mesh *me_dst, const struct Mesh *me_src);
 void BKE_mesh_update_customdata_pointers(struct Mesh *me, const bool do_ensure_tess_cd);
 void BKE_mesh_ensure_skin_customdata(struct Mesh *me);
 
@@ -215,7 +216,8 @@ void BKE_mesh_split_faces(struct Mesh *mesh, bool free_loop_normals);
  * ignored otherwise. */
 struct Mesh *BKE_mesh_new_from_object(struct Depsgraph *depsgraph,
                                       struct Object *object,
-                                      bool preserve_all_data_layers);
+                                      const bool preserve_all_data_layers,
+                                      const bool preserve_origindex);
 
 /* This is a version of BKE_mesh_new_from_object() which stores mesh in the given main database.
  * However, that function enforces object type to be a geometry one, and ensures a mesh is always
@@ -577,9 +579,9 @@ void BKE_mesh_polygons_flip(struct MPoly *mpoly,
                             struct CustomData *ldata,
                             int totpoly);
 
-/* merge verts  */
-/* Enum for merge_mode of CDDM_merge_verts.
- * Refer to mesh.c for details. */
+/* Merge verts. */
+/* Enum for merge_mode of #BKE_mesh_merge_verts.
+ * Refer to mesh_merge.c for details. */
 enum {
   MESH_MERGE_VERTS_DUMP_IF_MAPPED,
   MESH_MERGE_VERTS_DUMP_IF_EQUAL,

@@ -1263,8 +1263,7 @@ def km_file_browser_main(params):
     )
 
     items.extend([
-        ("file.execute", {"type": 'LEFTMOUSE', "value": 'DOUBLE_CLICK'},
-         {"properties": [("need_active", True)]}),
+        ("file.mouse_execute", {"type": 'LEFTMOUSE', "value": 'DOUBLE_CLICK'}, None),
         ("file.refresh", {"type": 'R', "value": 'PRESS', "ctrl": True}, None),
         ("file.select", {"type": 'LEFTMOUSE', "value": 'DOUBLE_CLICK'}, None),
         ("file.select", {"type": 'LEFTMOUSE', "value": 'CLICK'},
@@ -3001,7 +3000,7 @@ def km_pose(params):
         ("anim.keyframe_insert_by_name", {"type": 'R', "value": 'PRESS', "shift": True},
          {"properties": [("type", 'Scaling')]}),
 
-        ("anim.keyframe_delete_v3d", {"type": 'S', "value": 'PRESS', "alt": True}, None),
+        ("anim.keyframe_delete", {"type": 'S', "value": 'PRESS', "alt": True}, None),
         ("anim.keying_set_active_set", {"type": 'S', "value": 'PRESS', "shift": True, "ctrl": True, "alt": True}, None),
         *_template_items_context_menu("VIEW3D_MT_pose_context_menu", {"type": 'RIGHTMOUSE', "value": 'PRESS'}),
         # Tools
@@ -3072,7 +3071,7 @@ def km_object_mode(params):
          {"properties": [("type", 'Rotation')]}),
         ("anim.keyframe_insert_by_name", {"type": 'R', "value": 'PRESS', "shift": True},
          {"properties": [("type", 'Scaling')]}),
-        ("anim.keyframe_delete_v3d", {"type": 'S', "value": 'PRESS', "alt": True}, None),
+        ("anim.keyframe_delete", {"type": 'S', "value": 'PRESS', "alt": True}, None),
         ("anim.keying_set_active_set", {"type": 'S', "value": 'PRESS', "shift": True, "ctrl": True, "alt": True}, None),
         *_template_items_context_menu("VIEW3D_MT_object_context_menu", {"type": 'RIGHTMOUSE', "value": 'PRESS'}),
         ("object.move_to_collection", {"type": 'G', "value": 'PRESS', "ctrl": True}, None),
@@ -3334,8 +3333,6 @@ def km_weight_paint(params):
         *_template_paint_radial_control("weight_paint"),
         ("wm.context_toggle", {"type": 'M', "value": 'PRESS'},
          {"properties": [("data_path", 'weight_paint_object.data.use_paint_mask')]}),
-        ("wm.context_toggle", {"type": 'V', "value": 'PRESS'},
-         {"properties": [("data_path", 'weight_paint_object.data.use_paint_mask_vertex')]}),
         ("wm.context_toggle", {"type": 'S', "value": 'PRESS', "shift": True},
          {"properties": [("data_path", 'tool_settings.weight_paint.brush.use_smooth_stroke')]}),
         *_template_items_context_panel("VIEW3D_PT_paint_weight_context_menu", {"type": 'RIGHTMOUSE', "value": 'PRESS'}),

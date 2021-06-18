@@ -1912,10 +1912,9 @@ static void rna_Scene_transform_orientation_slots_begin(CollectionPropertyIterat
       iter, orient_slot, sizeof(*orient_slot), ARRAY_SIZE(scene->orientation_slots), 0, NULL);
 }
 
-static int rna_Scene_transform_orientation_slots_length(PointerRNA *ptr)
+static int rna_Scene_transform_orientation_slots_length(PointerRNA *UNUSED(ptr))
 {
-  Scene *scene = (Scene *)ptr->owner_id;
-  return ARRAY_SIZE(scene->orientation_slots);
+  return ARRAY_SIZE(((Scene *)NULL)->orientation_slots);
 }
 
 static bool rna_Scene_use_audio_get(PointerRNA *ptr)
@@ -2483,6 +2482,10 @@ const EnumPropertyItem *rna_TransformOrientation_itemf(bContext *C,
                                                        PropertyRNA *UNUSED(prop),
                                                        bool *r_free)
 {
+  if (C == NULL) {
+    return rna_enum_transform_orientation_items;
+  }
+
   Scene *scene;
   if (ptr->owner_id && (GS(ptr->owner_id->name) == ID_SCE)) {
     scene = (Scene *)ptr->owner_id;
@@ -2493,11 +2496,15 @@ const EnumPropertyItem *rna_TransformOrientation_itemf(bContext *C,
   return rna_TransformOrientation_impl_itemf(scene, false, r_free);
 }
 
-const EnumPropertyItem *rna_TransformOrientation_with_scene_itemf(bContext *UNUSED(C),
+const EnumPropertyItem *rna_TransformOrientation_with_scene_itemf(bContext *C,
                                                                   PointerRNA *ptr,
                                                                   PropertyRNA *UNUSED(prop),
                                                                   bool *r_free)
 {
+  if (C == NULL) {
+    return rna_enum_transform_orientation_items;
+  }
+
   Scene *scene = (Scene *)ptr->owner_id;
   TransformOrientationSlot *orient_slot = ptr->data;
   bool include_default = (orient_slot != &scene->orientation_slots[SCE_ORIENT_DEFAULT]);

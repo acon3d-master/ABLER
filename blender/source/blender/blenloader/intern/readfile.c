@@ -62,6 +62,7 @@
 #include "MEM_guardedalloc.h"
 
 #include "BLI_blenlib.h"
+#include "BLI_endian_defines.h"
 #include "BLI_endian_switch.h"
 #include "BLI_ghash.h"
 #include "BLI_linklist.h"
@@ -111,6 +112,7 @@
 #include "SEQ_iterator.h"
 #include "SEQ_modifier.h"
 #include "SEQ_sequencer.h"
+#include "SEQ_utils.h"
 
 #include "readfile.h"
 
@@ -2696,7 +2698,7 @@ static int lib_link_seq_clipboard_cb(Sequence *seq, void *arg_pt)
 static void lib_link_clipboard_restore(struct IDNameLib_Map *id_map)
 {
   /* update IDs stored in sequencer clipboard */
-  SEQ_iterator_seqbase_recursive_apply(&seqbase_clipboard, lib_link_seq_clipboard_cb, id_map);
+  SEQ_seqbase_recursive_apply(&seqbase_clipboard, lib_link_seq_clipboard_cb, id_map);
 }
 
 static int lib_link_main_data_restore_cb(LibraryIDLinkCallbackData *cb_data)
@@ -2912,7 +2914,7 @@ static void lib_link_workspace_layout_restore(struct IDNameLib_Map *id_map,
         else if (sl->spacetype == SPACE_TEXT) {
           SpaceText *st = (SpaceText *)sl;
 
-          st->text = restore_pointer_by_name(id_map, (ID *)st->text, USER_REAL);
+          st->text = restore_pointer_by_name(id_map, (ID *)st->text, USER_IGNORE);
           if (st->text == NULL) {
             st->text = newmain->texts.first;
           }
@@ -3010,8 +3012,13 @@ static void lib_link_workspace_layout_restore(struct IDNameLib_Map *id_map,
         else if (sl->spacetype == SPACE_SPREADSHEET) {
           SpaceSpreadsheet *sspreadsheet = (SpaceSpreadsheet *)sl;
 
-          sspreadsheet->pinned_id = restore_pointer_by_name(
-              id_map, sspreadsheet->pinned_id, USER_IGNORE);
+          LISTBASE_FOREACH (SpreadsheetContext *, context, &sspreadsheet->context_path) {
+            if (context->type == SPREADSHEET_CONTEXT_OBJECT) {
+              SpreadsheetContextObject *object_context = (SpreadsheetContextObject *)context;
+              object_context->object = restore_pointer_by_name(
+                  id_map, (ID *)object_context->object, USER_IGNORE);
+            }
+          }
         }
       }
     }
@@ -3863,6 +3870,7 @@ static void do_versions(FileData *fd, Library *lib, Main *main)
   blo_do_versions_270(fd, lib, main);
   blo_do_versions_280(fd, lib, main);
   blo_do_versions_290(fd, lib, main);
+  blo_do_versions_300(fd, lib, main);
   blo_do_versions_cycles(fd, lib, main);
 
   /* WATCH IT!!!: pointers from libdata have not been converted yet here! */
@@ -3886,6 +3894,7 @@ static void do_versions_after_linking(Main *main, ReportList *reports)
   do_versions_after_linking_270(main);
   do_versions_after_linking_280(main, reports);
   do_versions_after_linking_290(main, reports);
+  do_versions_after_linking_300(main, reports);
   do_versions_after_linking_cycles(main);
 
   main->is_locked_for_linking = false;
@@ -4444,7 +4453,9 @@ static void expand_doit_library(void *fdhandle, Main *mainvar, void *old)
     if (id == NULL) {
       /* ID has not been read yet, add placeholder to the main of the
        * library it belongs to, so that it will be read later. */
-      read_libblock(fd, libmain, bhead, fd->id_tag_extra | LIB_TAG_INDIRECT, false, NULL);
+      read_libblock(fd, libmain, bhead, fd->id_tag_extra | LIB_TAG_INDIRECT, false, &id);
+      id_sort_by_name(which_libbase(libmain, GS(id->name)), id, id->prev);
+
       /* commented because this can print way too much */
       // if (G.debug & G_DEBUG) printf("expand_doit: other lib %s\n", lib->filepath);
 
@@ -4504,7 +4515,8 @@ static void expand_doit_library(void *fdhandle, Main *mainvar, void *old)
                     bhead,
                     fd->id_tag_extra | LIB_TAG_NEED_EXPAND | LIB_TAG_INDIRECT,
                     false,
-                    NULL);
+                    &id);
+      id_sort_by_name(which_libbase(mainvar, GS(id->name)), id, id->prev);
     }
     else {
       /* Convert any previously read weak link to regular link

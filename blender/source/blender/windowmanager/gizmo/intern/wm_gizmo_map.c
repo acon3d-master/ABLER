@@ -620,7 +620,7 @@ static int gizmo_find_intersected_3d_intern(wmGizmo **visible_gizmos,
     struct GPUMatrixUnproject_Precalc unproj_precalc;
     GPU_matrix_unproject_precalc(&unproj_precalc, rv3d->viewmat, rv3d->winmat, viewport);
 
-    GPU_matrix_unproject_with_precalc(&unproj_precalc, co_screen, co_3d_origin);
+    GPU_matrix_unproject_3fv_with_precalc(&unproj_precalc, co_screen, co_3d_origin);
 
     uint *buf_iter = buffer;
     int hit_found = -1;
@@ -631,7 +631,7 @@ static int gizmo_find_intersected_3d_intern(wmGizmo **visible_gizmos,
       wmGizmo *gz = visible_gizmos[buf_iter[3] >> 8];
       float co_3d[3];
       co_screen[2] = int_as_float(buf_iter[1]);
-      GPU_matrix_unproject_with_precalc(&unproj_precalc, co_screen, co_3d);
+      GPU_matrix_unproject_3fv_with_precalc(&unproj_precalc, co_screen, co_3d);
       float select_bias = gz->select_bias;
       if ((gz->flag & WM_GIZMO_DRAW_NO_SCALE) == 0) {
         select_bias *= gz->scale_final;
@@ -731,15 +731,6 @@ wmGizmo *wm_gizmomap_highlight_find(wmGizmoMap *gzmap,
   BLI_buffer_declare_static(wmGizmo *, visible_3d_gizmos, BLI_BUFFER_NOP, 128);
   bool do_step[WM_GIZMOMAP_DRAWSTEP_MAX];
 
-  int mval[2] = {UNPACK2(event->mval)};
-
-  /* Ensure for drag events we use the location where the user clicked.
-   * Without this click-dragging on a gizmo can accidentally act on the wrong gizmo. */
-  if (ISTWEAK(event->type) || (event->val == KM_CLICK_DRAG)) {
-    mval[0] += event->x - event->prevclickx;
-    mval[1] += event->y - event->prevclicky;
-  }
-
   for (int i = 0; i < ARRAY_SIZE(do_step); i++) {
     do_step[i] = WM_gizmo_context_check_drawstep(C, i);
   }
@@ -775,7 +766,7 @@ wmGizmo *wm_gizmomap_highlight_find(wmGizmoMap *gzmap,
         }
         else if (step == WM_GIZMOMAP_DRAWSTEP_2D) {
           if ((gz = wm_gizmogroup_find_intersected_gizmo(
-                   wm, gzgroup, C, event_modifier, mval, r_part))) {
+                   wm, gzgroup, C, event_modifier, event->mval, r_part))) {
             break;
           }
         }
@@ -787,7 +778,7 @@ wmGizmo *wm_gizmomap_highlight_find(wmGizmoMap *gzmap,
     /* 2D gizmos get priority. */
     if (gz == NULL) {
       gz = gizmo_find_intersected_3d(
-          C, mval, visible_3d_gizmos.data, visible_3d_gizmos.count, r_part);
+          C, event->mval, visible_3d_gizmos.data, visible_3d_gizmos.count, r_part);
     }
   }
   BLI_buffer_free(&visible_3d_gizmos);

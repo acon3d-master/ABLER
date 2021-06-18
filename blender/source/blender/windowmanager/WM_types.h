@@ -132,17 +132,21 @@ struct wmWindowManager;
 extern "C" {
 #endif
 
+typedef void (*wmGenericUserDataFreeFn)(void *data);
+
 typedef struct wmGenericUserData {
   void *data;
   /** When NULL, use #MEM_freeN. */
-  void (*free_fn)(void *data);
+  wmGenericUserDataFreeFn free_fn;
   bool use_free;
 } wmGenericUserData;
 
+typedef void (*wmGenericCallbackFn)(struct bContext *C, void *user_data);
+
 typedef struct wmGenericCallback {
-  void (*exec)(struct bContext *C, void *user_data);
+  wmGenericCallbackFn exec;
   void *user_data;
-  void (*free_user_data)(void *user_data);
+  wmGenericUserDataFreeFn free_user_data;
 } wmGenericCallback;
 
 /* ************** wmOperatorType ************************ */
@@ -680,6 +684,25 @@ typedef struct wmNDOFMotionData {
 } wmNDOFMotionData;
 #endif /* WITH_INPUT_NDOF */
 
+#ifdef WITH_XR_OPENXR
+/* Similar to GHOST_XrPose. */
+typedef struct wmXrPose {
+  float position[3];
+  /* Blender convention (w, x, y, z) */
+  float orientation_quat[4];
+} wmXrPose;
+
+typedef struct wmXrActionState {
+  union {
+    bool state_boolean;
+    float state_float;
+    float state_vector2f[2];
+    wmXrPose state_pose;
+  };
+  int type; /* eXrActionType */
+} wmXrActionState;
+#endif
+
 /** Timer flags. */
 typedef enum {
   /** Do not attempt to free customdata pointer even if non-NULL. */
@@ -897,6 +920,7 @@ typedef struct wmDragAsset {
   /* Always freed. */
   const char *path;
   int id_type;
+  int import_type; /* eFileAssetImportType */
 } wmDragAsset;
 
 typedef struct wmDrag {

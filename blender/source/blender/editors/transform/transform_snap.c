@@ -345,7 +345,7 @@ void applyProject(TransInfo *t)
                 SCE_SNAP_MODE_FACE,
                 &(const struct SnapObjectParams){
                     .snap_select = t->tsnap.modeSelect,
-                    .use_object_edit_cage = (t->flag & T_EDIT) != 0,
+                    .edit_mode_type = (t->flag & T_EDIT) != 0 ? SNAP_GEOM_EDIT : SNAP_GEOM_FINAL,
                     .use_occlusion_test = false,
                     .use_backface_culling = t->tsnap.use_backface_culling,
                 },
@@ -1072,7 +1072,7 @@ static void TargetSnapClosest(TransInfo *t)
     if (t->options & CTX_OBJECT) {
       int i;
       FOREACH_TRANS_DATA_CONTAINER (t, tc) {
-        TransData *td = tc->data;
+        TransData *td;
         for (td = tc->data, i = 0; i < tc->data_len && td->flag & TD_SELECTED; i++, td++) {
           const BoundBox *bb = NULL;
 
@@ -1167,7 +1167,7 @@ short snapObjectsTransform(
       t->settings->snap_mode,
       &(const struct SnapObjectParams){
           .snap_select = t->tsnap.modeSelect,
-          .use_object_edit_cage = (t->flag & T_EDIT) != 0,
+          .edit_mode_type = (t->flag & T_EDIT) != 0 ? SNAP_GEOM_EDIT : SNAP_GEOM_FINAL,
           .use_occlusion_test = t->settings->snap_mode != SCE_SNAP_MODE_FACE,
           .use_backface_culling = t->tsnap.use_backface_culling,
       },
@@ -1201,7 +1201,7 @@ bool peelObjectsTransform(TransInfo *t,
       t->depsgraph,
       &(const struct SnapObjectParams){
           .snap_select = t->tsnap.modeSelect,
-          .use_object_edit_cage = (t->flag & T_EDIT) != 0,
+          .edit_mode_type = (t->flag & T_EDIT) != 0 ? SNAP_GEOM_EDIT : SNAP_GEOM_FINAL,
       },
       mval,
       -1.0f,

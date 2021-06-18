@@ -89,7 +89,6 @@
 #include "COM_NormalizeNode.h"
 #include "COM_OutputFileNode.h"
 #include "COM_PixelateNode.h"
-#include "COM_GlslNode.h"
 #include "COM_PlaneTrackDeformNode.h"
 #include "COM_RenderLayersNode.h"
 #include "COM_RotateNode.h"
@@ -406,9 +405,6 @@ Node *COM_convert_bnode(bNode *b_node)
       break;
     case CMP_NODE_CORNERPIN:
       node = new CornerPinNode(b_node);
-      break;
-    case CMP_NODE_GLSL:
-      node = new GlslNode(b_node);
       break;
     case CMP_NODE_SUNBEAMS:
       node = new SunBeamsNode(b_node);

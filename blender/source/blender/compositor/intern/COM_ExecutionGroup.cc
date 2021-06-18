@@ -157,6 +157,7 @@ void ExecutionGroup::init_work_packages()
   if (this->m_chunks_len != 0) {
     m_work_packages.resize(this->m_chunks_len);
     for (unsigned int index = 0; index < m_chunks_len; index++) {
+      m_work_packages[index].type = eWorkPackageType::Tile;
       m_work_packages[index].state = eWorkPackageState::NotScheduled;
       m_work_packages[index].execution_group = this;
       m_work_packages[index].chunk_number = index;
@@ -549,8 +550,6 @@ bool ExecutionGroup::scheduleChunk(unsigned int chunkNumber)
   return false;
 }
 
-extern "C" int wm_window_process_main_queue_events();
-
 bool ExecutionGroup::scheduleChunkWhenPossible(ExecutionSystem *graph,
                                                const int chunk_x,
                                                const int chunk_y)
@@ -569,10 +568,6 @@ bool ExecutionGroup::scheduleChunkWhenPossible(ExecutionSystem *graph,
     return true;
   }
   if (work_package.state == eWorkPackageState::Scheduled) {
-    if (BLI_thread_is_main()) {
-      // When Blender is run in background mode, we need to pump events manually here
-      wm_window_process_main_queue_events();
-    }
     return false;
   }
 

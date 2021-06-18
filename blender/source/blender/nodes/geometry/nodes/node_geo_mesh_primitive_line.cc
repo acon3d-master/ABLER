@@ -17,6 +17,7 @@
 #include "DNA_mesh_types.h"
 #include "DNA_meshdata_types.h"
 
+#include "BKE_material.h"
 #include "BKE_mesh.h"
 
 #include "UI_interface.h"
@@ -110,6 +111,7 @@ static Mesh *create_line_mesh(const float3 start, const float3 delta, const int 
   }
 
   Mesh *mesh = BKE_mesh_new_nomain(count, count - 1, 0, 0, 0);
+  BKE_id_material_eval_ensure_default_slot(&mesh->id);
   MutableSpan<MVert> verts{mesh->mvert, mesh->totvert};
   MutableSpan<MEdge> edges{mesh->medge, mesh->totedge};
 
@@ -151,7 +153,10 @@ static void geo_node_mesh_primitive_line_exec(GeoNodeExecParams params)
     }
     else if (count_mode == GEO_NODE_MESH_LINE_COUNT_TOTAL) {
       const int count = params.extract_input<int>("Count");
-      if (count > 1) {
+      if (count == 1) {
+        mesh = create_line_mesh(start, float3(0), count);
+      }
+      else {
         const float3 delta = total_delta / (float)(count - 1);
         mesh = create_line_mesh(start, delta, count);
       }

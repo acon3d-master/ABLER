@@ -1065,29 +1065,21 @@ static PyObject *bpy_bmesh_to_mesh(BPy_BMesh *self, PyObject *args)
   Py_RETURN_NONE;
 }
 
-PyDoc_STRVAR(
-    bpy_bmesh_from_object_doc,
-    ".. method:: from_object(object, depsgraph, deform=True, cage=False, face_normals=True)\n"
-    "\n"
-    "   Initialize this bmesh from existing object datablock (currently only meshes are "
-    "supported).\n"
-    "\n"
-    "   :arg object: The object data to load.\n"
-    "   :type object: :class:`Object`\n"
-    "   :arg deform: Apply deformation modifiers.\n"
-    "   :type deform: boolean\n"
-    "   :arg cage: Get the mesh as a deformed cage.\n"
-    "   :type cage: boolean\n"
-    "   :arg face_normals: Calculate face normals.\n"
-    "   :type face_normals: boolean\n"
-    "\n"
-    "   .. deprecated:: 2.93\n"
-    "\n"
-    "      The deform parameter is deprecated, assumed to be True, and will be removed in version "
-    "3.0.\n");
+PyDoc_STRVAR(bpy_bmesh_from_object_doc,
+             ".. method:: from_object(object, depsgraph, cage=False, face_normals=True)\n"
+             "\n"
+             "   Initialize this bmesh from existing object data-block (only meshes are currently "
+             "supported).\n"
+             "\n"
+             "   :arg object: The object data to load.\n"
+             "   :type object: :class:`Object`\n"
+             "   :arg cage: Get the mesh as a deformed cage.\n"
+             "   :type cage: boolean\n"
+             "   :arg face_normals: Calculate face normals.\n"
+             "   :type face_normals: boolean\n");
 static PyObject *bpy_bmesh_from_object(BPy_BMesh *self, PyObject *args, PyObject *kw)
 {
-  static const char *kwlist[] = {"object", "depsgraph", "deform", "cage", "face_normals", NULL};
+  static const char *kwlist[] = {"object", "depsgraph", "cage", "face_normals", NULL};
   PyObject *py_object;
   PyObject *py_depsgraph;
   Object *ob, *ob_eval;
@@ -1095,7 +1087,6 @@ static PyObject *bpy_bmesh_from_object(BPy_BMesh *self, PyObject *args, PyObject
   struct Scene *scene_eval;
   Mesh *me_eval;
   BMesh *bm;
-  bool use_deform = true;
   bool use_cage = false;
   bool use_fnorm = true;
   const CustomData_MeshMasks data_masks = CD_MASK_BMESH;
@@ -1104,12 +1095,10 @@ static PyObject *bpy_bmesh_from_object(BPy_BMesh *self, PyObject *args, PyObject
 
   if (!PyArg_ParseTupleAndKeywords(args,
                                    kw,
-                                   "OO|O&O&O&:from_object",
+                                   "OO|$O&O&:from_object",
                                    (char **)kwlist,
                                    &py_object,
                                    &py_depsgraph,
-                                   PyC_ParseBool,
-                                   &use_deform,
                                    PyC_ParseBool,
                                    &use_cage,
                                    PyC_ParseBool,
@@ -1123,13 +1112,6 @@ static PyObject *bpy_bmesh_from_object(BPy_BMesh *self, PyObject *args, PyObject
     PyErr_SetString(PyExc_ValueError,
                     "from_object(...): currently only mesh objects are supported");
     return NULL;
-  }
-
-  if (use_deform == false) {
-    PyErr_WarnEx(PyExc_FutureWarning,
-                 "from_object(...): the deform parameter is deprecated, assumed to be True, and "
-                 "will be removed in version 3.0",
-                 1);
   }
 
   const bool use_render = DEG_get_mode(depsgraph) == DAG_EVAL_RENDER;
@@ -1146,7 +1128,7 @@ static PyObject *bpy_bmesh_from_object(BPy_BMesh *self, PyObject *args, PyObject
       return NULL;
     }
 
-    me_eval = BKE_mesh_new_from_object(depsgraph, ob_eval, true);
+    me_eval = BKE_mesh_new_from_object(depsgraph, ob_eval, true, false);
     need_free = true;
   }
   else {
@@ -1214,7 +1196,7 @@ static PyObject *bpy_bmesh_from_mesh(BPy_BMesh *self, PyObject *args, PyObject *
 
   if (!PyArg_ParseTupleAndKeywords(args,
                                    kw,
-                                   "O|O&O&i:from_mesh",
+                                   "O|$O&O&i:from_mesh",
                                    (char **)kwlist,
                                    &py_mesh,
                                    PyC_ParseBool,
@@ -1314,7 +1296,7 @@ static PyObject *bpy_bmesh_transform(BPy_BMElem *self, PyObject *args, PyObject 
 
   if (!PyArg_ParseTupleAndKeywords(args,
                                    kw,
-                                   "O!|O!:transform",
+                                   "O!|$O!:transform",
                                    (char **)kwlist,
                                    &matrix_Type,
                                    &mat,
@@ -1376,7 +1358,7 @@ static PyObject *bpy_bmesh_calc_volume(BPy_BMElem *self, PyObject *args, PyObjec
   BPY_BM_CHECK_OBJ(self);
 
   if (!PyArg_ParseTupleAndKeywords(
-          args, kw, "|O!:calc_volume", (char **)kwlist, &PyBool_Type, &is_signed)) {
+          args, kw, "|$O!:calc_volume", (char **)kwlist, &PyBool_Type, &is_signed)) {
     return NULL;
   }
 
@@ -1395,7 +1377,6 @@ static PyObject *bpy_bmesh_calc_loop_triangles(BPy_BMElem *self)
   BMesh *bm;
 
   int looptris_tot;
-  int tottri;
   BMLoop *(*looptris)[3];
 
   PyObject *ret;
@@ -1408,10 +1389,10 @@ static PyObject *bpy_bmesh_calc_loop_triangles(BPy_BMElem *self)
   looptris_tot = poly_to_tri_count(bm->totface, bm->totloop);
   looptris = PyMem_MALLOC(sizeof(*looptris) * looptris_tot);
 
-  BM_mesh_calc_tessellation(bm, looptris, &tottri);
+  BM_mesh_calc_tessellation(bm, looptris);
 
-  ret = PyList_New(tottri);
-  for (i = 0; i < tottri; i++) {
+  ret = PyList_New(looptris_tot);
+  for (i = 0; i < looptris_tot; i++) {
     PyList_SET_ITEM(ret, i, BPy_BMLoop_Array_As_Tuple(bm, looptris[i], 3));
   }
 
@@ -1869,7 +1850,7 @@ static PyObject *bpy_bmface_copy(BPy_BMFace *self, PyObject *args, PyObject *kw)
 
   if (!PyArg_ParseTupleAndKeywords(args,
                                    kw,
-                                   "|O&O&:BMFace.copy",
+                                   "|$O&O&:BMFace.copy",
                                    (char **)kwlist,
                                    PyC_ParseBool,
                                    &do_verts,
@@ -2665,7 +2646,7 @@ static PyObject *bpy_bmelemseq_sort(BPy_BMElemSeq *self, PyObject *args, PyObjec
   if (args != NULL) {
     if (!PyArg_ParseTupleAndKeywords(args,
                                      kw,
-                                     "|OO&:BMElemSeq.sort",
+                                     "|$OO&:BMElemSeq.sort",
                                      (char **)kwlist,
                                      &keyfunc,
                                      PyC_ParseBool,

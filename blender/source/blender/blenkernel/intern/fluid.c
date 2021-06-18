@@ -623,7 +623,8 @@ static void clamp_bounds_in_domain(FluidDomainSettings *fds,
 static bool is_static_object(Object *ob)
 {
   /* Check if the object has modifiers that might make the object "dynamic". */
-  ModifierData *md = ob->modifiers.first;
+  VirtualModifierData virtualModifierData;
+  ModifierData *md = BKE_modifiers_get_virtual_modifierlist(ob, &virtualModifierData);
   for (; md; md = md->next) {
     if (ELEM(md->type,
              eModifierType_Cloth,
@@ -631,7 +632,8 @@ static bool is_static_object(Object *ob)
              eModifierType_Explode,
              eModifierType_Ocean,
              eModifierType_ShapeKey,
-             eModifierType_Softbody)) {
+             eModifierType_Softbody,
+             eModifierType_Nodes)) {
       return false;
     }
   }
@@ -4232,7 +4234,7 @@ struct Mesh *BKE_fluid_modifier_do(
     result = BKE_mesh_copy_for_eval(me, false);
   }
   else {
-    BKE_mesh_copy_settings(result, me);
+    BKE_mesh_copy_parameters_for_eval(result, me);
   }
 
   /* Liquid simulation has a texture space that based on the bounds of the fluid mesh.

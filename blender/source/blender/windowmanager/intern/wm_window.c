@@ -39,7 +39,6 @@
 #include "GHOST_C-api.h"
 
 #include "BLI_blenlib.h"
-#include "BLI_threads.h"
 #include "BLI_math.h"
 #include "BLI_utildefines.h"
 
@@ -134,7 +133,7 @@ static struct WMInitStruct {
  * \{ */
 
 static void wm_window_set_drawable(wmWindowManager *wm, wmWindow *win, bool activate);
-static int wm_window_timer(const bContext *C);
+static bool wm_window_timer(const bContext *C);
 
 /* XXX this one should correctly check for apple top header...
  * done for Cocoa : returns window contents (and not frame) max size*/
@@ -551,7 +550,7 @@ static void wm_window_ghostwindow_add(wmWindowManager *wm,
   }
 
   int scr_w, scr_h;
-  wm_get_screensize(&scr_w, &scr_h);
+  wm_get_desktopsize(&scr_w, &scr_h);
   int posy = (scr_h - win->posy - win->sizey);
 
   /* Clear drawable so we can set the new window. */
@@ -757,6 +756,7 @@ static bool wm_window_update_size_position(wmWindow *win)
 
 /**
  * \param space_type: SPACE_VIEW3D, SPACE_INFO, ... (eSpace_Type)
+ * \param toplevel: Not a child owned by other windows. A peer of main window.
  * \param dialog: whether this should be made as a dialog-style window
  * \param temp: whether this is considered a short-lived window
  * \param alignment: how this window is positioned relative to its parent
@@ -769,6 +769,7 @@ wmWindow *WM_window_open(bContext *C,
                          int sizex,
                          int sizey,
                          int space_type,
+                         bool toplevel,
                          bool dialog,
                          bool temp,
                          WindowAlignment alignment)
@@ -823,7 +824,7 @@ wmWindow *WM_window_open(bContext *C,
 
   /* add new window? */
   if (win == NULL) {
-    win = wm_window_new(bmain, wm, win_prev, dialog);
+    win = wm_window_new(bmain, wm, toplevel ? NULL : win_prev, dialog);
     win->posx = rect.xmin;
     win->posy = rect.ymin;
     *win->stereo3d_format = *win_prev->stereo3d_format;
@@ -924,6 +925,7 @@ int wm_window_new_exec(bContext *C, wmOperator *UNUSED(op))
                             win_src->sizex * 0.95f,
                             win_src->sizey * 0.9f,
                             area->spacetype,
+                            false,
                             false,
                             false,
                             WIN_ALIGN_PARENT_CENTER) != NULL);
@@ -1499,12 +1501,12 @@ static int ghost_event_proc(GHOST_EventHandle evt, GHOST_TUserDataPtr C_void_ptr
  * Timer handlers should check for delta to decide if they just update, or follow real time.
  * Timer handlers can also set duration to match frames passed
  */
-static int wm_window_timer(const bContext *C)
+static bool wm_window_timer(const bContext *C)
 {
   Main *bmain = CTX_data_main(C);
   wmWindowManager *wm = CTX_wm_manager(C);
   double time = PIL_check_seconds_timer();
-  int retval = 0;
+  bool has_event = false;
 
   /* Mutable in case the timer gets removed. */
   LISTBASE_FOREACH_MUTABLE (wmTimer *, wt, &wm->timers) {
@@ -1541,77 +1543,34 @@ static int wm_window_timer(const bContext *C)
         event.customdata = wt;
         wm_event_add(win, &event);
 
-        retval = 1;
+        has_event = true;
       }
     }
   }
-  return retval;
+  return has_event;
 }
-
-ThreadQueue* wm_main_thread_queue = NULL;
-
-typedef struct MainThreadWork {
-    MainThreadCallback callback;
-    void *user_data;
-} MainThreadWork;
-
-void WM_run_in_main_thread(MainThreadCallback callback, void *user_data)
-{
-    MainThreadWork* work = malloc(sizeof(MainThreadWork));
-    work->callback = callback;
-    work->user_data = user_data;
-    BLI_thread_queue_push(wm_main_thread_queue, work);
-}
-
-void wm_window_create_main_queue()
-{
-    if (wm_main_thread_queue == NULL) {
-        wm_main_thread_queue = BLI_thread_queue_init();
-    }
-}
-
-void wm_window_free_main_queue()
-{
-    BLI_thread_queue_free(wm_main_thread_queue);
-}
-
-int wm_window_process_main_queue_events()
-{
-    BLI_assert(BLI_thread_is_main());
-    int count = 0;
-
-    MainThreadWork *work = NULL;
-    while (work = BLI_thread_queue_pop_timeout(wm_main_thread_queue, 0)) {
-        (work->callback)(work->user_data);
-
-        free(work);
-
-        count++;
-    }
-    return count;
-}
-
 
 void wm_window_process_events(const bContext *C)
 {
   BLI_assert(BLI_thread_is_main());
 
-  wm_window_process_main_queue_events();
+  bool has_event = GHOST_ProcessEvents(g_system, false); /* `false` is no wait. */
 
-  int hasevent = GHOST_ProcessEvents(g_system, 0); /* 0 is no wait */
-
-  if (hasevent) {
+  if (has_event) {
     GHOST_DispatchEvents(g_system);
   }
-  hasevent |= wm_window_timer(C);
+  has_event |= wm_window_timer(C);
 #ifdef WITH_XR_OPENXR
   /* XR events don't use the regular window queues. So here we don't only trigger
    * processing/dispatching but also handling. */
-  hasevent |= wm_xr_events_handle(CTX_wm_manager(C));
+  has_event |= wm_xr_events_handle(CTX_wm_manager(C));
 #endif
 
-  /* no event, we sleep 5 milliseconds */
-  if (hasevent == 0) {
+  /* When there is no event, sleep 5 milliseconds not to use too much CPU when idle.
+   *
+   * Skip sleeping when simulating events so tests don't idle unnecessarily as simulated
+   * events are typically generated from a timer that runs in the main loop. */
+  if ((has_event == false) && !(G.f & G_FLAG_EVENT_SIMULATE)) {
     PIL_sleep_ms(5);
   }
 }

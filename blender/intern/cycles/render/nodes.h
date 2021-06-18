@@ -839,6 +839,34 @@ class AmbientOcclusionNode : public ShaderNode {
   NODE_SOCKET_API(bool, inside)
 };
 
+class OutlineNode : public ShaderNode {
+ public:
+  SHADER_NODE_CLASS(OutlineNode)
+
+  bool has_spatial_varying()
+  {
+    return true;
+  }
+  virtual int get_group()
+  {
+    return NODE_GROUP_LEVEL_3;
+  }
+  virtual bool has_raytrace()
+  {
+    return true;
+  }
+
+  float3 normal;
+  float width;
+  float depth;
+  float3 depth_hit_position;
+  float negative_depth;
+  float3 negative_depth_hit_position;
+  //float dot;
+  float object;
+  float width_ws_size;
+};
+
 class VolumeNode : public ShaderNode {
  public:
   VolumeNode(const NodeType *node_type);
@@ -1600,10 +1628,22 @@ class SetNormalNode : public ShaderNode {
   NODE_SOCKET_API(float3, direction)
 };
 
-class OSLNode : public ShaderNode {
+class OSLNode final : public ShaderNode {
  public:
   static OSLNode *create(ShaderGraph *graph, size_t num_inputs, const OSLNode *from = NULL);
   ~OSLNode();
+
+  static void operator delete(void *ptr)
+  {
+    /* Override delete operator to silence new-delete-type-mismatch ASAN warnings
+     * regarding size mismatch in the destructor. This is intentional as we allocate
+     * extra space at the end of the node. */
+    ::operator delete(ptr);
+  }
+  static void operator delete(void *, void *)
+  {
+    /* Deliberately empty placement delete operator, to avoid MSVC warning C4291. */
+  }
 
   ShaderNode *clone(ShaderGraph *graph) const;
 

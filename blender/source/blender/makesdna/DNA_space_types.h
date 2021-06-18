@@ -780,7 +780,15 @@ typedef struct FileAssetSelectParams {
   FileSelectParams base_params;
 
   FileSelectAssetLibraryUID asset_library;
+
+  short import_type; /* eFileAssetImportType */
+  char _pad[6];
 } FileAssetSelectParams;
+
+typedef enum eFileAssetImportType {
+  FILE_ASSET_IMPORT_LINK = 0,
+  FILE_ASSET_IMPORT_APPEND = 1,
+} eFileAssetImportType;
 
 /**
  * A wrapper to store previous and next folder lists (#FolderList) for a specific browse mode
@@ -1856,8 +1864,6 @@ typedef struct SpaceStatusBar {
 
 typedef struct SpreadsheetColumnID {
   char *name;
-  int index;
-  char _pad[4];
 } SpreadsheetColumnID;
 
 typedef struct SpreadsheetColumn {
@@ -1869,6 +1875,32 @@ typedef struct SpreadsheetColumn {
    */
   SpreadsheetColumnID *id;
 } SpreadsheetColumn;
+
+/**
+ * An item in SpaceSpreadsheet.context_path.
+ * This is a bases struct for the structs below.
+ */
+typedef struct SpreadsheetContext {
+  struct SpreadsheetContext *next, *prev;
+  /* eSpaceSpreadsheet_ContextType. */
+  int type;
+  char _pad[4];
+} SpreadsheetContext;
+
+typedef struct SpreadsheetContextObject {
+  SpreadsheetContext base;
+  struct Object *object;
+} SpreadsheetContextObject;
+
+typedef struct SpreadsheetContextModifier {
+  SpreadsheetContext base;
+  char *modifier_name;
+} SpreadsheetContextModifier;
+
+typedef struct SpreadsheetContextNode {
+  SpreadsheetContext base;
+  char *node_name;
+} SpreadsheetContextNode;
 
 typedef struct SpaceSpreadsheet {
   SpaceLink *next, *prev;
@@ -1882,7 +1914,13 @@ typedef struct SpaceSpreadsheet {
   /* List of #SpreadsheetColumn. */
   ListBase columns;
 
-  struct ID *pinned_id;
+  /**
+   * List of #SpreadsheetContext.
+   * This is a path to the data that is displayed in the spreadsheet.
+   * It can be set explicitly by an action of the user (e.g. clicking the preview icon in a
+   * geometry node) or it can be derived from context automatically based on some heuristic.
+   */
+  ListBase context_path;
 
   /* eSpaceSpreadsheet_FilterFlag. */
   uint8_t filter_flag;
@@ -1894,20 +1932,31 @@ typedef struct SpaceSpreadsheet {
   /* eSpaceSpreadsheet_ObjectContext. */
   uint8_t object_eval_state;
 
-  char _pad1[4];
+  /* eSpaceSpreadsheet_Flag. */
+  uint32_t flag;
 
   SpaceSpreadsheet_Runtime *runtime;
 } SpaceSpreadsheet;
+
+typedef enum eSpaceSpreadsheet_Flag {
+  SPREADSHEET_FLAG_PINNED = (1 << 0),
+  SPREADSHEET_FLAG_CONTEXT_PATH_COLLAPSED = (1 << 1),
+} eSpaceSpreadsheet_Flag;
 
 typedef enum eSpaceSpreadsheet_FilterFlag {
   SPREADSHEET_FILTER_SELECTED_ONLY = (1 << 0),
 } eSpaceSpreadsheet_FilterFlag;
 
 typedef enum eSpaceSpreadsheet_ObjectEvalState {
-  SPREADSHEET_OBJECT_EVAL_STATE_FINAL = 0,
+  SPREADSHEET_OBJECT_EVAL_STATE_EVALUATED = 0,
   SPREADSHEET_OBJECT_EVAL_STATE_ORIGINAL = 1,
-  SPREADSHEET_OBJECT_EVAL_STATE_NODE = 2,
 } eSpaceSpreadsheet_Context;
+
+typedef enum eSpaceSpreadsheet_ContextType {
+  SPREADSHEET_CONTEXT_OBJECT = 0,
+  SPREADSHEET_CONTEXT_MODIFIER = 1,
+  SPREADSHEET_CONTEXT_NODE = 2,
+} eSpaceSpreadsheet_ContextType;
 
 /**
  * We can't just use UI_UNIT_X, because it does not take `widget.points` into account, which

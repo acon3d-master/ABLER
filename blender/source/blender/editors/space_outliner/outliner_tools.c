@@ -598,8 +598,14 @@ static uiBlock *merged_element_search_menu(bContext *C, ARegion *region, void *d
   short menu_width = 10 * UI_UNIT_X;
   but = uiDefSearchBut(
       block, search, 0, ICON_VIEWZOOM, sizeof(search), 10, 10, menu_width, UI_UNIT_Y, 0, 0, "");
-  UI_but_func_search_set(
-      but, NULL, merged_element_search_update_fn, data, NULL, merged_element_search_exec_fn, NULL);
+  UI_but_func_search_set(but,
+                         NULL,
+                         merged_element_search_update_fn,
+                         data,
+                         false,
+                         NULL,
+                         merged_element_search_exec_fn,
+                         NULL);
   UI_but_flag_enable(but, UI_BUT_ACTIVATE_ON_INIT);
 
   /* Fake button to hold space for search items */
@@ -734,7 +740,7 @@ static void id_local_fn(bContext *C,
       BKE_lib_id_clear_library_data(bmain, tselem->id);
     }
     else {
-      BKE_main_id_clear_newpoins(bmain);
+      BKE_main_id_newptr_and_tag_clear(bmain);
     }
   }
   else if (ID_IS_OVERRIDE_LIBRARY_REAL(tselem->id)) {
@@ -840,13 +846,13 @@ static void id_override_library_create_fn(bContext *C,
         te->store_elem->id->tag |= LIB_TAG_DOIT;
       }
       success = BKE_lib_override_library_create(
-          bmain, CTX_data_scene(C), CTX_data_view_layer(C), id_root, id_reference);
+          bmain, CTX_data_scene(C), CTX_data_view_layer(C), id_root, id_reference, NULL);
     }
     else if (ID_IS_OVERRIDABLE_LIBRARY(id_root)) {
       success = BKE_lib_override_library_create_from_id(bmain, id_root, true) != NULL;
 
       /* Cleanup. */
-      BKE_main_id_clear_newpoins(bmain);
+      BKE_main_id_newptr_and_tag_clear(bmain);
       BKE_main_id_tag_all(bmain, LIB_TAG_DOIT, false);
     }
 
@@ -896,7 +902,7 @@ static void id_override_library_reset_fn(bContext *C,
 }
 
 static void id_override_library_resync_fn(bContext *C,
-                                          ReportList *UNUSED(reports),
+                                          ReportList *reports,
                                           Scene *scene,
                                           TreeElement *te,
                                           TreeStoreElem *UNUSED(tsep),
@@ -925,7 +931,7 @@ static void id_override_library_resync_fn(bContext *C,
     }
 
     BKE_lib_override_library_resync(
-        bmain, scene, CTX_data_view_layer(C), id_root, NULL, do_hierarchy_enforce, true);
+        bmain, scene, CTX_data_view_layer(C), id_root, NULL, do_hierarchy_enforce, true, reports);
 
     WM_event_add_notifier(C, NC_WINDOW, NULL);
   }

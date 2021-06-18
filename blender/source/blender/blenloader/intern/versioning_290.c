@@ -48,6 +48,7 @@
 #include "DNA_screen_types.h"
 #include "DNA_shader_fx_types.h"
 #include "DNA_space_types.h"
+#include "DNA_text_types.h"
 #include "DNA_tracking_types.h"
 #include "DNA_workspace_types.h"
 
@@ -79,6 +80,7 @@
 
 #include "BLO_readfile.h"
 #include "readfile.h"
+#include "versioning_common.h"
 
 /* Make preferences read-only, use versioning_userdef.c. */
 #define U (*((const UserDef *)&U))
@@ -116,23 +118,37 @@ static bool can_use_proxy(const Sequence *seq, int psize)
 }
 
 /* image_size is width or height depending what RNA property is converted - X or Y. */
-static void seq_convert_transform_animation(const Scene *scene,
+static void seq_convert_transform_animation(const Sequence *seq,
+                                            const Scene *scene,
                                             const char *path,
-                                            const int image_size)
+                                            const int image_size,
+                                            const int scene_size)
 {
   if (scene->adt == NULL || scene->adt->action == NULL) {
     return;
   }
 
-  FCurve *fcu = BKE_fcurve_find(&scene->adt->action->curves, path, 0);
-  if (fcu != NULL && !BKE_fcurve_is_empty(fcu)) {
-    BezTriple *bezt = fcu->bezt;
-    for (int i = 0; i < fcu->totvert; i++, bezt++) {
-      /* Same math as with old_image_center_*, but simplified. */
-      bezt->vec[0][1] = image_size / 2 + bezt->vec[0][1] - scene->r.xsch / 2;
-      bezt->vec[1][1] = image_size / 2 + bezt->vec[1][1] - scene->r.xsch / 2;
-      bezt->vec[2][1] = image_size / 2 + bezt->vec[2][1] - scene->r.xsch / 2;
+  /* Hardcoded legacy bit-flags which has been removed. */
+  const uint32_t use_transform_flag = (1 << 16);
+  const uint32_t use_crop_flag = (1 << 17);
+
+  /* Convert offset animation, but only if crop is not used. */
+  if ((seq->flag & use_transform_flag) != 0 && (seq->flag & use_crop_flag) == 0) {
+    FCurve *fcu = BKE_fcurve_find(&scene->adt->action->curves, path, 0);
+    if (fcu != NULL && !BKE_fcurve_is_empty(fcu)) {
+      BezTriple *bezt = fcu->bezt;
+      for (int i = 0; i < fcu->totvert; i++, bezt++) {
+        /* Same math as with old_image_center_*, but simplified. */
+        bezt->vec[0][1] = (image_size - scene_size) / 2 + bezt->vec[0][1];
+        bezt->vec[1][1] = (image_size - scene_size) / 2 + bezt->vec[1][1];
+        bezt->vec[2][1] = (image_size - scene_size) / 2 + bezt->vec[2][1];
+      }
     }
+  }
+  else { /* Else, remove offset animation. */
+    FCurve *fcu = BKE_fcurve_find(&scene->adt->action->curves, path, 0);
+    BLI_remlink(&scene->adt->action->curves, fcu);
+    BKE_fcurve_free(fcu);
   }
 }
 
@@ -230,18 +246,15 @@ static void seq_convert_transform_crop(const Scene *scene,
   t->xofs = old_image_center_x - scene->r.xsch / 2;
   t->yofs = old_image_center_y - scene->r.ysch / 2;
 
-  /* Convert offset animation, but only if crop is not used. */
-  if ((seq->flag & use_transform_flag) != 0 && (seq->flag & use_crop_flag) == 0) {
-    char name_esc[(sizeof(seq->name) - 2) * 2], *path;
-    BLI_str_escape(name_esc, seq->name + 2, sizeof(name_esc));
+  char name_esc[(sizeof(seq->name) - 2) * 2], *path;
+  BLI_str_escape(name_esc, seq->name + 2, sizeof(name_esc));
 
-    path = BLI_sprintfN("sequence_editor.sequences_all[\"%s\"].transform.offset_x", name_esc);
-    seq_convert_transform_animation(scene, path, image_size_x);
-    MEM_freeN(path);
-    path = BLI_sprintfN("sequence_editor.sequences_all[\"%s\"].transform.offset_y", name_esc);
-    seq_convert_transform_animation(scene, path, image_size_y);
-    MEM_freeN(path);
-  }
+  path = BLI_sprintfN("sequence_editor.sequences_all[\"%s\"].transform.offset_x", name_esc);
+  seq_convert_transform_animation(seq, scene, path, image_size_x, scene->r.xsch);
+  MEM_freeN(path);
+  path = BLI_sprintfN("sequence_editor.sequences_all[\"%s\"].transform.offset_y", name_esc);
+  seq_convert_transform_animation(seq, scene, path, image_size_y, scene->r.ysch);
+  MEM_freeN(path);
 
   seq->flag &= ~use_transform_flag;
   seq->flag &= ~use_crop_flag;
@@ -686,6 +699,15 @@ void do_versions_after_linking_290(Main *bmain, ReportList *UNUSED(reports))
     }
   }
 
+  if (!MAIN_VERSION_ATLEAST(bmain, 293, 20)) {
+    /* Set zero user text objects to have a fake user. */
+    LISTBASE_FOREACH (Text *, text, &bmain->texts) {
+      if (text->id.us == 0) {
+        id_fake_user_set(&text->id);
+      }
+    }
+  }
+
   /**
    * Versioning code until next subversion bump goes here.
    *
@@ -849,26 +871,6 @@ static void version_node_join_geometry_for_multi_input_socket(bNodeTree *ntree)
       nodeRemoveSocket(ntree, node, socket->next);
     }
   }
-}
-
-static ARegion *do_versions_add_region_if_not_found(ListBase *regionbase,
-                                                    int region_type,
-                                                    const char *name,
-                                                    int link_after_region_type)
-{
-  ARegion *link_after_region = NULL;
-  LISTBASE_FOREACH (ARegion *, region, regionbase) {
-    if (region->regiontype == region_type) {
-      return NULL;
-    }
-    if (region->regiontype == link_after_region_type) {
-      link_after_region = region;
-    }
-  }
-  ARegion *new_region = MEM_callocN(sizeof(ARegion), name);
-  new_region->regiontype = region_type;
-  BLI_insertlinkafter(regionbase, link_after_region, new_region);
-  return new_region;
 }
 
 /* NOLINTNEXTLINE: readability-function-size */
@@ -1574,7 +1576,7 @@ void blo_do_versions_290(FileData *fd, Library *UNUSED(lib), Main *bmain)
     }
 
     LISTBASE_FOREACH (Scene *, scene, &bmain->scenes) {
-      if (scene->ed != NULL) {
+      if (scene->toolsettings->sequencer_tool_settings == NULL) {
         scene->toolsettings->sequencer_tool_settings = SEQ_tool_settings_init();
       }
     }
@@ -2009,18 +2011,7 @@ void blo_do_versions_290(FileData *fd, Library *UNUSED(lib), Main *bmain)
     }
   }
 
-  /**
-   * Versioning code until next subversion bump goes here.
-   *
-   * \note Be sure to check when bumping the version:
-   * - "versioning_userdef.c", #blo_do_versions_userdef
-   * - "versioning_userdef.c", #do_versions_theme
-   *
-   * \note Keep this message at the bottom of the function.
-   */
-  {
-    /* Keep this block, even when empty. */
-
+  if (!MAIN_VERSION_ATLEAST(bmain, 293, 18)) {
     FOREACH_NODETREE_BEGIN (bmain, ntree, id) {
       if (ntree->type == NTREE_GEOMETRY) {
         version_node_socket_name(ntree, GEO_NODE_VOLUME_TO_MESH, "Grid", "Density");
@@ -2054,5 +2045,50 @@ void blo_do_versions_290(FileData *fd, Library *UNUSED(lib), Main *bmain)
         }
       }
     }
+
+    /* Consolidate node and final evaluation modes. */
+    LISTBASE_FOREACH (bScreen *, screen, &bmain->screens) {
+      LISTBASE_FOREACH (ScrArea *, area, &screen->areabase) {
+        LISTBASE_FOREACH (SpaceLink *, sl, &area->spacedata) {
+          if (sl->spacetype == SPACE_SPREADSHEET) {
+            SpaceSpreadsheet *sspreadsheet = (SpaceSpreadsheet *)sl;
+            if (sspreadsheet->object_eval_state == 2) {
+              sspreadsheet->object_eval_state = SPREADSHEET_OBJECT_EVAL_STATE_EVALUATED;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  /* Set default value for the new bisect_threshold parameter in the mirror modifier. */
+  if (!MAIN_VERSION_ATLEAST(bmain, 293, 19)) {
+    LISTBASE_FOREACH (Object *, ob, &bmain->objects) {
+      LISTBASE_FOREACH (ModifierData *, md, &ob->modifiers) {
+        if (md->type == eModifierType_Mirror) {
+          MirrorModifierData *mmd = (MirrorModifierData *)md;
+          /* This was the previous hard-coded value. */
+          mmd->bisect_threshold = 0.001f;
+        }
+      }
+    }
+
+    LISTBASE_FOREACH (Curve *, cu, &bmain->curves) {
+      /* Turn on clamping as this was implicit before. */
+      cu->flag |= CU_PATH_CLAMP;
+    }
+  }
+
+  /**
+   * Versioning code until next subversion bump goes here.
+   *
+   * \note Be sure to check when bumping the version:
+   * - "versioning_userdef.c", #blo_do_versions_userdef
+   * - "versioning_userdef.c", #do_versions_theme
+   *
+   * \note Keep this message at the bottom of the function.
+   */
+  {
+    /* Keep this block, even when empty. */
   }
 }

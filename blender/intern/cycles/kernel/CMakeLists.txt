@@ -93,6 +93,7 @@ set(SRC_BVH_HEADERS
   bvh/bvh_local.h
   bvh/bvh_traversal.h
   bvh/bvh_types.h
+  bvh/bvh_util.h
   bvh/bvh_volume.h
   bvh/bvh_volume_all.h
   bvh/bvh_embree.h
@@ -228,6 +229,7 @@ set(SRC_SVM_HEADERS
   svm/svm_noise.h
   svm/svm_noisetex.h
   svm/svm_normal.h
+  svm/svm_outline.h
   svm/svm_ramp.h
   svm/svm_ramp_util.h
   svm/svm_sepcomb_hsv.h

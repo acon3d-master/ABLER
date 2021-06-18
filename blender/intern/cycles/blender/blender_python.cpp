@@ -35,6 +35,7 @@
 #include "util/util_path.h"
 #include "util/util_string.h"
 #include "util/util_task.h"
+#include "util/util_tbb.h"
 #include "util/util_types.h"
 
 #ifdef WITH_OSL
@@ -288,6 +289,7 @@ static PyObject *render_func(PyObject * /*self*/, PyObject *args)
   RNA_pointer_create(NULL, &RNA_Depsgraph, (ID *)PyLong_AsVoidPtr(pydepsgraph), &depsgraphptr);
   BL::Depsgraph b_depsgraph(depsgraphptr);
 
+  /* Allow Blender to execute other Python scripts. */
   python_thread_state_save(&session->python_thread_state);
 
   session->render(b_depsgraph);

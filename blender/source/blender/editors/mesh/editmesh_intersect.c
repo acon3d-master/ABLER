@@ -116,8 +116,12 @@ static void edbm_intersect_select(BMEditMesh *em, struct Mesh *me, bool do_selec
     }
   }
 
-  EDBM_mesh_normals_update(em);
-  EDBM_update_generic(me, true, true);
+  EDBM_update(me,
+              &(const struct EDBMUpdate_Params){
+                  .calc_looptri = true,
+                  .calc_normals = true,
+                  .is_destructive = true,
+              });
 }
 
 /* -------------------------------------------------------------------- */
@@ -255,27 +259,24 @@ static void edbm_intersect_ui(bContext *UNUSED(C), wmOperator *op)
 {
   uiLayout *layout = op->layout;
   uiLayout *row;
-  PointerRNA ptr;
 
-  RNA_pointer_create(NULL, op->type->srna, op->properties, &ptr);
-
-  bool use_exact = RNA_enum_get(&ptr, "solver") == ISECT_SOLVER_EXACT;
+  bool use_exact = RNA_enum_get(op->ptr, "solver") == ISECT_SOLVER_EXACT;
 
   uiLayoutSetPropSep(layout, true);
   uiLayoutSetPropDecorate(layout, false);
   row = uiLayoutRow(layout, false);
-  uiItemR(row, &ptr, "mode", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+  uiItemR(row, op->ptr, "mode", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
   uiItemS(layout);
   row = uiLayoutRow(layout, false);
-  uiItemR(row, &ptr, "separate_mode", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+  uiItemR(row, op->ptr, "separate_mode", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
   uiItemS(layout);
 
   row = uiLayoutRow(layout, false);
-  uiItemR(row, &ptr, "solver", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+  uiItemR(row, op->ptr, "solver", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
   uiItemS(layout);
 
   if (!use_exact) {
-    uiItemR(layout, &ptr, "threshold", 0, NULL, ICON_NONE);
+    uiItemR(layout, op->ptr, "threshold", 0, NULL, ICON_NONE);
   }
 }
 
@@ -421,27 +422,24 @@ static void edbm_intersect_boolean_ui(bContext *UNUSED(C), wmOperator *op)
 {
   uiLayout *layout = op->layout;
   uiLayout *row;
-  PointerRNA ptr;
 
-  RNA_pointer_create(NULL, op->type->srna, op->properties, &ptr);
-
-  bool use_exact = RNA_enum_get(&ptr, "solver") == ISECT_SOLVER_EXACT;
+  bool use_exact = RNA_enum_get(op->ptr, "solver") == ISECT_SOLVER_EXACT;
 
   uiLayoutSetPropSep(layout, true);
   uiLayoutSetPropDecorate(layout, false);
 
   row = uiLayoutRow(layout, false);
-  uiItemR(row, &ptr, "operation", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+  uiItemR(row, op->ptr, "operation", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
   uiItemS(layout);
 
   row = uiLayoutRow(layout, false);
-  uiItemR(row, &ptr, "solver", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
+  uiItemR(row, op->ptr, "solver", UI_ITEM_R_EXPAND, NULL, ICON_NONE);
   uiItemS(layout);
 
-  uiItemR(layout, &ptr, "use_swap", 0, NULL, ICON_NONE);
-  uiItemR(layout, &ptr, "use_self", 0, NULL, ICON_NONE);
+  uiItemR(layout, op->ptr, "use_swap", 0, NULL, ICON_NONE);
+  uiItemR(layout, op->ptr, "use_self", 0, NULL, ICON_NONE);
   if (!use_exact) {
-    uiItemR(layout, &ptr, "threshold", 0, NULL, ICON_NONE);
+    uiItemR(layout, op->ptr, "threshold", 0, NULL, ICON_NONE);
   }
 }
 
@@ -969,8 +967,12 @@ static int edbm_face_split_by_edges_exec(bContext *C, wmOperator *UNUSED(op))
     }
 #endif
 
-    EDBM_mesh_normals_update(em);
-    EDBM_update_generic(obedit->data, true, true);
+    EDBM_update(obedit->data,
+                &(const struct EDBMUpdate_Params){
+                    .calc_looptri = true,
+                    .calc_normals = true,
+                    .is_destructive = true,
+                });
 
 #ifdef USE_NET_ISLAND_CONNECT
     /* we may have remaining isolated regions remaining,
@@ -1074,8 +1076,12 @@ static int edbm_face_split_by_edges_exec(bContext *C, wmOperator *UNUSED(op))
 
       BLI_ghash_free(face_edge_map, NULL, NULL);
 
-      EDBM_mesh_normals_update(em);
-      EDBM_update_generic(obedit->data, true, true);
+      EDBM_update(obedit->data,
+                  &(const struct EDBMUpdate_Params){
+                      .calc_looptri = true,
+                      .calc_normals = true,
+                      .is_destructive = true,
+                  });
     }
 
     BLI_stack_free(edges_loose);

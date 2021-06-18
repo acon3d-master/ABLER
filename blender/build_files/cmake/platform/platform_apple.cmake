@@ -20,12 +20,6 @@
 
 # Libraries configuration for Apple.
 
-if("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
-  set(MACOSX_DEPLOYMENT_TARGET 11.00)
-else()
-  set(MACOSX_DEPLOYMENT_TARGET 10.13)
-endif()
-
 macro(find_package_wrapper)
 # do nothing, just satisfy the macro
 endmacro()
@@ -394,6 +388,10 @@ endif()
 
 if(WITH_TBB)
   find_package(TBB)
+  if(NOT TBB_FOUND)
+    message(WARNING "TBB not found, disabling WITH_TBB")
+    set(WITH_TBB OFF)
+  endif()
 endif()
 
 if(WITH_POTRACE)

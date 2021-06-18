@@ -70,7 +70,9 @@ void BKE_object_free_curve_cache(struct Object *ob);
 void BKE_object_free_derived_caches(struct Object *ob);
 void BKE_object_free_caches(struct Object *object);
 
-void BKE_object_set_preview_geometry_set(struct Object *ob, struct GeometrySet *geometry_set);
+void BKE_object_preview_geometry_set_add(struct Object *ob,
+                                         const uint64_t key,
+                                         struct GeometrySet *geometry_set);
 
 void BKE_object_modifier_hook_reset(struct Object *ob, struct HookModifierData *hmd);
 void BKE_object_modifier_gpencil_hook_reset(struct Object *ob,
@@ -372,6 +374,7 @@ struct MovieClip *BKE_object_movieclip_get(struct Scene *scene,
 
 void BKE_object_runtime_reset(struct Object *object);
 void BKE_object_runtime_reset_on_copy(struct Object *object, const int flag);
+void BKE_object_runtime_free_data(struct Object *object);
 
 void BKE_object_batch_cache_dirty_tag(struct Object *ob);
 

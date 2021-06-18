@@ -3278,6 +3278,59 @@ void AmbientOcclusionNode::compile(OSLCompiler &compiler)
   compiler.add(this, "node_ambient_occlusion");
 }
 
+/* Outline */
+
+NODE_DEFINE(OutlineNode)
+{
+  NodeType *type = NodeType::add("outline", create, NodeType::SHADER);
+
+  SOCKET_IN_NORMAL(normal, "Normal", make_float3(0.0f, 0.0f, 0.0f), SocketType::LINK_NORMAL);
+  SOCKET_IN_FLOAT(width, "Width", 1.0f);
+
+  SOCKET_OUT_FLOAT(delta_depth, "Depth");
+  SOCKET_OUT_POINT(delta_depth_position, "Depth Hit Position");
+  SOCKET_OUT_FLOAT(negative_depth, "Negative Depth");
+  SOCKET_OUT_POINT(negative_depth_position, "Negative Depth Hit Position");
+  //SOCKET_OUT_FLOAT(delta_dot, "Dot");
+  SOCKET_OUT_FLOAT(object, "Object");
+  SOCKET_OUT_FLOAT(width_ws_size, "Width WorldSpace Size");
+
+  return type;
+}
+
+OutlineNode::OutlineNode() : ShaderNode(get_node_type())
+{
+}
+
+void OutlineNode::compile(SVMCompiler &compiler)
+{
+  ShaderInput *normal = input("Normal");
+  ShaderInput *width_in = input("Width");
+  ShaderOutput *depth_out = output("Depth");
+  ShaderOutput *depth_hit_position_out = output("Depth Hit Position");
+  ShaderOutput *negative_depth_out = output("Negative Depth");
+  ShaderOutput *negative_depth_hit_position_out = output("Negative Depth Hit Position");
+  //ShaderOutput *dot_out = output("Dot");
+  ShaderOutput *object_out = output("Object");
+  ShaderOutput *width_ws_size_out = output("Width WorldSpace Size");
+
+  compiler.add_node(
+      NODE_OUTLINE,
+      compiler.encode_uchar4(compiler.stack_assign_if_linked(normal),
+                             compiler.stack_assign(width_in),
+                             compiler.stack_assign_if_linked(depth_out),
+                             compiler.stack_assign_if_linked(depth_hit_position_out)),
+      compiler.encode_uchar4(compiler.stack_assign_if_linked(negative_depth_out),
+                             compiler.stack_assign_if_linked(negative_depth_hit_position_out),
+                             compiler.stack_assign_if_linked(object_out),
+                             compiler.stack_assign_if_linked(width_ws_size_out)));
+}
+
+void OutlineNode::compile(OSLCompiler &compiler)
+{
+  compiler.add(this, "node_outline");
+}
+
 /* Volume Closure */
 
 VolumeNode::VolumeNode(const NodeType *node_type) : ShaderNode(node_type)
@@ -6093,6 +6146,7 @@ NODE_DEFINE(VectorMathNode)
   type_enum.insert("reflect", NODE_VECTOR_MATH_REFLECT);
   type_enum.insert("refract", NODE_VECTOR_MATH_REFRACT);
   type_enum.insert("faceforward", NODE_VECTOR_MATH_FACEFORWARD);
+  type_enum.insert("multiply_add", NODE_VECTOR_MATH_MULTIPLY_ADD);
 
   type_enum.insert("dot_product", NODE_VECTOR_MATH_DOT_PRODUCT);
 
@@ -6165,7 +6219,8 @@ void VectorMathNode::compile(SVMCompiler &compiler)
   int vector_stack_offset = compiler.stack_assign_if_linked(vector_out);
 
   /* 3 Vector Operators */
-  if (math_type == NODE_VECTOR_MATH_WRAP || math_type == NODE_VECTOR_MATH_FACEFORWARD) {
+  if (math_type == NODE_VECTOR_MATH_WRAP || math_type == NODE_VECTOR_MATH_FACEFORWARD ||
+      math_type == NODE_VECTOR_MATH_MULTIPLY_ADD) {
     ShaderInput *vector3_in = input("Vector3");
     int vector3_stack_offset = compiler.stack_assign(vector3_in);
     compiler.add_node(
