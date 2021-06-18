@@ -621,7 +621,7 @@ static ShaderNode *add_node(Scene *scene,
     ao->set_only_local(b_ao_node.only_local());
     node = ao;
   }
-  else if (b_node is_a(&RNA_ShaderNodeOutline)) {
+  else if (b_node.is_a(&RNA_ShaderNodeOutline)) {
     BL::ShaderNodeOutline b_outline_node(b_node);
     OutlineNode *outline = new OutlineNode();
     node = outline;
