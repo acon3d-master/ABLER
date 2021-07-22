@@ -2693,25 +2693,16 @@ class WM_MT_splash_quick_setup(Menu):
         layout.separator()
 
 
-class AconUserProperty(bpy.types.PropertyGroup):
-    @classmethod
-    def register(cls):
-        bpy.types.Scene.ACON_user = bpy.props.PointerProperty(type=AconUserProperty)
+class AconLoginOperator(Operator):
+    bl_idname = "acon3d.login"
+    bl_label = "Simple Modal Operator"
 
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Scene.ACON_user
-
-    username : bpy.props.StringProperty(
-        name="Username",
-        description="Username"
-    )
-
-    password : bpy.props.StringProperty(
-        name="Password",
-        description="Password",
-        subtype="PASSWORD"
-    )
+    def execute(self, context):
+        # check user credentials (todo)
+        context.scene.ACON_prop.logged_in = True
+        bpy.ops.acon3d.modal_operator()
+    
+        return {'FINISHED'}
 
 
 class WM_MT_splash(Menu):
@@ -2719,75 +2710,49 @@ class WM_MT_splash(Menu):
 
     def draw(self, context):
         layout = self.layout
-        layout.alignment = "CENTER"
+        layout.operator_context = 'EXEC_DEFAULT'
 
         row = layout.row()
-        row.label(text="Please Login")
+
+        if context.scene.ACON_prop.logged_in:
+            row.label(text="Welcome!")
+            row = layout.row()
+            row.label(text="Click out to start Abler.")
+
+        else:
+            row.label(text="Please Login")
+
+            layout.separator()
+
+            row_outside = layout.row()
+
+            column = row_outside.column()
+            row = column.row()
+            row.prop(context.scene.ACON_prop, "username")
+            row = column.row()
+            row.prop(context.scene.ACON_prop, "password")
+
+            column = row_outside.column()
+            column.scale_x = 0.5
+            column.scale_y = 2
+            column.operator("acon3d.login", text="Submit")
 
         layout.separator()
-
-        row_outside = layout.row()
-
-        column = row_outside.column()
-        row = column.row()
-        row.prop(context.scene.ACON_user, "username")
-        row = column.row()
-        row.prop(context.scene.ACON_user, "password")
-
-        column = row_outside.column()
-        row = column.row()
-        row.scale_x = 0.5
-        row.scale_y = 2
-        row.operator("render.render", text="Submit")
-
         layout.separator()
-        layout.separator()
+
+        layout.emboss = 'PULLDOWN_MENU'
         
-        # layout.operator_context = 'EXEC_DEFAULT'
-        # layout.emboss = 'PULLDOWN_MENU'
+        split = layout.split()
 
-        # split = layout.split()
+        col1 = split.column()
+        col1.operator("wm.url_open_preset", text="Release Notes", icon='URL').type = 'RELEASE_NOTES'
 
-        # # Templates
-        # col1 = split.column()
-        # col1.label(text="New File")
+        col2 = split.column()
 
-        # bpy.types.TOPBAR_MT_file_new.draw_ex(col1, context, use_splash=True)
+        col2.operator("wm.url_open_preset", text="Development Fund", icon='FUND').type = 'FUND'
 
-        # # Recent
-        # col2 = split.column()
-        # col2_title = col2.row()
-
-        # found_recent = col2.template_recent_files()
-
-        # if found_recent:
-        #     col2_title.label(text="Recent Files")
-        # else:
-
-        #     # Links if no recent files
-        #     col2_title.label(text="Getting Started")
-
-        #     col2.operator("wm.url_open_preset", text="Manual", icon='URL').type = 'MANUAL'
-        #     col2.operator("wm.url_open_preset", text="Blender Website", icon='URL').type = 'BLENDER'
-        #     col2.operator("wm.url_open_preset", text="Credits", icon='URL').type = 'CREDITS'
-
-        # layout.separator()
-
-        # split = layout.split()
-
-        # col1 = split.column()
-        # sub = col1.row()
-        # sub.operator_context = 'INVOKE_DEFAULT'
-        # sub.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER')
-        # col1.operator("wm.recover_last_session", icon='RECOVER_LAST')
-
-        # col2 = split.column()
-
-        # col2.operator("wm.url_open_preset", text="Release Notes", icon='URL').type = 'RELEASE_NOTES'
-        # col2.operator("wm.url_open_preset", text="Development Fund", icon='FUND').type = 'FUND'
-
-        # layout.separator()
-        # layout.separator()
+        layout.separator()
+        layout.separator()
 
 
 class WM_MT_splash_about(Menu):
@@ -2850,7 +2815,7 @@ class WM_OT_drop_blend_file(Operator):
 
 
 classes = (
-    AconUserProperty,
+    AconLoginOperator,
     WM_OT_context_collection_boolean_set,
     WM_OT_context_cycle_array,
     WM_OT_context_cycle_enum,
