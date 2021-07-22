@@ -2735,7 +2735,7 @@ class WM_MT_splash(Menu):
         col1 = split.column()
         anchor = col1.operator("acon3d.anchor", text="See ACON3D models!", icon='EVENT_A')
         anchor.href = 'https://acon3d.com'
-        anchor = col1.operator("acon3d.anchor", text="Don't have ACON3D account?", icon='USER')
+        anchor = col1.operator("acon3d.anchor", text="Don't have an ACON3D account?", icon='USER')
         anchor.href = 'https://www.acon3d.com/member/join'
 
         col2 = split.column()
