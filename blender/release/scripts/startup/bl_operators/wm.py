@@ -2693,18 +2693,6 @@ class WM_MT_splash_quick_setup(Menu):
         layout.separator()
 
 
-class AconLoginOperator(Operator):
-    bl_idname = "acon3d.login"
-    bl_label = "Simple Modal Operator"
-
-    def execute(self, context):
-        # check user credentials (todo)
-        context.scene.ACON_prop.logged_in = True
-        bpy.ops.acon3d.modal_operator()
-    
-        return {'FINISHED'}
-
-
 class WM_MT_splash(Menu):
     bl_label = "Splash"
 
@@ -2735,7 +2723,7 @@ class WM_MT_splash(Menu):
             column = row_outside.column()
             column.scale_x = 0.5
             column.scale_y = 2
-            column.operator("acon3d.login", text="Submit")
+            column.operator("acon3d.login", text="  Submit", depress=True)
 
         layout.separator()
         layout.separator()
@@ -2745,11 +2733,14 @@ class WM_MT_splash(Menu):
         split = layout.split()
 
         col1 = split.column()
-        col1.operator("wm.url_open_preset", text="Release Notes", icon='URL').type = 'RELEASE_NOTES'
+        anchor = col1.operator("acon3d.anchor", text="See ACON3D models!", icon='EVENT_A')
+        anchor.href = 'https://acon3d.com'
+        anchor = col1.operator("acon3d.anchor", text="Don't have ACON3D account?", icon='USER')
+        anchor.href = 'https://www.acon3d.com/member/join'
 
         col2 = split.column()
-
-        col2.operator("wm.url_open_preset", text="Development Fund", icon='FUND').type = 'FUND'
+        col2.operator("wm.url_open_preset", text="Blender Release Notes", icon='URL').type = 'RELEASE_NOTES'
+        col2.operator("wm.url_open_preset", text="Blender Development Fund", icon='FUND').type = 'FUND'
 
         layout.separator()
         layout.separator()
@@ -2815,7 +2806,6 @@ class WM_OT_drop_blend_file(Operator):
 
 
 classes = (
-    AconLoginOperator,
     WM_OT_context_collection_boolean_set,
     WM_OT_context_cycle_array,
     WM_OT_context_cycle_enum,
