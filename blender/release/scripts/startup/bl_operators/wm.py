@@ -2699,47 +2699,48 @@ class WM_MT_splash(Menu):
     def draw(self, context):
         layout = self.layout
         layout.operator_context = 'EXEC_DEFAULT'
-        layout.emboss = 'PULLDOWN_MENU'
 
-        split = layout.split()
+        row = layout.row()
 
-        # Templates
-        col1 = split.column()
-        col1.label(text="New File")
+        if context.scene.ACON_prop.logged_in:
+            row.label(text="Welcome!")
+            row = layout.row()
+            row.label(text="Click out to start Abler.")
 
-        bpy.types.TOPBAR_MT_file_new.draw_ex(col1, context, use_splash=True)
-
-        # Recent
-        col2 = split.column()
-        col2_title = col2.row()
-
-        found_recent = col2.template_recent_files()
-
-        if found_recent:
-            col2_title.label(text="Recent Files")
         else:
+            row.label(text="Please Login")
 
-            # Links if no recent files
-            col2_title.label(text="Getting Started")
+            layout.separator()
 
-            col2.operator("wm.url_open_preset", text="Manual", icon='URL').type = 'MANUAL'
-            col2.operator("wm.url_open_preset", text="Blender Website", icon='URL').type = 'BLENDER'
-            col2.operator("wm.url_open_preset", text="Credits", icon='URL').type = 'CREDITS'
+            row_outside = layout.row()
+
+            column = row_outside.column()
+            row = column.row()
+            row.prop(context.scene.ACON_prop, "username")
+            row = column.row()
+            row.prop(context.scene.ACON_prop, "password")
+
+            column = row_outside.column()
+            column.scale_x = 0.5
+            column.scale_y = 2
+            column.operator("acon3d.login", text="  Submit", depress=True)
 
         layout.separator()
+        layout.separator()
 
+        layout.emboss = 'PULLDOWN_MENU'
+        
         split = layout.split()
 
         col1 = split.column()
-        sub = col1.row()
-        sub.operator_context = 'INVOKE_DEFAULT'
-        sub.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER')
-        col1.operator("wm.recover_last_session", icon='RECOVER_LAST')
+        anchor = col1.operator("acon3d.anchor", text="See ACON3D models!", icon='EVENT_A')
+        anchor.href = 'https://acon3d.com'
+        anchor = col1.operator("acon3d.anchor", text="Don't have an ACON3D account?", icon='USER')
+        anchor.href = 'https://www.acon3d.com/member/join'
 
         col2 = split.column()
-
-        col2.operator("wm.url_open_preset", text="Release Notes", icon='URL').type = 'RELEASE_NOTES'
-        col2.operator("wm.url_open_preset", text="Development Fund", icon='FUND').type = 'FUND'
+        col2.operator("wm.url_open_preset", text="Blender Release Notes", icon='URL').type = 'RELEASE_NOTES'
+        col2.operator("wm.url_open_preset", text="Blender Development Fund", icon='FUND').type = 'FUND'
 
         layout.separator()
         layout.separator()
