@@ -15,8 +15,6 @@ from .lib import materials
 
 
 def toggleToonEdge(self, context):
-    materials.applyAconToonStyle()
-
     node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
     edgeFactor = None
 
@@ -24,10 +22,10 @@ def toggleToonEdge(self, context):
         if node.name == 'ACON_node_toonEdgeFactor':
             edgeFactor = node.inputs[0]
 
-    if not bpy.context.scene.ToggleToonEdge:
-        edgeFactor.default_value = 0
-    else:
+    if bpy.context.scene.ToggleToonEdge:
         edgeFactor.default_value = 1
+    else:
+        edgeFactor.default_value = 0
 
 
 class Acon3dEdgePanel(bpy.types.Panel):
@@ -87,6 +85,7 @@ def register():
 
     bpy.types.Scene.ToggleToonEdge = bpy.props.BoolProperty(
         name="Toon Style",
+        default=True,
         update=toggleToonEdge
     )
 

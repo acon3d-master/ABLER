@@ -96,7 +96,8 @@ def open_credential_modal(dummy):
     prefs = bpy.context.preferences
     prefs.view.show_splash = False
     bpy.context.scene.ACON_prop.logged_in = False
-    bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
+    # bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
+    bpy.ops.wm.splash('INVOKE_DEFAULT')
 
 
 classes = (

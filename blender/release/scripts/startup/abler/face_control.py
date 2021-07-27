@@ -15,24 +15,36 @@ from .lib import materials
 
 
 def toggleToonFace(self, context):
-    materials.applyAconToonStyle()
+    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+    toonFaceFactorValue = 0
+    if bpy.context.scene.ToggleToonFace:
+        toonFaceFactorValue = 1
 
-    faceFactorValue = 1
+    for node in node_group.nodes:
+        if node.name == 'ACON_nodeGroup_toonFace':
+            node.inputs[4].default_value = toonFaceFactorValue
 
-    if not bpy.context.scene.ToggleToonFace:
-        faceFactorValue = 0
-    
-    for mat in bpy.data.materials:
-        
-        if "ACON_mat" in mat.name:
-            continue
-        
-        nodes = mat.node_tree.nodes
 
-        for node in nodes:
+def toggleTexture(self, context):
+    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+    textureFactorValue = 1
+    if bpy.context.scene.ToggleTexture:
+        textureFactorValue = 0
 
-            if node.name == "ACON_nodeGroup_combinedToon":
-                node.inputs[4].default_value = faceFactorValue
+    for node in node_group.nodes:
+        if node.name == 'ACON_node_textureMixFactor':
+            node.inputs[0].default_value = textureFactorValue
+
+
+def toggleShading(self, context):
+    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+    shadingFactorValue = 1
+    if bpy.context.scene.ToggleShading:
+        shadingFactorValue = 0
+
+    for node in node_group.nodes:
+        if node.name == 'ACON_node_shadeMixFactor':
+            node.inputs[0].default_value = shadingFactorValue
 
 
 def changeToonDepth(self, context):
@@ -181,6 +193,11 @@ class Acon3dFacePanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        row.prop(bpy.context.scene, "ToggleTexture")
+        row = layout.row()
+        row.prop(bpy.context.scene, "ToggleShading")
         return
 
 
@@ -271,7 +288,20 @@ def register():
 
     bpy.types.Scene.ToggleToonFace = bpy.props.BoolProperty(
         name="Toon Style",
+        default=True,
         update=toggleToonFace
+    )
+
+    bpy.types.Scene.ToggleTexture = bpy.props.BoolProperty(
+        name="Texture",
+        default=True,
+        update=toggleTexture
+    )
+    
+    bpy.types.Scene.ToggleShading = bpy.props.BoolProperty(
+        name="Shading",
+        default=True,
+        update=toggleShading
     )
 
     for cls in classes:

@@ -208,12 +208,14 @@ def createToonFaceNodeGroup():
     node_group.inputs.new('NodeSocketFloat', 'Second Shade Factor')
     node_group.inputs.new('NodeSocketFloat', 'Brightness 1')
     node_group.inputs.new('NodeSocketFloat', 'Brightness 2')
-    node_group.inputs.new('NodeSocketFloat', 'Mix Facotr')
+    node_group.inputs.new('NodeSocketFloat', 'Mix Factor')
+    node_group.inputs.new('NodeSocketFloat', 'Map Factor')
     node_group.links.new(inputs.outputs[0], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[1], node_overlay.inputs[0])
     node_group.links.new(inputs.outputs[2], node_multiply_2.inputs[1])
     node_group.links.new(inputs.outputs[3], node_multiply_3.inputs[1])
     node_group.links.new(inputs.outputs[4], node_mix.inputs[0])
+    node_group.links.new(inputs.outputs[5], node_map.inputs[4])
 
     node_group.inputs[1].default_value = 0
     node_group.inputs[1].min_value = 0
@@ -226,6 +228,8 @@ def createToonFaceNodeGroup():
     node_group.inputs[3].default_value = 5
     node_group.inputs[3].min_value = 0
     node_group.inputs[3].max_value = 10
+    
+    node_group.inputs[5].default_value = 0.5
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
 
@@ -279,17 +283,29 @@ def createCombinedToonNodeGroup():
     node_multiply_2 = nodes.new('ShaderNodeMixRGB')
     node_multiply_2.name = 'ACON_node_toonEdgeFactor'
     node_multiply_2.blend_type = 'MULTIPLY'
-    if not bpy.context.scene.ToggleToonEdge:
-        node_multiply_2.inputs[0].default_value = 0
-    else:
+    if bpy.context.scene.ToggleToonEdge:
         node_multiply_2.inputs[0].default_value = 1
+    else:
+        node_multiply_2.inputs[0].default_value = 0
     node_group.links.new(node_multiply_2.outputs[0], node_mixShader_2.inputs[2])
     
+    node_mixColor_2 = nodes.new('ShaderNodeMixRGB')
+    node_mixColor_2.name = 'ACON_node_shadeMixFactor'
+    node_mixColor_2.blend_type = 'MIX'
+    if bpy.context.scene.ToggleShading:
+        node_mixColor_2.inputs[0].default_value = 0
+    else:
+        node_mixColor_2.inputs[0].default_value = 1
+    node_group.links.new(node_mixColor_2.outputs[0], node_multiply_2.inputs[1])
     
     node_group_toonFace = nodes.new(type='ShaderNodeGroup')
     node_group_toonFace.name = 'ACON_nodeGroup_toonFace'
     node_group_toonFace.node_tree = bpy.data.node_groups['ACON_nodeGroup_toonFace']
-    node_group.links.new(node_group_toonFace.outputs[0], node_multiply_2.inputs[1])
+    if bpy.context.scene.ToggleToonFace:
+        node_group_toonFace.inputs[4].default_value = 1
+    else:
+        node_group_toonFace.inputs[4].default_value = 0
+    node_group.links.new(node_group_toonFace.outputs[0], node_mixColor_2.inputs[1])
     
     node_group_outline = nodes.new(type='ShaderNodeGroup')
     node_group_outline.name = 'ACON_nodeGroup_outline'
@@ -300,6 +316,20 @@ def createCombinedToonNodeGroup():
     node_transparent.inputs[0].default_value = (1, 1, 1, 1)
     node_group.links.new(node_transparent.outputs[0], node_mixShader_2.inputs[1])
 
+    node_mixColor = nodes.new('ShaderNodeMixRGB')
+    node_mixColor.name = 'ACON_node_textureMixFactor'
+    node_mixColor.blend_type = 'MIX'
+    node_group.links.new(node_mixColor.outputs[0], node_mixColor_2.inputs[2])
+    node_group.links.new(node_mixColor.outputs[0], node_group_toonFace.inputs[0])
+    node_group.links.new(node_mixColor.outputs[0], node_emission.inputs[0])
+    node_group.links.new(node_mixColor.outputs[0], node_glossy.inputs[0])
+    if bpy.context.scene.ToggleTexture:
+        node_mixColor.inputs[0].default_value = 0
+    else:
+        node_mixColor.inputs[0].default_value = 1
+    node_mixColor.inputs[0].default_value = 0
+    node_mixColor.inputs[2].default_value = (1, 1, 1, 1)
+
     inputs = nodes.new('NodeGroupInput')
     node_group.inputs.new('NodeSocketColor', 'Color')
     node_group.inputs.new('NodeSocketFloat', 'AlphaMixFactor')
@@ -309,13 +339,10 @@ def createCombinedToonNodeGroup():
     node_group.inputs.new('NodeSocketFloat', 'Strength')
     node_group.inputs.new('NodeSocketFloat', 'Smoothness')
     node_group.inputs.new('NodeSocketFloat', 'Negative Alpha')
-    node_group.links.new(inputs.outputs[0], node_group_toonFace.inputs[0])
-    node_group.links.new(inputs.outputs[0], node_emission.inputs[0])
-    node_group.links.new(inputs.outputs[0], node_glossy.inputs[0])
+    node_group.links.new(inputs.outputs[0], node_mixColor.inputs[1])
     node_group.links.new(inputs.outputs[1], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[2], node_mixShader_3.inputs[0])
     node_group.links.new(inputs.outputs[3], node_mixShader.inputs[0])
-    node_group.links.new(inputs.outputs[4], node_group_toonFace.inputs[4])
     node_group.links.new(inputs.outputs[5], node_emission.inputs[1])
     node_group.links.new(inputs.outputs[6], node_subtract_2.inputs[1])
     node_group.links.new(inputs.outputs[7], node_multiply_1.inputs[0])
