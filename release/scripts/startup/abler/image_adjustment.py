@@ -36,7 +36,7 @@ class Acon3dImageAdjustmentPanel(bpy.types.Panel):
 
         col.separator()
 
-        col.prop(view, "view_transform")
+        col.prop(view, "view_transform", text="Color Filter")
 
         col = flow.column()
         col.prop(view, "exposure")

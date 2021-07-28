@@ -92,9 +92,9 @@ class MaterialTypeEnumProperty(bpy.types.PropertyGroup):
         description="Material Type",
         items = [
             ("Diffuse", "Diffuse", ""),
-            ("Mirror", "Mirror", ""),
+            ("Reflection", "Reflection", ""),
             ("Glow", "Glow", ""),
-            ("Clear", "Clear", "")
+            ("Transparent", "Transparent", "")
         ],
         update = changeMaterialType
     )
@@ -119,13 +119,13 @@ class MATERIAL_UL_List(bpy.types.UIList):
             if ma.ACON_prop_mat.type == "Diffuse":
                 layout.label(text="", translate=False)
             
-            if ma.ACON_prop_mat.type == "Mirror":
+            if ma.ACON_prop_mat.type == "Reflection":
                 layout.prop(toonNode.inputs[6], "default_value", text="")
 
             if ma.ACON_prop_mat.type == "Glow":
                 layout.prop(toonNode.inputs[5], "default_value", text="")
 
-            if ma.ACON_prop_mat.type == "Clear":
+            if ma.ACON_prop_mat.type == "Transparent":
                 layout.prop(toonNode.inputs[7], "default_value", text="")
 
 
@@ -232,10 +232,10 @@ class FaceSubPanel(bpy.types.Panel):
             col.prop(bpy.context.scene.toon_depth, "depth")
             if toonFaceInputs is not None:
                 if bpy.context.scene.toon_depth.depth == "2 depth":
-                    col.prop(toonFaceInputs[2], "default_value", text="Threshold", slider=True)
+                    col.prop(toonFaceInputs[2], "default_value", text="Brightness", slider=True)
                 else:
-                    col.prop(toonFaceInputs[2], "default_value", text="Threshold 1", slider=True)
-                    col.prop(toonFaceInputs[3], "default_value", text="Threshold 2", slider=True)
+                    col.prop(toonFaceInputs[2], "default_value", text="Brightness 1", slider=True)
+                    col.prop(toonFaceInputs[3], "default_value", text="Brightness 2", slider=True)
 
 
 class Acon3dBloomPanel(bpy.types.Panel):

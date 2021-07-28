@@ -314,7 +314,7 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
                     row = box.row()
                     row.prop(bg, "alpha")
                     row = box.row()
-                    row.prop(bg, "display_depth", expand=True)
+                    row.prop(bg, "display_depth", text="Placement", expand=True)
                     row = box.row()
                     row.prop(bg, "frame_method", expand=True)
                     row = box.row()

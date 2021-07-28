@@ -431,7 +431,7 @@ def applyAconToonStyle():
         if "ACON_mat" in mat.name:
         
             if "mirror" in mat.name:
-                mat.ACON_prop_mat.type = "Mirror"
+                mat.ACON_prop_mat.type = "Reflection"
                 
             if "light" in mat.name:
                 mat.ACON_prop_mat.type = "Glow"
@@ -448,7 +448,7 @@ def applyAconToonStyle():
                 node_combinedToon.inputs[5].default_value = strength
                 
             if "clear" in mat.name:
-                mat.ACON_prop_mat.type = "Clear"
+                mat.ACON_prop_mat.type = "Transparent"
         
         setMaterialParametersByType(mat)
         
@@ -466,7 +466,7 @@ def setMaterialParametersByType(mat):
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[3].default_value = 1
     
-    if type == "Mirror":
+    if type == "Reflection":
         bpy.context.scene.eevee.use_ssr = True
         mat.blend_method = "OPAQUE"
         mat.shadow_method = "OPAQUE"
@@ -481,7 +481,7 @@ def setMaterialParametersByType(mat):
         toonNode.inputs[2].default_value = 0
         toonNode.inputs[3].default_value = 0
         
-    if type == "Clear":
+    if type == "Transparent":
         mat.blend_method = "BLEND"
         mat.shadow_method = "NONE"
         toonNode.inputs[1].default_value = 1

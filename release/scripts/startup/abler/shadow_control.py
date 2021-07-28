@@ -15,7 +15,7 @@ import bpy
 class Acon3dShadowPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
     bl_idname = "ACON3D_PT_shadow"
-    bl_label = "Shadow / Light control"
+    bl_label = "Shadow / Light Control"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
