@@ -30,7 +30,6 @@
 #include "BLI_listbase.h"
 #include "BLI_math.h"
 #include "BLI_string.h"
-#include "BLI_string_utf8.h"
 
 #include "BLT_translation.h"
 
@@ -40,12 +39,10 @@
 #include "BKE_sound.h"
 
 #include "strip_time.h"
-#include "utils.h"
 
 #include "SEQ_add.h"
 #include "SEQ_edit.h"
 #include "SEQ_effects.h"
-#include "SEQ_iterator.h"
 #include "SEQ_relations.h"
 #include "SEQ_sequencer.h"
 #include "SEQ_time.h"
@@ -152,7 +149,7 @@ void SEQ_edit_update_muting(Editing *ed)
 static void sequencer_flag_users_for_removal(Scene *scene, ListBase *seqbase, Sequence *seq)
 {
   LISTBASE_FOREACH (Sequence *, user_seq, seqbase) {
-    /* Look in meta-strips for usage of seq. */
+    /* Look in metas for usage of seq. */
     if (user_seq->type == SEQ_TYPE_META) {
       sequencer_flag_users_for_removal(scene, &user_seq->seqbase, seq);
     }
@@ -203,7 +200,6 @@ void SEQ_edit_remove_flagged_sequences(Scene *scene, ListBase *seqbase)
       }
       BLI_remlink(seqbase, seq);
       SEQ_sequence_free(scene, seq, true);
-      SEQ_sequence_lookup_tag(scene, SEQ_LOOKUP_TAG_INVALID);
     }
   }
 }
@@ -255,25 +251,21 @@ bool SEQ_edit_move_strip_to_meta(Scene *scene,
     return false;
   }
 
-  SeqCollection *collection = SEQ_collection_create();
-  SEQ_collection_append_strip(src_seq, collection);
-  SEQ_collection_expand(seqbase, collection, SEQ_query_strip_effect_chain);
+  /* Remove users of src_seq. Ideally these could be moved into meta as well, but this would be
+   * best to do with generalized iterator as described in D10337. */
+  sequencer_flag_users_for_removal(scene, seqbase, src_seq);
+  SEQ_edit_remove_flagged_sequences(scene, seqbase);
 
-  Sequence *seq;
-  SEQ_ITERATOR_FOREACH (seq, collection) {
-    /* Move to meta. */
-    BLI_remlink(seqbase, seq);
-    BLI_addtail(&dst_seqm->seqbase, seq);
-    SEQ_relations_invalidate_cache_preprocessed(scene, seq);
+  /* Move to meta. */
+  BLI_remlink(seqbase, src_seq);
+  BLI_addtail(&dst_seqm->seqbase, src_seq);
+  SEQ_relations_invalidate_cache_preprocessed(scene, src_seq);
 
-    /* Update meta. */
-    SEQ_time_update_sequence(scene, dst_seqm);
-    if (SEQ_transform_test_overlap(&dst_seqm->seqbase, seq)) {
-      SEQ_transform_seqbase_shuffle(&dst_seqm->seqbase, seq, scene);
-    }
+  /* Update meta. */
+  SEQ_time_update_sequence(scene, dst_seqm);
+  if (SEQ_transform_test_overlap(&dst_seqm->seqbase, src_seq)) {
+    SEQ_transform_seqbase_shuffle(&dst_seqm->seqbase, src_seq, scene);
   }
-
-  SEQ_collection_free(collection);
 
   return true;
 }
@@ -351,29 +343,6 @@ static void seq_split_set_left_offset(Sequence *seq, int timeline_frame)
   SEQ_transform_set_left_handle_frame(seq, timeline_frame);
 }
 
-static void seq_edit_split_handle_strip_offsets(Main *bmain,
-                                                Scene *scene,
-                                                Sequence *left_seq,
-                                                Sequence *right_seq,
-                                                const int timeline_frame,
-                                                const eSeqSplitMethod method)
-{
-  switch (method) {
-    case SEQ_SPLIT_SOFT:
-      seq_split_set_left_offset(right_seq, timeline_frame);
-      seq_split_set_right_offset(left_seq, timeline_frame);
-      break;
-    case SEQ_SPLIT_HARD:
-      seq_split_set_right_hold_offset(left_seq, timeline_frame);
-      seq_split_set_left_hold_offset(right_seq, timeline_frame);
-      SEQ_add_reload_new_file(bmain, scene, left_seq, false);
-      SEQ_add_reload_new_file(bmain, scene, right_seq, false);
-      break;
-  }
-  SEQ_time_update_sequence(scene, left_seq);
-  SEQ_time_update_sequence(scene, right_seq);
-}
-
 /**
  * Split Sequence at timeline_frame in two.
  *
@@ -396,44 +365,33 @@ Sequence *SEQ_edit_strip_split(Main *bmain,
     return NULL;
   }
 
-  SeqCollection *collection = SEQ_collection_create();
-  SEQ_collection_append_strip(seq, collection);
-  SEQ_collection_expand(seqbase, collection, SEQ_query_strip_effect_chain);
-
-  /* Move strips in collection from seqbase to new ListBase. */
-  ListBase left_strips = {NULL, NULL};
-  SEQ_ITERATOR_FOREACH (seq, collection) {
-    BLI_remlink(seqbase, seq);
-    BLI_addtail(&left_strips, seq);
+  if (method == SEQ_SPLIT_HARD) {
+    /* Precaution, needed because the length saved on-disk may not match the length saved in the
+     * blend file, or our code may have minor differences reading file length between versions.
+     * This causes hard-split to fail, see: T47862. */
+    SEQ_add_reload_new_file(bmain, scene, seq, true);
+    SEQ_time_update_sequence(scene, seq);
   }
 
-  /* Sort list, so that no strip can depend on next strip in list.
-   * This is important for SEQ_time_update_sequence functionality. */
-  SEQ_sort(&left_strips);
+  Sequence *left_seq = seq;
+  Sequence *right_seq = SEQ_sequence_dupli_recursive(
+      scene, scene, seqbase, seq, SEQ_DUPE_UNIQUE_NAME | SEQ_DUPE_ANIM);
 
-  /* Duplicate ListBase. */
-  ListBase right_strips = {NULL, NULL};
-  SEQ_sequence_base_dupli_recursive(scene, scene, &right_strips, &left_strips, SEQ_DUPE_ALL, 0);
-
-  /* Split strips. */
-  Sequence *left_seq = left_strips.first;
-  Sequence *right_seq = right_strips.first;
-  Sequence *return_seq = right_strips.first;
-  while (left_seq && right_seq) {
-    seq_edit_split_handle_strip_offsets(bmain, scene, left_seq, right_seq, timeline_frame, method);
-    left_seq = left_seq->next;
-    right_seq = right_seq->next;
+  switch (method) {
+    case SEQ_SPLIT_SOFT:
+      seq_split_set_left_offset(right_seq, timeline_frame);
+      seq_split_set_right_offset(left_seq, timeline_frame);
+      break;
+    case SEQ_SPLIT_HARD:
+      seq_split_set_right_hold_offset(left_seq, timeline_frame);
+      seq_split_set_left_hold_offset(right_seq, timeline_frame);
+      SEQ_add_reload_new_file(bmain, scene, left_seq, false);
+      SEQ_add_reload_new_file(bmain, scene, right_seq, false);
+      break;
   }
-
-  seq = right_strips.first;
-  BLI_movelisttolist(seqbase, &left_strips);
-  BLI_movelisttolist(seqbase, &right_strips);
-
-  for (; seq; seq = seq->next) {
-    SEQ_ensure_unique_name(seq, scene);
-  }
-
-  return return_seq;
+  SEQ_time_update_sequence(scene, left_seq);
+  SEQ_time_update_sequence(scene, right_seq);
+  return right_seq;
 }
 
 /**
@@ -469,11 +427,4 @@ bool SEQ_edit_remove_gaps(Scene *scene,
         scene, seqbase, -gap_info.gap_length, gap_info.gap_start_frame);
   }
   return true;
-}
-
-void SEQ_edit_sequence_name_set(Scene *scene, Sequence *seq, const char *new_name)
-{
-  BLI_strncpy_utf8(seq->name + 2, new_name, MAX_NAME - 2);
-  BLI_utf8_invalid_strip(seq->name + 2, strlen(seq->name + 2));
-  SEQ_sequence_lookup_tag(scene, SEQ_LOOKUP_TAG_INVALID);
 }

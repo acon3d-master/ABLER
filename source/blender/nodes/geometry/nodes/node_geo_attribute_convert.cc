@@ -35,10 +35,8 @@ static void geo_node_attribute_convert_layout(uiLayout *layout,
                                               bContext *UNUSED(C),
                                               PointerRNA *ptr)
 {
-  uiLayoutSetPropSep(layout, true);
-  uiLayoutSetPropDecorate(layout, false);
-  uiItemR(layout, ptr, "domain", 0, nullptr, ICON_NONE);
-  uiItemR(layout, ptr, "data_type", 0, IFACE_("Type"), ICON_NONE);
+  uiItemR(layout, ptr, "domain", 0, "", ICON_NONE);
+  uiItemR(layout, ptr, "data_type", 0, "", ICON_NONE);
 }
 
 static void geo_node_attribute_convert_init(bNodeTree *UNUSED(tree), bNode *node)
@@ -46,27 +44,26 @@ static void geo_node_attribute_convert_init(bNodeTree *UNUSED(tree), bNode *node
   NodeAttributeConvert *data = (NodeAttributeConvert *)MEM_callocN(sizeof(NodeAttributeConvert),
                                                                    __func__);
 
-  data->data_type = CD_AUTO_FROM_NAME;
+  data->data_type = CD_PROP_FLOAT;
   data->domain = ATTR_DOMAIN_AUTO;
   node->storage = data;
 }
 
 namespace blender::nodes {
 
-static AttributeMetaData get_result_domain_and_type(const GeometryComponent &component,
-                                                    const StringRef source_name,
-                                                    const StringRef result_name)
+static AttributeDomain get_result_domain(const GeometryComponent &component,
+                                         StringRef source_name,
+                                         StringRef result_name)
 {
-  std::optional<AttributeMetaData> result_info = component.attribute_get_meta_data(result_name);
-  if (result_info) {
-    return *result_info;
+  ReadAttributePtr result_attribute = component.attribute_try_get_for_read(result_name);
+  if (result_attribute) {
+    return result_attribute->domain();
   }
-  std::optional<AttributeMetaData> source_info = component.attribute_get_meta_data(source_name);
-  if (source_info) {
-    return *source_info;
+  ReadAttributePtr source_attribute = component.attribute_try_get_for_read(source_name);
+  if (source_attribute) {
+    return source_attribute->domain();
   }
-  /* The node won't do anything in this case, but we still have to return a value. */
-  return AttributeMetaData{ATTR_DOMAIN_POINT, CD_PROP_BOOL};
+  return ATTR_DOMAIN_POINT;
 }
 
 static bool conversion_can_be_skipped(const GeometryComponent &component,
@@ -78,14 +75,14 @@ static bool conversion_can_be_skipped(const GeometryComponent &component,
   if (source_name != result_name) {
     return false;
   }
-  std::optional<AttributeMetaData> info = component.attribute_get_meta_data(result_name);
-  if (!info) {
+  ReadAttributePtr read_attribute = component.attribute_try_get_for_read(source_name);
+  if (!read_attribute) {
     return false;
   }
-  if (info->domain != result_domain) {
+  if (read_attribute->domain() != result_domain) {
     return false;
   }
-  if (info->data_type != result_type) {
+  if (read_attribute->cpp_type() != *bke::custom_data_type_to_cpp_type(result_type)) {
     return false;
   }
   return true;
@@ -95,20 +92,19 @@ static void attribute_convert_calc(GeometryComponent &component,
                                    const GeoNodeExecParams &params,
                                    const StringRef source_name,
                                    const StringRef result_name,
-                                   const CustomDataType data_type,
+                                   const CustomDataType result_type,
                                    const AttributeDomain domain)
 {
-  const AttributeMetaData auto_info = get_result_domain_and_type(
-      component, source_name, result_name);
-  const AttributeDomain result_domain = (domain == ATTR_DOMAIN_AUTO) ? auto_info.domain : domain;
-  const CustomDataType result_type = (data_type == CD_AUTO_FROM_NAME) ? auto_info.data_type :
-                                                                        data_type;
+  const AttributeDomain result_domain = (domain == ATTR_DOMAIN_AUTO) ?
+                                            get_result_domain(
+                                                component, source_name, result_name) :
+                                            domain;
 
   if (conversion_can_be_skipped(component, source_name, result_name, result_domain, result_type)) {
     return;
   }
 
-  GVArrayPtr source_attribute = component.attribute_try_get_for_read(
+  ReadAttributePtr source_attribute = component.attribute_try_get_for_read(
       source_name, result_domain, result_type);
   if (!source_attribute) {
     params.error_message_add(NodeWarningType::Error,
@@ -116,22 +112,25 @@ static void attribute_convert_calc(GeometryComponent &component,
     return;
   }
 
-  OutputAttribute result_attribute = component.attribute_try_get_for_output_only(
+  OutputAttributePtr result_attribute = component.attribute_try_get_for_output(
       result_name, result_domain, result_type);
   if (!result_attribute) {
     return;
   }
 
-  GVArray_GSpan source_span{*source_attribute};
-  GMutableSpan result_span = result_attribute.as_span();
-
+  fn::GSpan source_span = source_attribute->get_span();
+  fn::GMutableSpan result_span = result_attribute->get_span_for_write_only();
+  if (source_span.is_empty() || result_span.is_empty()) {
+    return;
+  }
   BLI_assert(source_span.size() == result_span.size());
 
   const CPPType *cpp_type = bke::custom_data_type_to_cpp_type(result_type);
   BLI_assert(cpp_type != nullptr);
 
   cpp_type->copy_to_initialized_n(source_span.data(), result_span.data(), result_span.size());
-  result_attribute.save();
+
+  result_attribute.apply_span_and_save();
 }
 
 static void geo_node_attribute_convert_exec(GeoNodeExecParams params)
@@ -161,14 +160,6 @@ static void geo_node_attribute_convert_exec(GeoNodeExecParams params)
   }
   if (geometry_set.has<PointCloudComponent>()) {
     attribute_convert_calc(geometry_set.get_component_for_write<PointCloudComponent>(),
-                           params,
-                           source_name,
-                           result_name,
-                           data_type,
-                           domain);
-  }
-  if (geometry_set.has<CurveComponent>()) {
-    attribute_convert_calc(geometry_set.get_component_for_write<CurveComponent>(),
                            params,
                            source_name,
                            result_name,

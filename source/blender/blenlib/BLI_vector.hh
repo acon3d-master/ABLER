@@ -161,7 +161,7 @@ class Vector {
   }
 
   /**
-   * Create a vector from a span. The values in the vector are copy constructed.
+   * Create a vector from an array ref. The values in the vector are copy constructed.
    */
   template<typename U, typename std::enable_if_t<std::is_convertible_v<U, T>> * = nullptr>
   Vector(Span<U> values, Allocator allocator = {}) : Vector(NoExceptConstructor(), allocator)
@@ -437,17 +437,13 @@ class Vector {
    */
   void append(const T &value)
   {
-    this->append_as(value);
+    this->ensure_space_for_one();
+    this->append_unchecked(value);
   }
   void append(T &&value)
   {
-    this->append_as(std::move(value));
-  }
-  /* This is similar to `std::vector::emplace_back`. */
-  template<typename... ForwardValue> void append_as(ForwardValue &&... value)
-  {
     this->ensure_space_for_one();
-    this->append_unchecked_as(std::forward<ForwardValue>(value)...);
+    this->append_unchecked(std::move(value));
   }
 
   /**
@@ -478,18 +474,10 @@ class Vector {
    * behavior when not enough capacity has been reserved beforehand. Only use this in performance
    * critical code.
    */
-  void append_unchecked(const T &value)
-  {
-    this->append_unchecked_as(value);
-  }
-  void append_unchecked(T &&value)
-  {
-    this->append_unchecked_as(std::move(value));
-  }
-  template<typename... ForwardT> void append_unchecked_as(ForwardT &&... value)
+  template<typename ForwardT> void append_unchecked(ForwardT &&value)
   {
     BLI_assert(end_ < capacity_end_);
-    new (end_) T(std::forward<ForwardT>(value)...);
+    new (end_) T(std::forward<ForwardT>(value));
     end_++;
     UPDATE_VECTOR_SIZE(this);
   }
@@ -669,21 +657,6 @@ class Vector {
   }
 
   /**
-   * Return a reference to the first element in the vector.
-   * This invokes undefined behavior when the vector is empty.
-   */
-  const T &first() const
-  {
-    BLI_assert(this->size() > 0);
-    return *begin_;
-  }
-  T &first()
-  {
-    BLI_assert(this->size() > 0);
-    return *begin_;
-  }
-
-  /**
    * Return how many values are currently stored in the vector.
    */
   int64_t size() const
@@ -740,12 +713,11 @@ class Vector {
     BLI_assert(index >= 0);
     BLI_assert(index < this->size());
     T *element_to_remove = begin_ + index;
-    T *last_element = end_ - 1;
-    if (element_to_remove < last_element) {
-      *element_to_remove = std::move(*last_element);
+    if (element_to_remove < end_) {
+      *element_to_remove = std::move(*(end_ - 1));
     }
-    end_ = last_element;
-    last_element->~T();
+    end_--;
+    end_->~T();
     UPDATE_VECTOR_SIZE(this);
   }
 

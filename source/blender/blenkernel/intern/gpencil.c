@@ -653,13 +653,9 @@ bGPDframe *BKE_gpencil_frame_addcopy(bGPDlayer *gpl, int cframe)
  * \param gpd: Grease pencil data-block
  * \param name: Name of the layer
  * \param setactive: Set as active
- * \param add_to_header: Used to force the layer added at header
  * \return Pointer to new layer
  */
-bGPDlayer *BKE_gpencil_layer_addnew(bGPdata *gpd,
-                                    const char *name,
-                                    const bool setactive,
-                                    const bool add_to_header)
+bGPDlayer *BKE_gpencil_layer_addnew(bGPdata *gpd, const char *name, bool setactive)
 {
   bGPDlayer *gpl = NULL;
   bGPDlayer *gpl_active = NULL;
@@ -675,18 +671,14 @@ bGPDlayer *BKE_gpencil_layer_addnew(bGPdata *gpd,
   gpl_active = BKE_gpencil_layer_active_get(gpd);
 
   /* Add to data-block. */
-  if (add_to_header) {
-    BLI_addhead(&gpd->layers, gpl);
+  if (gpl_active == NULL) {
+    BLI_addtail(&gpd->layers, gpl);
   }
   else {
-    if (gpl_active == NULL) {
-      BLI_addtail(&gpd->layers, gpl);
-    }
-    else {
-      /* if active layer, add after that layer */
-      BLI_insertlinkafter(&gpd->layers, gpl_active, gpl);
-    }
+    /* if active layer, add after that layer */
+    BLI_insertlinkafter(&gpd->layers, gpl_active, gpl);
   }
+
   /* annotation vs GP Object behavior is slightly different */
   if (gpd->flag & GP_DATA_ANNOTATIONS) {
     /* set default color of new strokes for this layer */
@@ -2624,11 +2616,6 @@ static bool gpencil_is_layer_mask(ViewLayer *view_layer, bGPdata *gpd, bGPDlayer
       continue;
     }
 
-    /* Skip if masks are disabled for this view layer. */
-    if (gpl->flag & GP_LAYER_DISABLE_MASKS_IN_VIEWLAYER) {
-      continue;
-    }
-
     LISTBASE_FOREACH (bGPDlayer_Mask *, mask, &gpl->mask_layers) {
       if (STREQ(gpl_mask->info, mask->name)) {
         return true;
@@ -2688,7 +2675,7 @@ void BKE_gpencil_visible_stroke_iter(ViewLayer *view_layer,
      * This is used only in final render and never in Viewport. */
     if ((view_layer != NULL) && (gpl->viewlayername[0] != '\0') &&
         (!STREQ(view_layer->name, gpl->viewlayername))) {
-      /* Do not skip masks when rendering the view-layer so that it can still be used to clip
+      /* Do not skip masks when rendering the viewlayer so that it can still be used to clip
        * other layers. Instead set their opacity to zero. */
       if (gpencil_is_layer_mask(view_layer, gpd, gpl)) {
         gpl->opacity = 0.0f;

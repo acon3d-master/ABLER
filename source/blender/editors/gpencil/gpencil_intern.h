@@ -421,7 +421,6 @@ void GPENCIL_OT_layer_duplicate_object(struct wmOperatorType *ot);
 
 void GPENCIL_OT_layer_mask_add(struct wmOperatorType *ot);
 void GPENCIL_OT_layer_mask_remove(struct wmOperatorType *ot);
-void GPENCIL_OT_layer_mask_move(struct wmOperatorType *ot);
 
 void GPENCIL_OT_hide(struct wmOperatorType *ot);
 void GPENCIL_OT_reveal(struct wmOperatorType *ot);
@@ -444,7 +443,6 @@ void GPENCIL_OT_frame_clean_duplicate(struct wmOperatorType *ot);
 
 void GPENCIL_OT_convert(struct wmOperatorType *ot);
 void GPENCIL_OT_bake_mesh_animation(struct wmOperatorType *ot);
-void GPENCIL_OT_bake_grease_pencil_animation(struct wmOperatorType *ot);
 
 void GPENCIL_OT_image_to_grease_pencil(struct wmOperatorType *ot);
 void GPENCIL_OT_trace_image(struct wmOperatorType *ot);
@@ -488,7 +486,6 @@ void GPENCIL_OT_stroke_trim(struct wmOperatorType *ot);
 void GPENCIL_OT_stroke_merge_by_distance(struct wmOperatorType *ot);
 void GPENCIL_OT_stroke_merge_material(struct wmOperatorType *ot);
 void GPENCIL_OT_stroke_reset_vertex_color(struct wmOperatorType *ot);
-void GPENCIL_OT_stroke_normalize(struct wmOperatorType *ot);
 
 void GPENCIL_OT_material_to_vertex_color(struct wmOperatorType *ot);
 void GPENCIL_OT_extract_palette_vertex(struct wmOperatorType *ot);
@@ -540,7 +537,6 @@ void GPENCIL_OT_material_lock_unused(struct wmOperatorType *ot);
 void GPENCIL_OT_material_select(struct wmOperatorType *ot);
 void GPENCIL_OT_material_set(struct wmOperatorType *ot);
 void GPENCIL_OT_set_active_material(struct wmOperatorType *ot);
-void GPENCIL_OT_materials_copy_to_object(struct wmOperatorType *ot);
 
 /* convert old 2.7 files to 2.8 */
 void GPENCIL_OT_convert_old_files(struct wmOperatorType *ot);
@@ -751,8 +747,5 @@ struct GP_EditableStrokes_Iter {
   } \
   } \
   (void)0
-
-/* Reused items for bake operators. */
-extern const EnumPropertyItem rna_gpencil_reproject_type_items[];
 
 /* ****************************************************** */

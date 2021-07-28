@@ -70,7 +70,6 @@
 #include "BKE_node.h"
 #include "BKE_object.h"
 #include "BKE_scene.h"
-#include "BKE_screen.h"
 #include "BKE_texture.h"
 #include "BKE_world.h"
 
@@ -611,7 +610,9 @@ static bool ed_preview_draw_rect(ScrArea *area, int split, int first, rcti *rect
         float fy = rect->ymin;
 
         /* material preview only needs monoscopy (view 0) */
-        RE_AcquiredResultGet32(re, &rres, (uint *)rect_byte, 0);
+        if (re) {
+          RE_AcquiredResultGet32(re, &rres, (uint *)rect_byte, 0);
+        }
 
         IMMDrawPixelsTexState state = immDrawPixelsTexSetup(GPU_SHADER_2D_IMAGE_COLOR);
         immDrawPixelsTex(
@@ -691,9 +692,8 @@ struct ObjectPreviewData {
   int sizey;
 };
 
-static Object *object_preview_camera_create(Main *preview_main,
-                                            ViewLayer *view_layer,
-                                            Object *preview_object)
+static Object *object_preview_camera_create(
+    Main *preview_main, ViewLayer *view_layer, Object *preview_object, int sizex, int sizey)
 {
   Object *camera = BKE_object_add(preview_main, view_layer, OB_CAMERA, "Preview Camera");
 
@@ -701,17 +701,18 @@ static Object *object_preview_camera_create(Main *preview_main,
   float dummyscale[3];
   mat4_to_loc_rot_size(camera->loc, rotmat, dummyscale, preview_object->obmat);
 
-  /* Camera is Y up, so needs additional rotations to obliquely face the front. */
+  /* Camera is Y up, so needs additional 90deg rotation around X to match object's Z up. */
   float drotmat[3][3];
-  const float eul[3] = {M_PI * 0.4f, 0.0f, M_PI * 0.1f};
-  eul_to_mat3(drotmat, eul);
+  axis_angle_to_mat3_single(drotmat, 'X', M_PI_2);
   mul_m3_m3_post(rotmat, drotmat);
 
   camera->rotmode = ROT_MODE_QUAT;
   mat3_to_quat(camera->quat, rotmat);
 
-  /* Nice focal length for close portraiture. */
-  ((Camera *)camera->data)->lens = 85;
+  /* shader_preview_render() does this too. */
+  if (sizex > sizey) {
+    ((Camera *)camera->data)->lens *= (float)sizey / (float)sizex;
+  }
 
   return camera;
 }
@@ -729,8 +730,11 @@ static Scene *object_preview_scene_create(const struct ObjectPreviewData *previe
 
   BKE_collection_object_add(preview_data->pr_main, scene->master_collection, preview_data->object);
 
-  Object *camera_object = object_preview_camera_create(
-      preview_data->pr_main, view_layer, preview_data->object);
+  Object *camera_object = object_preview_camera_create(preview_data->pr_main,
+                                                       view_layer,
+                                                       preview_data->object,
+                                                       preview_data->sizex,
+                                                       preview_data->sizey);
 
   scene->camera = camera_object;
   scene->r.xsch = preview_data->sizex;
@@ -775,21 +779,16 @@ static void object_preview_render(IconPreview *preview, IconPreviewSize *preview
 
   U.pixelsize = 2.0f;
 
-  View3DShading shading;
-  BKE_screen_view3d_shading_init(&shading);
-  /* Enable shadows, makes it a bit easier to see the shape. */
-  shading.flag |= V3D_SHADING_SHADOW;
-
   ImBuf *ibuf = ED_view3d_draw_offscreen_imbuf_simple(
       depsgraph,
       DEG_get_evaluated_scene(depsgraph),
-      &shading,
-      OB_TEXTURE,
+      NULL,
+      OB_SOLID,
       DEG_get_evaluated_object(depsgraph, scene->camera),
       preview_sized->sizex,
       preview_sized->sizey,
       IB_rect,
-      V3D_OFSDRAW_OVERRIDE_SCENE_SETTINGS,
+      V3D_OFSDRAW_NONE,
       R_ALPHAPREMUL,
       NULL,
       NULL,
@@ -1255,8 +1254,9 @@ static void icon_copy_rect(ImBuf *ibuf, uint w, uint h, uint *rect)
     scaledy = (float)h;
   }
 
-  ex = (short)scaledx;
-  ey = (short)scaledy;
+  /* Scaling down must never assign zero width/height, see: T89868. */
+  ex = MAX2(1, (short)scaledx);
+  ey = MAX2(1, (short)scaledy);
 
   dx = (w - ex) / 2;
   dy = (h - ey) / 2;

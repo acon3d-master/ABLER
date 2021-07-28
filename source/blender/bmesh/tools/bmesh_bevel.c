@@ -7361,6 +7361,7 @@ static float geometry_collide_offset(BevelParams *bp, EdgeHalf *eb)
 static float vertex_collide_offset(BevelParams *bp, EdgeHalf *ea)
 {
   float no_collide_offset = bp->offset + 1e6;
+  float limit = no_collide_offset;
   if (bp->offset == 0.0f) {
     return no_collide_offset;
   }
@@ -7372,7 +7373,8 @@ static float vertex_collide_offset(BevelParams *bp, EdgeHalf *ea)
   if (kab <= 0.0f) {
     return no_collide_offset;
   }
-  return la / kab;
+  limit = la / kab;
+  return limit;
 }
 
 /**

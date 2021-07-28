@@ -36,7 +36,6 @@
 #    include <AUD_Special.h>
 #  endif
 
-#  include "BLI_endian_defines.h"
 #  include "BLI_math_base.h"
 #  include "BLI_threads.h"
 #  include "BLI_utildefines.h"
@@ -523,9 +522,9 @@ static AVRational calc_time_base(uint den, double num, int codec_id)
 {
   /* Convert the input 'num' to an integer. Simply shift the decimal places until we get an integer
    * (within a floating point error range).
-   * For example if we have `den = 3` and `num = 0.1` then the fps is: `den/num = 30` fps.
-   * When converting this to a FFMPEG time base, we want num to be an integer.
-   * So we simply move the decimal places of both numbers. i.e. `den = 30`, `num = 1`. */
+   * For example if we have den = 3 and num = 0.1 then the fps is: den/num = 30 fps.
+   * When converthing this to a ffmpeg time base, we want num to be an integer.
+   * So we simply move the decimal places of both numbers. IE den = 30, num = 1.*/
   float eps = FLT_EPSILON;
   const uint DENUM_MAX = (codec_id == AV_CODEC_ID_MPEG4) ? (1UL << 16) - 1 : (1UL << 31) - 1;
 
@@ -534,7 +533,7 @@ static AVRational calc_time_base(uint den, double num, int codec_id)
     const uint num_integer_bits = log2_floor_u((unsigned int)num);
 
     /* Formula for calculating the epsilon value: (power of two range) / (pow mantissa bits)
-     * For example, a float has 23 mantissa bits and the float value 3.5f as a pow2 range of
+     * For example, a float has 23 manitissa bits and the float value 3.5f as a pow2 range of
      * (4-2=2):
      * (2) / pow2(23) = floating point precision for 3.5f
      */
@@ -620,10 +619,10 @@ static AVStream *alloc_video_stream(FFMpegContext *context,
     c->time_base = calc_time_base(rd->frs_sec, rd->frs_sec_base, codec_id);
   }
 
-  /* As per the time-base documentation here:
+  /* As per the timebase documentation here:
    * https://www.ffmpeg.org/ffmpeg-codecs.html#Codec-Options
    * We want to set the time base to (1 / fps) for fixed frame rate video.
-   * If it is not possible, we want to set the time-base numbers to something as
+   * If it is not possible, we want to set the timebase numbers to something as
    * small as possible.
    */
   if (c->time_base.num != 1) {
@@ -728,11 +727,6 @@ static AVStream *alloc_video_stream(FFMpegContext *context,
     if (rd->im_format.planes == R_IMF_PLANES_RGBA) {
       c->pix_fmt = AV_PIX_FMT_YUVA420P;
     }
-  }
-
-  /* Use 4:4:4 instead of 4:2:0 pixel format for lossless rendering. */
-  if ((codec_id == AV_CODEC_ID_H264 || codec_id == AV_CODEC_ID_VP9) && context->ffmpeg_crf == 0) {
-    c->pix_fmt = AV_PIX_FMT_YUV444P;
   }
 
   if (codec_id == AV_CODEC_ID_PNG) {
@@ -1456,8 +1450,6 @@ static void end_ffmpeg_impl(FFMpegContext *context, int is_autosplit)
       context->audio_mixdown_device = NULL;
     }
   }
-#  else
-  UNUSED_VARS(is_autosplit);
 #  endif
 
   if (context->video_stream) {

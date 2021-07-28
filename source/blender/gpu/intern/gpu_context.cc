@@ -24,7 +24,7 @@
  * Use these instead of glGenBuffers & its friends
  * - alloc must be called from a thread that is bound
  *   to the context that will be used for drawing with
- *   this VAO.
+ *   this vao.
  * - free can be called from any thread
  */
 

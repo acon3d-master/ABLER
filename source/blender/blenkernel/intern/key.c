@@ -105,11 +105,6 @@ static void shapekey_foreach_id(ID *id, LibraryForeachIDData *data)
   BKE_LIB_FOREACHID_PROCESS_ID(data, key->from, IDWALK_CB_LOOPBACK);
 }
 
-static ID *shapekey_owner_get(Main *UNUSED(bmain), ID *id)
-{
-  return ((Key *)id)->from;
-}
-
 static void shapekey_blend_write(BlendWriter *writer, ID *id, const void *id_address)
 {
   Key *key = (Key *)id;
@@ -221,9 +216,7 @@ IDTypeInfo IDType_ID_KE = {
     .make_local = NULL,
     .foreach_id = shapekey_foreach_id,
     .foreach_cache = NULL,
-    /* A bit weird, due to shapekeys not being strictly speaking embedded data... But they also
-     * share a lot with those (non linkable, only ever used by one owner ID, etc.). */
-    .owner_get = shapekey_owner_get,
+    .owner_get = NULL, /* Could have one actually? */
 
     .blend_write = shapekey_blend_write,
     .blend_read_data = shapekey_blend_read_data,

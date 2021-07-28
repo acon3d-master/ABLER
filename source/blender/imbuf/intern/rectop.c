@@ -988,9 +988,8 @@ typedef struct RectBlendThreadData {
   bool accumulate;
 } RectBlendThreadData;
 
-static void rectblend_thread_do(void *data_v, int scanline)
+static void rectblend_thread_do(void *data_v, int start_scanline, int num_scanlines)
 {
-  const int num_scanlines = 1;
   RectBlendThreadData *data = (RectBlendThreadData *)data_v;
   IMB_rectblend(data->dbuf,
                 data->obuf,
@@ -1000,11 +999,11 @@ static void rectblend_thread_do(void *data_v, int scanline)
                 data->texmask,
                 data->mask_max,
                 data->destx,
-                data->desty + scanline,
+                data->desty + start_scanline,
                 data->origx,
-                data->origy + scanline,
+                data->origy + start_scanline,
                 data->srcx,
-                data->srcy + scanline,
+                data->srcy + start_scanline,
                 data->width,
                 num_scanlines,
                 data->mode,

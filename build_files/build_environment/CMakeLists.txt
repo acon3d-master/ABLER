@@ -113,7 +113,7 @@ include(cmake/expat.cmake)
 include(cmake/yamlcpp.cmake)
 include(cmake/opencolorio.cmake)
 
-if(BLENDER_PLATFORM_ARM)
+if(APPLE AND ("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64"))
   include(cmake/sse2neon.cmake)
 endif()
 

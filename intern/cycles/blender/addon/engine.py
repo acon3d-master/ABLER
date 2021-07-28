@@ -19,16 +19,16 @@ from __future__ import annotations
 
 
 def _is_using_buggy_driver():
-    import gpu
+    import bgl
     # We need to be conservative here because in multi-GPU systems display card
     # might be quite old, but others one might be just good.
     #
     # So We shouldn't disable possible good dedicated cards just because display
     # card seems weak. And instead we only blacklist configurations which are
     # proven to cause problems.
-    if gpu.platform.vendor_get() == "ATI Technologies Inc.":
+    if bgl.glGetString(bgl.GL_VENDOR) == "ATI Technologies Inc.":
         import re
-        version = gpu.platform.version_get()
+        version = bgl.glGetString(bgl.GL_VERSION)
         if version.endswith("Compatibility Profile Context"):
             # Old HD 4xxx and 5xxx series drivers did not have driver version
             # in the version string, but those cards do not quite work and
@@ -132,7 +132,7 @@ def init():
         _workaround_buggy_drivers()
 
     path = os.path.dirname(__file__)
-    user_path = os.path.dirname(os.path.abspath(bpy.utils.user_resource('CONFIG', path='')))
+    user_path = os.path.dirname(os.path.abspath(bpy.utils.user_resource('CONFIG', '')))
 
     _cycles.init(path, user_path, bpy.app.background)
     _parse_command_line()

@@ -77,9 +77,8 @@ typedef struct IpoCurve {
   short totvert;
   /** Interpolation and extrapolation modes . */
   short ipo, extrap;
-  /** Flag= settings. */
-  short flag;
-  char _pad0[2];
+  /** Flag= settings; rt= ???. */
+  short flag, rt;
   /** Minimum/maximum y-extents for curve. */
   float ymin, ymax;
   /** ???. */

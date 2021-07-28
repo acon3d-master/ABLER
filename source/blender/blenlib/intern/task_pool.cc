@@ -111,7 +111,15 @@ class Task {
   Task &operator=(const Task &other) = delete;
   Task &operator=(Task &&other) = delete;
 
-  void operator()() const;
+  /* Execute task. */
+  void operator()() const
+  {
+#ifdef WITH_TBB
+    tbb::this_task_arena::isolate([this] { run(pool, taskdata); });
+#else
+    run(pool, taskdata);
+#endif
+  }
 };
 
 /* TBB Task Group.
@@ -159,8 +167,8 @@ struct TaskPool {
   ThreadMutex user_mutex;
   void *userdata;
 
-#ifdef WITH_TBB
   /* TBB task pool. */
+#ifdef WITH_TBB
   TBBTaskGroup tbb_group;
 #endif
   volatile bool is_suspended;
@@ -171,12 +179,6 @@ struct TaskPool {
   ThreadQueue *background_queue;
   volatile bool background_is_canceling;
 };
-
-/* Execute task. */
-void Task::operator()() const
-{
-  run(pool, taskdata);
-}
 
 /* TBB Task Pool.
  *

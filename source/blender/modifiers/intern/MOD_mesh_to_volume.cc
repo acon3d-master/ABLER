@@ -20,7 +20,6 @@
 
 #include <vector>
 
-#include "BKE_geometry_set.hh"
 #include "BKE_lib_query.h"
 #include "BKE_mesh_runtime.h"
 #include "BKE_mesh_wrapper.h"
@@ -205,9 +204,7 @@ static float compute_voxel_size(const ModifierEvalContext *ctx,
 }
 #endif
 
-static Volume *mesh_to_volume(ModifierData *md,
-                              const ModifierEvalContext *ctx,
-                              Volume *input_volume)
+static Volume *modifyVolume(ModifierData *md, const ModifierEvalContext *ctx, Volume *input_volume)
 {
 #ifdef WITH_OPENVDB
   using namespace blender;
@@ -281,17 +278,6 @@ static Volume *mesh_to_volume(ModifierData *md,
 #endif
 }
 
-static void modifyGeometrySet(ModifierData *md,
-                              const ModifierEvalContext *ctx,
-                              GeometrySet *geometry_set)
-{
-  Volume *input_volume = geometry_set->get_volume_for_write();
-  Volume *result_volume = mesh_to_volume(md, ctx, input_volume);
-  if (result_volume != input_volume) {
-    geometry_set->replace_volume(result_volume);
-  }
-}
-
 ModifierTypeInfo modifierType_MeshToVolume = {
     /* name */ "Mesh to Volume",
     /* structName */ "MeshToVolumeModifierData",
@@ -309,7 +295,8 @@ ModifierTypeInfo modifierType_MeshToVolume = {
     /* deformMatricesEM */ nullptr,
     /* modifyMesh */ nullptr,
     /* modifyHair */ nullptr,
-    /* modifyGeometrySet */ modifyGeometrySet,
+    /* modifyGeometrySet */ nullptr,
+    /* modifyVolume */ modifyVolume,
 
     /* initData */ initData,
     /* requiredDataMask */ nullptr,

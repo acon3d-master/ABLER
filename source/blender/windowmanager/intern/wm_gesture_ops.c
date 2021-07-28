@@ -316,7 +316,6 @@ int WM_gesture_circle_invoke(bContext *C, wmOperator *op, const wmEvent *event)
   if (gesture->wait_for_input == false) {
     gesture->is_active = true;
     gesture_circle_apply(C, op);
-    gesture->is_active_prev = true;
   }
 
   /* add modal handler */

@@ -66,9 +66,9 @@ static bool path_test_extension(const char *str, const char *ext)
   return !(a == 0 || b == 0 || b >= a) && (strcmp(ext, str + a - b) == 0);
 }
 
-static void endian_switch_uint32(uint *val)
+static void endian_switch_uint32(unsigned int *val)
 {
-  uint tval = *val;
+  unsigned int tval = *val;
   *val = ((tval >> 24)) | ((tval << 8) & 0x00ff0000) | ((tval >> 8) & 0x0000ff00) | ((tval << 24));
 }
 
@@ -96,7 +96,10 @@ static const char *path_basename(const char *path)
 /* -------------------------------------------------------------------- */
 /* Write a PNG from RGBA pixels */
 
-static bool write_png(const char *name, const uint *pixels, const int width, const int height)
+static bool write_png(const char *name,
+                      const unsigned int *pixels,
+                      const int width,
+                      const int height)
 {
   png_structp png_ptr;
   png_infop info_ptr;
@@ -196,9 +199,9 @@ static bool write_png(const char *name, const uint *pixels, const int width, con
 /* Merge icon-data from files */
 
 struct IconHead {
-  uint icon_w, icon_h;
-  uint orig_x, orig_y;
-  uint canvas_w, canvas_h;
+  unsigned int icon_w, icon_h;
+  unsigned int orig_x, orig_y;
+  unsigned int canvas_w, canvas_h;
 };
 
 struct IconInfo {
@@ -286,10 +289,10 @@ static bool icon_decode_head(FILE *f_src, struct IconHead *r_head)
   return false;
 }
 
-static bool icon_decode(FILE *f_src, struct IconHead *r_head, uint **r_pixels)
+static bool icon_decode(FILE *f_src, struct IconHead *r_head, unsigned int **r_pixels)
 {
-  uint *pixels;
-  uint pixels_size;
+  unsigned int *pixels;
+  unsigned int pixels_size;
 
   if (!icon_decode_head(f_src, r_head)) {
     printf("%s: failed to read header\n", __func__);
@@ -313,7 +316,7 @@ static bool icon_decode(FILE *f_src, struct IconHead *r_head, uint **r_pixels)
   return true;
 }
 
-static bool icon_read(const char *file_src, struct IconHead *r_head, uint **r_pixels)
+static bool icon_read(const char *file_src, struct IconHead *r_head, unsigned int **r_pixels)
 {
   FILE *f_src;
   bool success;
@@ -332,18 +335,18 @@ static bool icon_read(const char *file_src, struct IconHead *r_head, uint **r_pi
 
 static bool icon_merge(struct IconMergeContext *context,
                        const char *file_src,
-                       uint32_t **r_pixels_canvas,
-                       uint *r_canvas_w,
-                       uint *r_canvas_h)
+                       unsigned int **r_pixels_canvas,
+                       unsigned int *r_canvas_w,
+                       unsigned int *r_canvas_h)
 {
   struct IconHead head;
-  uint *pixels;
+  unsigned int *pixels;
 
-  uint x, y;
+  unsigned int x, y;
 
   /* canvas */
-  uint32_t *pixels_canvas;
-  uint canvas_w, canvas_h;
+  unsigned int *pixels_canvas;
+  unsigned int canvas_w, canvas_h;
 
   if (!icon_read(file_src, &head, &pixels)) {
     return false;
@@ -362,7 +365,7 @@ static bool icon_merge(struct IconMergeContext *context,
     /* init once */
     *r_canvas_w = head.canvas_w;
     *r_canvas_h = head.canvas_h;
-    *r_pixels_canvas = calloc(1, (head.canvas_w * head.canvas_h) * sizeof(uint32_t));
+    *r_pixels_canvas = calloc(1, (head.canvas_w * head.canvas_h) * sizeof(const unsigned char[4]));
   }
 
   canvas_w = *r_canvas_w;
@@ -374,9 +377,9 @@ static bool icon_merge(struct IconMergeContext *context,
 
   for (x = 0; x < head.icon_w; x++) {
     for (y = 0; y < head.icon_h; y++) {
-      uint pixel;
-      uint dst_x, dst_y;
-      uint pixel_xy_dst;
+      unsigned int pixel;
+      unsigned int dst_x, dst_y;
+      unsigned int pixel_xy_dst;
 
       /* get pixel */
       pixel = pixels[(y * head.icon_w) + x];
@@ -410,8 +413,8 @@ static bool icondir_to_png(const char *path_src, const char *file_dst)
 
   struct IconMergeContext context;
 
-  uint32_t *pixels_canvas = NULL;
-  uint canvas_w = 0, canvas_h = 0;
+  unsigned int *pixels_canvas = NULL;
+  unsigned int canvas_w = 0, canvas_h = 0;
 
   icon_merge_context_init(&context);
 

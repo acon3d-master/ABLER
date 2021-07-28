@@ -2215,41 +2215,34 @@ static int do_write_image_or_movie(Render *re,
   RenderResult rres;
   double render_time;
   bool ok = true;
-  RenderEngineType *re_type = RE_engines_find(re->r.engine);
 
-  /* Only disable file writing if postprocessing is also disabled. */
-  const bool do_write_file = !(re_type->flag & RE_USE_NO_IMAGE_SAVE) ||
-                             (re_type->flag & RE_USE_POSTPROCESS);
+  RE_AcquireResultImageViews(re, &rres);
 
-  if (do_write_file) {
-    RE_AcquireResultImageViews(re, &rres);
-
-    /* write movie or image */
-    if (BKE_imtype_is_movie(scene->r.im_format.imtype)) {
-      RE_WriteRenderViewsMovie(
-          re->reports, &rres, scene, &re->r, mh, re->movie_ctx_arr, totvideos, false);
+  /* write movie or image */
+  if (BKE_imtype_is_movie(scene->r.im_format.imtype)) {
+    RE_WriteRenderViewsMovie(
+        re->reports, &rres, scene, &re->r, mh, re->movie_ctx_arr, totvideos, false);
+  }
+  else {
+    if (name_override) {
+      BLI_strncpy(name, name_override, sizeof(name));
     }
     else {
-      if (name_override) {
-        BLI_strncpy(name, name_override, sizeof(name));
-      }
-      else {
-        BKE_image_path_from_imformat(name,
-                                     scene->r.pic,
-                                     BKE_main_blendfile_path(bmain),
-                                     scene->r.cfra,
-                                     &scene->r.im_format,
-                                     (scene->r.scemode & R_EXTENSION) != 0,
-                                     true,
-                                     NULL);
-      }
-
-      /* write images as individual images or stereo */
-      ok = RE_WriteRenderViewsImage(re->reports, &rres, scene, true, name);
+      BKE_image_path_from_imformat(name,
+                                   scene->r.pic,
+                                   BKE_main_blendfile_path(bmain),
+                                   scene->r.cfra,
+                                   &scene->r.im_format,
+                                   (scene->r.scemode & R_EXTENSION) != 0,
+                                   true,
+                                   NULL);
     }
 
-    RE_ReleaseResultImageViews(re, &rres);
+    /* write images as individual images or stereo */
+    ok = RE_WriteRenderViewsImage(re->reports, &rres, scene, true, name);
   }
+
+  RE_ReleaseResultImageViews(re, &rres);
 
   render_time = re->i.lastframetime;
   re->i.lastframetime = PIL_check_seconds_timer() - re->i.starttime;
@@ -2264,10 +2257,8 @@ static int do_write_image_or_movie(Render *re,
    * Not sure it's actually even used anyway, we could as well pass NULL? */
   render_callback_exec_null(re, G_MAIN, BKE_CB_EVT_RENDER_STATS);
 
-  if (do_write_file) {
-    BLI_timecode_string_from_time_simple(name, sizeof(name), re->i.lastframetime - render_time);
-    printf(" (Saving: %s)\n", name);
-  }
+  BLI_timecode_string_from_time_simple(name, sizeof(name), re->i.lastframetime - render_time);
+  printf(" (Saving: %s)\n", name);
 
   fputc('\n', stdout);
   fflush(stdout);
@@ -2339,15 +2330,9 @@ void RE_RenderAnim(Render *re,
     return;
   }
 
-  RenderEngineType *re_type = RE_engines_find(re->r.engine);
-
-  /* Only disable file writing if postprocessing is also disabled. */
-  const bool do_write_file = !(re_type->flag & RE_USE_NO_IMAGE_SAVE) ||
-                             (re_type->flag & RE_USE_POSTPROCESS);
-
   render_init_depsgraph(re);
 
-  if (is_movie && do_write_file) {
+  if (is_movie) {
     size_t width, height;
     int i;
     bool is_error = false;
@@ -2430,7 +2415,7 @@ void RE_RenderAnim(Render *re,
       nfra += tfra;
 
       /* Touch/NoOverwrite options are only valid for image's */
-      if (is_movie == false && do_write_file) {
+      if (is_movie == false) {
         if (rd.mode & (R_NO_OVERWRITE | R_TOUCH)) {
           BKE_image_path_from_imformat(name,
                                        rd.pic,
@@ -2523,7 +2508,7 @@ void RE_RenderAnim(Render *re,
 
       if (G.is_break == true) {
         /* remove touched file */
-        if (is_movie == false && do_write_file) {
+        if (is_movie == false) {
           if ((rd.mode & R_TOUCH)) {
             if (!is_multiview_name) {
               if ((BLI_file_size(name) == 0)) {
@@ -2563,7 +2548,7 @@ void RE_RenderAnim(Render *re,
   }
 
   /* end movie */
-  if (is_movie && do_write_file) {
+  if (is_movie) {
     re_movie_free_all(re, mh, totvideos);
   }
 

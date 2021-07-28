@@ -193,6 +193,7 @@ ModifierTypeInfo modifierType_Lattice = {
     /* modifyMesh */ NULL,
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
+    /* modifyVolume */ NULL,
 
     /* initData */ initData,
     /* requiredDataMask */ requiredDataMask,

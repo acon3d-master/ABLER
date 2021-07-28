@@ -98,8 +98,6 @@ static struct {
     bool active = false;
     bool initialized = false;
   } opencl;
-
-  int num_cpu_threads;
 } g_work_scheduler;
 
 /* -------------------------------------------------------------------- */
@@ -145,8 +143,7 @@ static void opencl_start(CompositorContext &context)
 
 static bool opencl_schedule(WorkPackage *package)
 {
-  if (package->type == eWorkPackageType::Tile && package->execution_group->get_flags().open_cl &&
-      g_work_scheduler.opencl.active) {
+  if (package->execution_group->get_flags().open_cl && g_work_scheduler.opencl.active) {
     BLI_thread_queue_push(g_work_scheduler.opencl.queue, package);
     return true;
   }
@@ -266,10 +263,10 @@ static void opencl_initialize(const bool use_opencl)
             if (error2 != CL_SUCCESS) {
               printf("CLERROR[%d]: %s\n", error2, clewErrorString(error2));
             }
-            g_work_scheduler.opencl.devices.append_as(g_work_scheduler.opencl.context,
-                                                      device,
-                                                      g_work_scheduler.opencl.program,
-                                                      vendorID);
+            g_work_scheduler.opencl.devices.append(OpenCLDevice(g_work_scheduler.opencl.context,
+                                                                device,
+                                                                g_work_scheduler.opencl.program,
+                                                                vendorID));
           }
         }
         MEM_freeN(cldevices);
@@ -371,7 +368,7 @@ static void threading_model_queue_initialize(const int num_cpu_threads)
   /* Initialize CPU threads. */
   if (!g_work_scheduler.queue.initialized) {
     for (int index = 0; index < num_cpu_threads; index++) {
-      g_work_scheduler.queue.devices.append_as(index);
+      g_work_scheduler.queue.devices.append(CPUDevice(index));
     }
     BLI_thread_local_create(g_thread_device);
     g_work_scheduler.queue.initialized = true;
@@ -535,12 +532,11 @@ void WorkScheduler::initialize(bool use_opencl, int num_cpu_threads)
     opencl_initialize(use_opencl);
   }
 
-  g_work_scheduler.num_cpu_threads = num_cpu_threads;
   switch (COM_threading_model()) {
     case ThreadingModel::SingleThreaded:
-      g_work_scheduler.num_cpu_threads = 1;
       /* Nothing to do. */
       break;
+
     case ThreadingModel::Queue:
       threading_model_queue_initialize(num_cpu_threads);
       break;
@@ -570,11 +566,6 @@ void WorkScheduler::deinitialize()
       /* Nothing to do. */
       break;
   }
-}
-
-int WorkScheduler::get_num_cpu_threads()
-{
-  return g_work_scheduler.num_cpu_threads;
 }
 
 int WorkScheduler::current_thread_id()

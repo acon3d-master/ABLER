@@ -846,7 +846,7 @@ static int paint_space_stroke(bContext *C,
   while (length > 0.0f) {
     float spacing = paint_space_stroke_spacing_variable(
         C, scene, stroke, pressure, dpressure, length);
-    float mouse[2];
+    float mouse[3];
 
     if (length >= spacing) {
       if (use_scene_spacing) {
@@ -856,7 +856,7 @@ static int paint_space_stroke(bContext *C,
         add_v3_v3v3(final_world_space_position,
                     stroke->last_world_space_position,
                     final_world_space_position);
-        ED_view3d_project_v2(region, final_world_space_position, mouse);
+        ED_view3d_project(region, final_world_space_position, mouse);
       }
       else {
         mouse[0] = stroke->last_mouse_position[0] + dmouse[0] * spacing;
@@ -1191,7 +1191,7 @@ static void paint_line_strokes_spacing(bContext *C,
 
   const bool use_scene_spacing = paint_stroke_use_scene_spacing(brush, mode);
 
-  float mouse[2], dmouse[2];
+  float mouse[3], dmouse[2];
   float length;
   float d_world_space_position[3] = {0.0f};
   float world_space_position_old[3], world_space_position_new[3];
@@ -1240,7 +1240,7 @@ static void paint_line_strokes_spacing(bContext *C,
         mul_v3_v3fl(final_world_space_position, d_world_space_position, spacing_final);
         add_v3_v3v3(
             final_world_space_position, world_space_position_old, final_world_space_position);
-        ED_view3d_project_v2(region, final_world_space_position, mouse);
+        ED_view3d_project(region, final_world_space_position, mouse);
       }
       else {
         mouse[0] = stroke->last_mouse_position[0] + dmouse[0] * spacing_final;
@@ -1462,7 +1462,7 @@ int paint_stroke_modal(bContext *C, wmOperator *op, const wmEvent *event)
 
     if (paint_supports_smooth_stroke(br, mode)) {
       stroke->stroke_cursor = WM_paint_cursor_activate(
-          SPACE_TYPE_ANY, RGN_TYPE_ANY, PAINT_brush_tool_poll, paint_draw_smooth_cursor, stroke);
+          SPACE_TYPE_ANY, RGN_TYPE_ANY, paint_poll, paint_draw_smooth_cursor, stroke);
     }
 
     stroke->stroke_init = true;
@@ -1489,7 +1489,7 @@ int paint_stroke_modal(bContext *C, wmOperator *op, const wmEvent *event)
 
       if (br->flag & BRUSH_LINE) {
         stroke->stroke_cursor = WM_paint_cursor_activate(
-            SPACE_TYPE_ANY, RGN_TYPE_ANY, PAINT_brush_tool_poll, paint_draw_line_cursor, stroke);
+            SPACE_TYPE_ANY, RGN_TYPE_ANY, paint_poll, paint_draw_line_cursor, stroke);
       }
 
       first_dab = true;
@@ -1659,7 +1659,7 @@ void paint_stroke_set_mode_data(PaintStroke *stroke, void *mode_data)
   stroke->mode_data = mode_data;
 }
 
-bool PAINT_brush_tool_poll(bContext *C)
+bool paint_poll(bContext *C)
 {
   Paint *p = BKE_paint_get_active_from_context(C);
   Object *ob = CTX_data_active_object(C);

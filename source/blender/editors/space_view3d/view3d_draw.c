@@ -1288,11 +1288,6 @@ static void draw_viewport_name(ARegion *region, View3D *v3d, int xoffset, int *y
     name_array[name_array_len++] = IFACE_(" (Local)");
   }
 
-  /* Indicate that clipping region is enabled. */
-  if (rv3d->rflag & RV3D_CLIPPING) {
-    name_array[name_array_len++] = IFACE_(" (Clipped)");
-  }
-
   if (name_array_len > 1) {
     BLI_string_join_array(tmpstr, sizeof(tmpstr), name_array, name_array_len);
     name = tmpstr;
@@ -1537,9 +1532,7 @@ void view3d_draw_region_info(const bContext *C, ARegion *region)
   }
 
   if ((v3d->flag2 & V3D_HIDE_OVERLAYS) == 0 && (v3d->overlay.flag & V3D_OVERLAY_STATS)) {
-    View3D *v3d_local = v3d->localvd ? v3d : NULL;
-    ED_info_draw_stats(
-        bmain, scene, view_layer, v3d_local, xoffset, &yoffset, VIEW3D_OVERLAY_LINEHEIGHT);
+    ED_info_draw_stats(bmain, scene, view_layer, xoffset, &yoffset, VIEW3D_OVERLAY_LINEHEIGHT);
   }
 
   BLF_batch_draw_end();
@@ -2024,6 +2017,7 @@ ImBuf *ED_view3d_draw_offscreen_imbuf_simple(Depsgraph *depsgraph,
     source_shading_settings = shading_override;
   }
   memcpy(&v3d.shading, source_shading_settings, sizeof(View3DShading));
+  v3d.shading.type = drawtype;
 
   if (drawtype == OB_MATERIAL) {
     v3d.shading.flag = V3D_SHADING_SCENE_WORLD | V3D_SHADING_SCENE_LIGHTS;
@@ -2033,12 +2027,6 @@ ImBuf *ED_view3d_draw_offscreen_imbuf_simple(Depsgraph *depsgraph,
     v3d.shading.flag = V3D_SHADING_SCENE_WORLD_RENDER | V3D_SHADING_SCENE_LIGHTS_RENDER;
     v3d.shading.render_pass = SCE_PASS_COMBINED;
   }
-  else if (drawtype == OB_TEXTURE) {
-    drawtype = OB_SOLID;
-    v3d.shading.light = V3D_LIGHTING_STUDIO;
-    v3d.shading.color_type = V3D_SHADING_TEXTURE_COLOR;
-  }
-  v3d.shading.type = drawtype;
 
   v3d.flag2 = V3D_HIDE_OVERLAYS;
   /* HACK: When rendering gpencil objects this opacity is used to mix vertex colors in when not in
@@ -2082,7 +2070,7 @@ ImBuf *ED_view3d_draw_offscreen_imbuf_simple(Depsgraph *depsgraph,
 
   return ED_view3d_draw_offscreen_imbuf(depsgraph,
                                         scene,
-                                        v3d.shading.type,
+                                        drawtype,
                                         &v3d,
                                         &region,
                                         width,

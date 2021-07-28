@@ -56,10 +56,7 @@ void TranslateNode::convertToOperations(NodeConverter &converter,
   converter.mapInputSocket(inputYSocket, operation->getInputSocket(2));
   converter.mapOutputSocket(outputSocket, operation->getOutputSocket(0));
 
-  /* FullFrame does not support using WriteBufferOperation.
-   * TODO: Implement TranslateOperation with wrap support in FullFrame.
-   */
-  if (data->wrap_axis && context.get_execution_model() != eExecutionModel::FullFrame) {
+  if (data->wrap_axis) {
     WriteBufferOperation *writeOperation = new WriteBufferOperation(DataType::Color);
     WrapOperation *wrapOperation = new WrapOperation(DataType::Color);
     wrapOperation->setMemoryProxy(writeOperation->getMemoryProxy());

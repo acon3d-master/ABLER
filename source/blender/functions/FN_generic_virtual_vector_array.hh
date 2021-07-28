@@ -100,13 +100,13 @@ class GVVectorArray {
   }
 };
 
-class GVArray_For_GVVectorArrayIndex : public GVArray {
+class GVArrayForGVVectorArrayIndex : public GVArray {
  private:
   const GVVectorArray &vector_array_;
   const int64_t index_;
 
  public:
-  GVArray_For_GVVectorArrayIndex(const GVVectorArray &vector_array, const int64_t index)
+  GVArrayForGVVectorArrayIndex(const GVVectorArray &vector_array, const int64_t index)
       : GVArray(vector_array.type(), vector_array.get_vector_size(index)),
         vector_array_(vector_array),
         index_(index)
@@ -118,12 +118,12 @@ class GVArray_For_GVVectorArrayIndex : public GVArray {
   void get_to_uninitialized_impl(const int64_t index_in_vector, void *r_value) const override;
 };
 
-class GVVectorArray_For_SingleGVArray : public GVVectorArray {
+class GVVectorArrayForSingleGVArray : public GVVectorArray {
  private:
   const GVArray &array_;
 
  public:
-  GVVectorArray_For_SingleGVArray(const GVArray &array, const int64_t size)
+  GVVectorArrayForSingleGVArray(const GVArray &array, const int64_t size)
       : GVVectorArray(array.type(), size), array_(array)
   {
   }
@@ -137,12 +137,12 @@ class GVVectorArray_For_SingleGVArray : public GVVectorArray {
   bool is_single_vector_impl() const override;
 };
 
-class GVVectorArray_For_SingleGSpan : public GVVectorArray {
+class GVVectorArrayForSingleGSpan : public GVVectorArray {
  private:
   const GSpan span_;
 
  public:
-  GVVectorArray_For_SingleGSpan(const GSpan span, const int64_t size)
+  GVVectorArrayForSingleGSpan(const GSpan span, const int64_t size)
       : GVVectorArray(span.type(), size), span_(span)
   {
   }
@@ -156,12 +156,12 @@ class GVVectorArray_For_SingleGSpan : public GVVectorArray {
   bool is_single_vector_impl() const override;
 };
 
-template<typename T> class VVectorArray_For_GVVectorArray : public VVectorArray<T> {
+template<typename T> class VVectorArrayForGVVectorArray : public VVectorArray<T> {
  private:
   const GVVectorArray &vector_array_;
 
  public:
-  VVectorArray_For_GVVectorArray(const GVVectorArray &vector_array)
+  VVectorArrayForGVVectorArray(const GVVectorArray &vector_array)
       : VVectorArray<T>(vector_array.size()), vector_array_(vector_array)
   {
   }

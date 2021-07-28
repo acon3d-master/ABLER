@@ -21,7 +21,6 @@
 #pragma once
 
 #include <exception>
-#include <string>
 
 class GHOST_XrException : public std::exception {
   friend class GHOST_XrContext;
@@ -34,10 +33,10 @@ class GHOST_XrException : public std::exception {
 
   const char *what() const noexcept override
   {
-    return m_msg.data();
+    return m_msg;
   }
 
  private:
-  std::string m_msg;
+  const char *m_msg;
   int m_result;
 };

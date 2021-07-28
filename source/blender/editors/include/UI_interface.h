@@ -186,17 +186,17 @@ enum {
   UI_RETURN_POPUP_OK = 1 << 5,
 };
 
-/** #uiBut.flag general state flags. */
+/* but->flag - general state flags. */
 enum {
-  /* WARNING: the first 7 flags are internal (see #UI_SELECT definition). */
-  UI_BUT_ICON_SUBMENU = 1 << 7,
-  UI_BUT_ICON_PREVIEW = 1 << 8,
+  /** Warning, the first 6 flags are internal. */
+  UI_BUT_ICON_SUBMENU = 1 << 6,
+  UI_BUT_ICON_PREVIEW = 1 << 7,
 
-  UI_BUT_NODE_LINK = 1 << 9,
-  UI_BUT_NODE_ACTIVE = 1 << 10,
-  UI_BUT_DRAG_LOCK = 1 << 11,
+  UI_BUT_NODE_LINK = 1 << 8,
+  UI_BUT_NODE_ACTIVE = 1 << 9,
+  UI_BUT_DRAG_LOCK = 1 << 10,
   /** Grayed out and un-editable. */
-  UI_BUT_DISABLED = 1 << 12,
+  UI_BUT_DISABLED = 1 << 11,
 
   UI_BUT_ANIMATED = 1 << 13,
   UI_BUT_ANIMATED_KEY = 1 << 14,
@@ -290,14 +290,18 @@ enum {
   /** Active right part of number button */
   UI_BUT_ACTIVE_RIGHT = 1 << 22,
 
+  /* (also used by search buttons to enforce shortcut display for their items). */
+  /** Button has shortcut text. */
+  UI_BUT_HAS_SHORTCUT = 1 << 23,
+
   /** Reverse order of consecutive off/on icons */
-  UI_BUT_ICON_REVERSE = 1 << 23,
+  UI_BUT_ICON_REVERSE = 1 << 24,
 
   /** Value is animated, but the current value differs from the animated one. */
-  UI_BUT_ANIMATED_CHANGED = 1 << 24,
+  UI_BUT_ANIMATED_CHANGED = 1 << 25,
 
   /* Draw the checkbox buttons inverted. */
-  UI_BUT_CHECKBOX_INVERT = 1 << 25,
+  UI_BUT_CHECKBOX_INVERT = 1 << 26,
 };
 
 /* scale fixed button widths by this to account for DPI */
@@ -719,7 +723,6 @@ void UI_but_drag_set_asset(uiBut *but,
                            const char *name,
                            const char *path,
                            int id_type,
-                           int import_type, /* eFileAssetImportType */
                            int icon,
                            struct ImBuf *imb,
                            float scale);
@@ -2134,7 +2137,7 @@ void uiTemplateComponentMenu(uiLayout *layout,
                              struct PointerRNA *ptr,
                              const char *propname,
                              const char *name);
-void uiTemplateNodeSocket(uiLayout *layout, struct bContext *C, float color[4]);
+void uiTemplateNodeSocket(uiLayout *layout, struct bContext *C, float *color);
 void uiTemplateCacheFile(uiLayout *layout,
                          const struct bContext *C,
                          struct PointerRNA *ptr,
@@ -2402,12 +2405,9 @@ void uiItemS_ex(uiLayout *layout, float factor);
 void uiItemSpacer(uiLayout *layout);
 
 void uiItemPopoverPanel_ptr(
-    uiLayout *layout, const struct bContext *C, struct PanelType *pt, const char *name, int icon);
-void uiItemPopoverPanel(uiLayout *layout,
-                        const struct bContext *C,
-                        const char *panel_type,
-                        const char *name,
-                        int icon);
+    uiLayout *layout, struct bContext *C, struct PanelType *pt, const char *name, int icon);
+void uiItemPopoverPanel(
+    uiLayout *layout, struct bContext *C, const char *panel_type, const char *name, int icon);
 void uiItemPopoverPanelFromGroup(uiLayout *layout,
                                  struct bContext *C,
                                  int space_id,

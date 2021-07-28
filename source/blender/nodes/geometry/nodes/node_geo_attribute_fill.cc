@@ -68,12 +68,13 @@ static void geo_node_attribute_fill_update(bNodeTree *UNUSED(ntree), bNode *node
 
 namespace blender::nodes {
 
-static AttributeDomain get_result_domain(const GeometryComponent &component, const StringRef name)
+static AttributeDomain get_result_domain(const GeometryComponent &component,
+                                         StringRef attribute_name)
 {
   /* Use the domain of the result attribute if it already exists. */
-  std::optional<AttributeMetaData> result_info = component.attribute_get_meta_data(name);
-  if (result_info) {
-    return result_info->domain;
+  ReadAttributePtr result_attribute = component.attribute_try_get_for_read(attribute_name);
+  if (result_attribute) {
+    return result_attribute->domain();
   }
   return ATTR_DOMAIN_POINT;
 }
@@ -92,7 +93,7 @@ static void fill_attribute(GeometryComponent &component, const GeoNodeExecParams
                                             get_result_domain(component, attribute_name) :
                                             domain;
 
-  OutputAttribute attribute = component.attribute_try_get_for_output_only(
+  OutputAttributePtr attribute = component.attribute_try_get_for_output(
       attribute_name, result_domain, data_type);
   if (!attribute) {
     return;
@@ -101,34 +102,38 @@ static void fill_attribute(GeometryComponent &component, const GeoNodeExecParams
   switch (data_type) {
     case CD_PROP_FLOAT: {
       const float value = params.get_input<float>("Value_001");
-      attribute->fill(&value);
+      MutableSpan<float> attribute_span = attribute->get_span_for_write_only<float>();
+      attribute_span.fill(value);
       break;
     }
     case CD_PROP_FLOAT3: {
       const float3 value = params.get_input<float3>("Value");
-      attribute->fill(&value);
+      MutableSpan<float3> attribute_span = attribute->get_span_for_write_only<float3>();
+      attribute_span.fill(value);
       break;
     }
     case CD_PROP_COLOR: {
-      const ColorGeometry4f value = params.get_input<ColorGeometry4f>("Value_002");
-      attribute->fill(&value);
+      const Color4f value = params.get_input<Color4f>("Value_002");
+      MutableSpan<Color4f> attribute_span = attribute->get_span_for_write_only<Color4f>();
+      attribute_span.fill(value);
       break;
     }
     case CD_PROP_BOOL: {
       const bool value = params.get_input<bool>("Value_003");
-      attribute->fill(&value);
+      MutableSpan<bool> attribute_span = attribute->get_span_for_write_only<bool>();
+      attribute_span.fill(value);
       break;
     }
     case CD_PROP_INT32: {
       const int value = params.get_input<int>("Value_004");
-      attribute->fill(&value);
-      break;
+      MutableSpan<int> attribute_span = attribute->get_span_for_write_only<int>();
+      attribute_span.fill(value);
     }
     default:
       break;
   }
 
-  attribute.save();
+  attribute.apply_span_and_save();
 }
 
 static void geo_node_attribute_fill_exec(GeoNodeExecParams params)
@@ -142,9 +147,6 @@ static void geo_node_attribute_fill_exec(GeoNodeExecParams params)
   }
   if (geometry_set.has<PointCloudComponent>()) {
     fill_attribute(geometry_set.get_component_for_write<PointCloudComponent>(), params);
-  }
-  if (geometry_set.has<CurveComponent>()) {
-    fill_attribute(geometry_set.get_component_for_write<CurveComponent>(), params);
   }
 
   params.set_output("Geometry", geometry_set);

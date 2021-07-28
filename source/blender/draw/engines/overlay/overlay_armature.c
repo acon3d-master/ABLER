@@ -1031,7 +1031,7 @@ static void pchan_draw_data_init(bPoseChannel *pchan)
 static void draw_bone_update_disp_matrix_default(EditBone *eBone, bPoseChannel *pchan)
 {
   float ebmat[4][4];
-  float bone_scale[3];
+  float length;
   float(*bone_mat)[4];
   float(*disp_mat)[4];
   float(*disp_tail_mat)[4];
@@ -1040,23 +1040,23 @@ static void draw_bone_update_disp_matrix_default(EditBone *eBone, bPoseChannel *
    * and not be tight to the draw pass creation.
    * This would refresh armature without invalidating the draw cache */
   if (pchan) {
+    length = pchan->bone->length;
     bone_mat = pchan->pose_mat;
     disp_mat = pchan->disp_mat;
     disp_tail_mat = pchan->disp_tail_mat;
-    copy_v3_fl(bone_scale, pchan->bone->length);
   }
   else {
     eBone->length = len_v3v3(eBone->tail, eBone->head);
     ED_armature_ebone_to_mat4(eBone, ebmat);
 
-    copy_v3_fl(bone_scale, eBone->length);
+    length = eBone->length;
     bone_mat = ebmat;
     disp_mat = eBone->disp_mat;
     disp_tail_mat = eBone->disp_tail_mat;
   }
 
   copy_m4_m4(disp_mat, bone_mat);
-  rescale_m4(disp_mat, bone_scale);
+  rescale_m4(disp_mat, (float[3]){length, length, length});
   copy_m4_m4(disp_tail_mat, disp_mat);
   translate_m4(disp_tail_mat, 0.0f, 1.0f, 0.0f);
 }
@@ -1255,27 +1255,19 @@ static void draw_bone_update_disp_matrix_bbone(EditBone *eBone, bPoseChannel *pc
 
 static void draw_bone_update_disp_matrix_custom(bPoseChannel *pchan)
 {
-  float bone_scale[3];
+  float length;
   float(*bone_mat)[4];
   float(*disp_mat)[4];
   float(*disp_tail_mat)[4];
-  float rot_mat[3][3];
 
   /* See TODO above */
-  mul_v3_v3fl(bone_scale, pchan->custom_scale_xyz, PCHAN_CUSTOM_BONE_LENGTH(pchan));
+  length = PCHAN_CUSTOM_DRAW_SIZE(pchan);
   bone_mat = pchan->custom_tx ? pchan->custom_tx->pose_mat : pchan->pose_mat;
   disp_mat = pchan->disp_mat;
   disp_tail_mat = pchan->disp_tail_mat;
 
-  eulO_to_mat3(rot_mat, pchan->custom_rotation_euler, ROT_MODE_XYZ);
-
   copy_m4_m4(disp_mat, bone_mat);
-  translate_m4(disp_mat,
-               pchan->custom_translation[0],
-               pchan->custom_translation[1],
-               pchan->custom_translation[2]);
-  mul_m4_m4m3(disp_mat, disp_mat, rot_mat);
-  rescale_m4(disp_mat, bone_scale);
+  rescale_m4(disp_mat, (float[3]){length, length, length});
   copy_m4_m4(disp_tail_mat, disp_mat);
   translate_m4(disp_tail_mat, 0.0f, 1.0f, 0.0f);
 }
@@ -2063,8 +2055,9 @@ static void draw_armature_pose(ArmatureDrawContext *ctx)
           set_pchan_colorset(ctx, ob, pchan);
         }
 
-        /* catch exception for bone with hidden parent */
         int boneflag = bone->flag;
+        /* catch exception for bone with hidden parent */
+        boneflag = bone->flag;
         if ((bone->parent) && (bone->parent->flag & (BONE_HIDDEN_P | BONE_HIDDEN_PG))) {
           boneflag &= ~BONE_CONNECTED;
         }

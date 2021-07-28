@@ -95,11 +95,6 @@ typedef struct ShaderCallData {
   int dummy;
 } ShaderCallData;
 
-typedef struct XYZ_to_RGB /* Transposed #imbuf_xyz_to_rgb, passed as 3x vec3. */
-{
-  float r[3], g[3], b[3];
-} XYZ_to_RGB;
-
 void nodestack_get_vec(float *in, short type_in, bNodeStack *ns);
 
 void node_gpu_stack_from_data(struct GPUNodeStack *gs, int type, struct bNodeStack *ns);
@@ -118,7 +113,6 @@ void node_shader_gpu_tex_mapping(struct GPUMaterial *mat,
 void ntreeExecGPUNodes(struct bNodeTreeExec *exec,
                        struct GPUMaterial *mat,
                        struct bNode *output_node);
-void get_XYZ_to_RGB_for_gpu(XYZ_to_RGB *data);
 
 #ifdef __cplusplus
 }

@@ -1573,8 +1573,7 @@ static int delete_exec(bContext *C, wmOperator *op)
         else if (*sel >= range[1]) {
           *sel -= len_remove;
         }
-        else {
-          BLI_assert(*sel < range[1]);
+        else if (*sel < range[1]) {
           /* pass */
           *sel = range[0];
         }

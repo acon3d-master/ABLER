@@ -520,7 +520,7 @@ void wm_event_do_notifiers(bContext *C)
     if (clear_info_stats) {
       /* Only do once since adding notifiers is slow when there are many. */
       ViewLayer *view_layer = CTX_data_view_layer(C);
-      ED_info_stats_clear(wm, view_layer);
+      ED_info_stats_clear(view_layer);
       WM_event_add_notifier(C, NC_SPACE | ND_SPACE_INFO, NULL);
     }
 
@@ -1048,7 +1048,7 @@ static int wm_operator_exec(bContext *C, wmOperator *op, const bool repeat, cons
   wmWindowManager *wm = CTX_wm_manager(C);
   int retval = OPERATOR_CANCELLED;
 
-  CTX_wm_operator_poll_msg_clear(C);
+  CTX_wm_operator_poll_msg_set(C, NULL);
 
   if (op == NULL || op->type == NULL) {
     return retval;
@@ -1469,7 +1469,7 @@ static int wm_operator_call_internal(bContext *C,
 {
   int retval;
 
-  CTX_wm_operator_poll_msg_clear(C);
+  CTX_wm_operator_poll_msg_set(C, NULL);
 
   /* Dummy test. */
   if (ot) {
@@ -4478,21 +4478,16 @@ void wm_event_add_ghostevent(wmWindowManager *wm, wmWindow *win, int type, void 
   event.prevtype = event.type;
   event.prevval = event.val;
 
-  /* Ensure the event state is correct, any deviation from this may cause bugs.
-   *
-   * NOTE: #EVENT_NONE is set when unknown keys are pressed,
-   * while not common, avoid a false alarm. */
+  /* Ensure the event state is correct, any deviation from this may cause bugs. */
 #ifndef NDEBUG
   if ((event_state->type || event_state->val) && /* Ignore cleared event state. */
-      !(ISMOUSE_BUTTON(event_state->type) || ISKEYBOARD(event_state->type) ||
-        (event_state->type == EVENT_NONE))) {
+      !(ISMOUSE_BUTTON(event_state->type) || ISKEYBOARD(event_state->type))) {
     CLOG_WARN(WM_LOG_HANDLERS,
               "Non-keyboard/mouse button found in 'win->eventstate->type = %d'",
               event_state->type);
   }
   if ((event_state->prevtype || event_state->prevval) && /* Ignore cleared event state. */
-      !(ISMOUSE_BUTTON(event_state->prevtype) || ISKEYBOARD(event_state->prevtype) ||
-        (event_state->type == EVENT_NONE))) {
+      !(ISMOUSE_BUTTON(event_state->prevtype) || ISKEYBOARD(event_state->prevtype))) {
     CLOG_WARN(WM_LOG_HANDLERS,
               "Non-keyboard/mouse button found in 'win->eventstate->prevtype = %d'",
               event_state->prevtype);

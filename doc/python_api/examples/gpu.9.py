@@ -7,6 +7,7 @@ You could also make this independent of a specific camera,
 but Blender does not expose good functions to create view and projection matrices yet.
 """
 import bpy
+import bgl
 import gpu
 from gpu_extras.presets import draw_texture_2d
 
@@ -33,8 +34,8 @@ def draw():
         view_matrix,
         projection_matrix)
 
-    gpu.state.depth_mask_set(False)
-    draw_texture_2d(offscreen.texture_color, (10, 10), WIDTH, HEIGHT)
+    bgl.glDisable(bgl.GL_DEPTH_TEST)
+    draw_texture_2d(offscreen.color_texture, (10, 10), WIDTH, HEIGHT)
 
 
 bpy.types.SpaceView3D.draw_handler_add(draw, (), 'WINDOW', 'POST_PIXEL')

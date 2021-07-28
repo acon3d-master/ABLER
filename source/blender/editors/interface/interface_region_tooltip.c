@@ -947,13 +947,12 @@ static uiTooltipData *ui_tooltip_data_from_button(bContext *C, uiBut *but)
   /* button is disabled, we may be able to tell user why */
   if (but->flag & UI_BUT_DISABLED) {
     const char *disabled_msg = NULL;
-    bool disabled_msg_free = false;
 
     /* if operator poll check failed, it can give pretty precise info why */
     if (but->optype) {
-      CTX_wm_operator_poll_msg_clear(C);
+      CTX_wm_operator_poll_msg_set(C, NULL);
       WM_operator_poll_context(C, but->optype, but->opcontext);
-      disabled_msg = CTX_wm_operator_poll_msg_get(C, &disabled_msg_free);
+      disabled_msg = CTX_wm_operator_poll_msg_get(C);
     }
     /* alternatively, buttons can store some reasoning too */
     else if (but->disabled_info) {
@@ -967,9 +966,6 @@ static uiTooltipData *ui_tooltip_data_from_button(bContext *C, uiBut *but)
                                                  .color_id = UI_TIP_LC_ALERT,
                                              });
       field->text = BLI_sprintfN(TIP_("Disabled: %s"), disabled_msg);
-    }
-    if (disabled_msg_free) {
-      MEM_freeN((void *)disabled_msg);
     }
   }
 

@@ -312,6 +312,6 @@ int av_image_deinterlace(
   return 0;
 }
 
-/** \} Deinterlace code block */
+/* --- Deinterlace code block end --- */
 
 #endif

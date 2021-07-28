@@ -26,7 +26,6 @@
 #include "GHOST_WindowWayland.h"
 
 #include <wayland-client.h>
-#include <xdg-decoration-client-protocol.h>
 #include <xdg-shell-client-protocol.h>
 
 #include <string>
@@ -34,16 +33,6 @@
 class GHOST_WindowWayland;
 
 struct display_t;
-
-struct output_t {
-  struct wl_output *output;
-  int32_t width_pxl, height_pxl;  // dimensions in pixel
-  int32_t width_mm, height_mm;    // dimensions in millimeter
-  int transform;
-  int scale;
-  std::string make;
-  std::string model;
-};
 
 class GHOST_SystemWayland : public GHOST_System {
  public:
@@ -94,12 +83,6 @@ class GHOST_SystemWayland : public GHOST_System {
   wl_compositor *compositor();
 
   xdg_wm_base *shell();
-
-  zxdg_decoration_manager_v1 *decoration_manager();
-
-  const std::vector<output_t *> &outputs() const;
-
-  wl_shm *shm() const;
 
   void setSelection(const std::string &selection);
 

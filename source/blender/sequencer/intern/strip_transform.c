@@ -48,12 +48,24 @@ static int seq_tx_get_end(Sequence *seq)
   return seq->start + seq->len;
 }
 
-int SEQ_transform_get_left_handle_frame(Sequence *seq)
+int SEQ_transform_get_left_handle_frame(Sequence *seq, bool metaclip)
 {
+  if (metaclip && seq->tmp) {
+    /* return the range clipped by the parents range */
+    return max_ii(SEQ_transform_get_left_handle_frame(seq, false),
+                  SEQ_transform_get_left_handle_frame((Sequence *)seq->tmp, true));
+  }
+
   return (seq->start - seq->startstill) + seq->startofs;
 }
-int SEQ_transform_get_right_handle_frame(Sequence *seq)
+int SEQ_transform_get_right_handle_frame(Sequence *seq, bool metaclip)
 {
+  if (metaclip && seq->tmp) {
+    /* return the range clipped by the parents range */
+    return min_ii(SEQ_transform_get_right_handle_frame(seq, false),
+                  SEQ_transform_get_right_handle_frame((Sequence *)seq->tmp, true));
+  }
+
   return ((seq->start + seq->len) + seq->endstill) - seq->endofs;
 }
 
@@ -139,12 +151,14 @@ bool SEQ_transform_seqbase_isolated_sel_check(ListBase *seqbase)
 void SEQ_transform_handle_xlimits(Sequence *seq, int leftflag, int rightflag)
 {
   if (leftflag) {
-    if (SEQ_transform_get_left_handle_frame(seq) >= SEQ_transform_get_right_handle_frame(seq)) {
-      SEQ_transform_set_left_handle_frame(seq, SEQ_transform_get_right_handle_frame(seq) - 1);
+    if (SEQ_transform_get_left_handle_frame(seq, false) >=
+        SEQ_transform_get_right_handle_frame(seq, false)) {
+      SEQ_transform_set_left_handle_frame(seq,
+                                          SEQ_transform_get_right_handle_frame(seq, false) - 1);
     }
 
     if (SEQ_transform_single_image_check(seq) == 0) {
-      if (SEQ_transform_get_left_handle_frame(seq) >= seq_tx_get_end(seq)) {
+      if (SEQ_transform_get_left_handle_frame(seq, false) >= seq_tx_get_end(seq)) {
         SEQ_transform_set_left_handle_frame(seq, seq_tx_get_end(seq) - 1);
       }
 
@@ -161,12 +175,14 @@ void SEQ_transform_handle_xlimits(Sequence *seq, int leftflag, int rightflag)
   }
 
   if (rightflag) {
-    if (SEQ_transform_get_right_handle_frame(seq) <= SEQ_transform_get_left_handle_frame(seq)) {
-      SEQ_transform_set_right_handle_frame(seq, SEQ_transform_get_left_handle_frame(seq) + 1);
+    if (SEQ_transform_get_right_handle_frame(seq, false) <=
+        SEQ_transform_get_left_handle_frame(seq, false)) {
+      SEQ_transform_set_right_handle_frame(seq,
+                                           SEQ_transform_get_left_handle_frame(seq, false) + 1);
     }
 
     if (SEQ_transform_single_image_check(seq) == 0) {
-      if (SEQ_transform_get_right_handle_frame(seq) <= seq_tx_get_start(seq)) {
+      if (SEQ_transform_get_right_handle_frame(seq, false) <= seq_tx_get_start(seq)) {
         SEQ_transform_set_right_handle_frame(seq, seq_tx_get_start(seq) + 1);
       }
     }
@@ -188,12 +204,14 @@ void SEQ_transform_fix_single_image_seq_offsets(Sequence *seq)
 
   /* make sure the image is always at the start since there is only one,
    * adjusting its start should be ok */
-  left = SEQ_transform_get_left_handle_frame(seq);
+  left = SEQ_transform_get_left_handle_frame(seq, false);
   start = seq->start;
   if (start != left) {
     offset = left - start;
-    SEQ_transform_set_left_handle_frame(seq, SEQ_transform_get_left_handle_frame(seq) - offset);
-    SEQ_transform_set_right_handle_frame(seq, SEQ_transform_get_right_handle_frame(seq) - offset);
+    SEQ_transform_set_left_handle_frame(seq,
+                                        SEQ_transform_get_left_handle_frame(seq, false) - offset);
+    SEQ_transform_set_right_handle_frame(
+        seq, SEQ_transform_get_right_handle_frame(seq, false) - offset);
     seq->start += offset;
   }
 }
@@ -233,22 +251,14 @@ void SEQ_transform_translate_sequence(Scene *evil_scene, Sequence *seq, int delt
   SEQ_offset_animdata(evil_scene, seq, delta);
   seq->start += delta;
 
-  /* Meta strips requires special handling: their content is to be translated, and then frame range
-   * of the meta is to be updated for the updated content. */
   if (seq->type == SEQ_TYPE_META) {
     Sequence *seq_child;
     for (seq_child = seq->seqbase.first; seq_child; seq_child = seq_child->next) {
       SEQ_transform_translate_sequence(evil_scene, seq_child, delta);
     }
-    /* Ensure that meta bounds are updated, but this function prevents resets seq->start and
-     * start/end point in timeline. */
-    SEQ_time_update_meta_strip_range(evil_scene, seq);
-    /* Move meta start/end points. */
-    SEQ_transform_set_left_handle_frame(seq, seq->startdisp + delta);
-    SEQ_transform_set_right_handle_frame(seq, seq->enddisp + delta);
   }
 
-  SEQ_time_update_sequence(evil_scene, seq);
+  SEQ_time_update_sequence_bounds(evil_scene, seq);
 }
 
 /* return 0 if there weren't enough space */

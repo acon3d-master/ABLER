@@ -2702,13 +2702,20 @@ class WM_MT_splash(Menu):
 
         row = layout.row()
 
-        if context.scene.ACON_prop.logged_in:
+        if context.scene.ACON_prop.login_status == 'SUCCESS':
             row.label(text="Welcome!")
             row = layout.row()
             row.label(text="Click out to start Abler.")
+        
+        elif context.scene.ACON_prop.login_status == 'LOADING':
+            row.label(text="Hold on...")
 
         else:
-            row.label(text="Please Login")
+            
+            if context.scene.ACON_prop.login_status == 'FAIL':
+                row.label(text="Login failed. Please try again.")
+            else: 
+                row.label(text="Please Login")
 
             layout.separator()
 

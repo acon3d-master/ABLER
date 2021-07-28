@@ -108,12 +108,7 @@ static int edbm_spin_exec(bContext *C, wmOperator *op)
       continue;
     }
 
-    EDBM_update(obedit->data,
-                &(const struct EDBMUpdate_Params){
-                    .calc_looptri = true,
-                    .calc_normals = false,
-                    .is_destructive = true,
-                });
+    EDBM_update_generic(obedit->data, true, true);
   }
 
   MEM_freeN(objects);

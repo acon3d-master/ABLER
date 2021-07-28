@@ -514,6 +514,7 @@ ModifierTypeInfo modifierType_WeightVGMix = {
     /* modifyMesh */ modifyMesh,
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
+    /* modifyVolume */ NULL,
 
     /* initData */ initData,
     /* requiredDataMask */ requiredDataMask,

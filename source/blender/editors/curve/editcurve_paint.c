@@ -210,7 +210,7 @@ static bool stroke_elem_project(const struct CurveDrawData *cdd,
       ED_view3d_depth_read_cached(depths, mval_i, 0, &depth_fl);
       const double depth = (double)depth_fl;
       if ((depth > depths->depth_range[0]) && (depth < depths->depth_range[1])) {
-        if (ED_view3d_depth_unproject_v3(region, mval_i, depth, r_location_world)) {
+        if (ED_view3d_depth_unproject(region, mval_i, depth, r_location_world)) {
           is_location_world_set = true;
           if (r_normal_world) {
             zero_v3(r_normal_world);
@@ -387,6 +387,7 @@ static void curve_draw_stroke_3d(const struct bContext *UNUSED(C),
       GPU_matrix_translate_3f(selem->location_local[0] - location_prev[0],
                               selem->location_local[1] - location_prev[1],
                               selem->location_local[2] - location_prev[2]);
+      location_prev = selem->location_local;
 
       const float radius = stroke_elem_radius(cdd, selem);
 

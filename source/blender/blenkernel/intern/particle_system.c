@@ -3312,11 +3312,13 @@ static MDeformVert *hair_set_pinning(MDeformVert *dvert, float weight)
 static void hair_create_input_mesh(ParticleSimulationData *sim,
                                    int totpoint,
                                    int totedge,
-                                   Mesh **r_mesh)
+                                   Mesh **r_mesh,
+                                   ClothHairData **r_hairdata)
 {
   ParticleSystem *psys = sim->psys;
   ParticleSettings *part = psys->part;
   Mesh *mesh;
+  ClothHairData *hairdata;
   MVert *mvert;
   MEdge *medge;
   MDeformVert *dvert;
@@ -3337,8 +3339,9 @@ static void hair_create_input_mesh(ParticleSimulationData *sim,
   medge = mesh->medge;
   dvert = mesh->dvert;
 
-  if (psys->clmd->hairdata == NULL) {
-    psys->clmd->hairdata = MEM_mallocN(sizeof(ClothHairData) * totpoint, "hair data");
+  hairdata = *r_hairdata;
+  if (!hairdata) {
+    *r_hairdata = hairdata = MEM_mallocN(sizeof(ClothHairData) * totpoint, "hair data");
   }
 
   /* calculate maximum segment length */
@@ -3490,7 +3493,7 @@ static void do_hair_dynamics(ParticleSimulationData *sim)
     }
   }
 
-  hair_create_input_mesh(sim, totpoint, totedge, &psys->hair_in_mesh);
+  hair_create_input_mesh(sim, totpoint, totedge, &psys->hair_in_mesh, &psys->clmd->hairdata);
 
   if (psys->hair_out_mesh) {
     BKE_id_free(NULL, psys->hair_out_mesh);
@@ -4909,12 +4912,9 @@ void particle_system_update(struct Depsgraph *depsgraph,
           sim.psmd->flag |= eParticleSystemFlag_Pars;
         }
 
-        ParticleTexture ptex;
-
         LOOP_EXISTING_PARTICLES
         {
-          psys_get_texture(&sim, pa, &ptex, PAMAP_SIZE, cfra);
-          pa->size = part->size * ptex.size;
+          pa->size = part->size;
           if (part->randsize > 0.0f) {
             pa->size *= 1.0f - part->randsize * psys_frand(psys, p + 1);
           }

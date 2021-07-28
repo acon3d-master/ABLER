@@ -159,7 +159,7 @@ void Shader::print_log(Span<const char *> sources, char *log, const char *stage,
     }
     /* Print line from the source file that is producing the error. */
     if ((error_line != -1) && (error_line != last_error_line || error_char != last_error_char)) {
-      const char *src_line_end;
+      const char *src_line_end = src_line;
       found_line_id = false;
       /* error_line is 1 based in this case. */
       int src_line_index = 1;
@@ -290,7 +290,6 @@ static void standard_defines(Vector<const char *> &sources)
 GPUShader *GPU_shader_create_ex(const char *vertcode,
                                 const char *fragcode,
                                 const char *geomcode,
-                                const char *computecode,
                                 const char *libcode,
                                 const char *defines,
                                 const eGPUShaderTFBType tf_type,
@@ -298,10 +297,8 @@ GPUShader *GPU_shader_create_ex(const char *vertcode,
                                 const int tf_count,
                                 const char *shname)
 {
-  /* At least a vertex shader and a fragment shader are required, or only a compute shader. */
-  BLI_assert(((fragcode != nullptr) && (vertcode != nullptr) && (computecode == nullptr)) ||
-             ((fragcode == nullptr) && (vertcode == nullptr) && (geomcode == nullptr) &&
-              (computecode != nullptr)));
+  /* At least a vertex shader and a fragment shader are required. */
+  BLI_assert((fragcode != nullptr) && (vertcode != nullptr));
 
   Shader *shader = GPUBackend::get()->shader_alloc(shname);
 
@@ -352,21 +349,6 @@ GPUShader *GPU_shader_create_ex(const char *vertcode,
     shader->geometry_shader_from_glsl(sources);
   }
 
-  if (computecode) {
-    Vector<const char *> sources;
-    standard_defines(sources);
-    sources.append("#define GPU_COMPUTE_SHADER\n");
-    if (defines) {
-      sources.append(defines);
-    }
-    if (libcode) {
-      sources.append(libcode);
-    }
-    sources.append(computecode);
-
-    shader->compute_shader_from_glsl(sources);
-  }
-
   if (tf_names != nullptr && tf_count > 0) {
     BLI_assert(tf_type != GPU_SHADER_TFB_NONE);
     shader->transform_feedback_names_set(Span<const char *>(tf_names, tf_count), tf_type);
@@ -398,33 +380,8 @@ GPUShader *GPU_shader_create(const char *vertcode,
                              const char *defines,
                              const char *shname)
 {
-  return GPU_shader_create_ex(vertcode,
-                              fragcode,
-                              geomcode,
-                              nullptr,
-                              libcode,
-                              defines,
-                              GPU_SHADER_TFB_NONE,
-                              nullptr,
-                              0,
-                              shname);
-}
-
-GPUShader *GPU_shader_create_compute(const char *computecode,
-                                     const char *libcode,
-                                     const char *defines,
-                                     const char *shname)
-{
-  return GPU_shader_create_ex(nullptr,
-                              nullptr,
-                              nullptr,
-                              computecode,
-                              libcode,
-                              defines,
-                              GPU_SHADER_TFB_NONE,
-                              nullptr,
-                              0,
-                              shname);
+  return GPU_shader_create_ex(
+      vertcode, fragcode, geomcode, libcode, defines, GPU_SHADER_TFB_NONE, nullptr, 0, shname);
 }
 
 GPUShader *GPU_shader_create_from_python(const char *vertcode,
@@ -445,7 +402,6 @@ GPUShader *GPU_shader_create_from_python(const char *vertcode,
   GPUShader *sh = GPU_shader_create_ex(vertcode,
                                        fragcode,
                                        geomcode,
-                                       nullptr,
                                        libcode,
                                        defines,
                                        GPU_SHADER_TFB_NONE,
@@ -611,13 +567,6 @@ int GPU_shader_get_builtin_block(GPUShader *shader, int builtin)
   return interface->ubo_builtin((GPUUniformBlockBuiltin)builtin);
 }
 
-int GPU_shader_get_ssbo(GPUShader *shader, const char *name)
-{
-  ShaderInterface *interface = unwrap(shader)->interface;
-  const ShaderInput *ssbo = interface->ssbo_get(name);
-  return ssbo ? ssbo->location : -1;
-}
-
 /* DEPRECATED. */
 int GPU_shader_get_uniform_block(GPUShader *shader, const char *name)
 {
@@ -774,7 +723,7 @@ void GPU_shader_uniform_4fv_array(GPUShader *sh, const char *name, int len, cons
 static int g_shader_builtin_srgb_transform = 0;
 static bool g_shader_builtin_srgb_is_dirty = false;
 
-static bool gpu_shader_srgb_uniform_dirty_get()
+static bool gpu_shader_srgb_uniform_dirty_get(void)
 {
   return g_shader_builtin_srgb_is_dirty;
 }

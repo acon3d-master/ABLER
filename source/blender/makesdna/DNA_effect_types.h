@@ -71,15 +71,13 @@ extern "C" {
 
 typedef struct Effect {
   struct Effect *next, *prev;
-  short type, flag, buttype;
-  char _pad0[2];
+  short type, flag, buttype, rt;
 
 } Effect;
 
 typedef struct BuildEff {
   struct BuildEff *next, *prev;
-  short type, flag, buttype;
-  char _pad0[2];
+  short type, flag, buttype, rt;
 
   float len, sfra;
 
@@ -90,8 +88,7 @@ typedef struct BuildEff {
 typedef struct Particle {
   float co[3], no[3];
   float time, lifetime;
-  short mat_nr;
-  char _pad0[2];
+  short mat_nr, rt;
 } Particle;
 
 struct Collection;

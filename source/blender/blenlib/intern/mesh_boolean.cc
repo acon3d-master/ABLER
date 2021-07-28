@@ -41,17 +41,12 @@
 #  include "BLI_set.hh"
 #  include "BLI_span.hh"
 #  include "BLI_stack.hh"
-#  include "BLI_task.hh"
 #  include "BLI_vector.hh"
 #  include "BLI_vector_set.hh"
 
 #  include "PIL_time.h"
 
 #  include "BLI_mesh_boolean.hh"
-
-#  ifdef WITH_TBB
-#    include "tbb/spin_mutex.h"
-#  endif
 
 // #  define PERFDEBUG
 
@@ -149,9 +144,11 @@ class TriMeshTopology : NonCopyable {
    * Else return NO_INDEX. */
   int other_tri_if_manifold(Edge e, int t) const
   {
-    auto p = edge_tri_.lookup_ptr(e);
-    if (p != nullptr && (*p)->size() == 2) {
-      return ((**p)[0] == t) ? (**p)[1] : (**p)[0];
+    if (edge_tri_.contains(e)) {
+      auto *p = edge_tri_.lookup(e);
+      if (p->size() == 2) {
+        return ((*p)[0] == t) ? (*p)[1] : (*p)[0];
+      }
     }
     return NO_INDEX;
   }
@@ -1406,9 +1403,9 @@ static int find_cell_for_point_near_edge(mpq3 p,
   int dummy_index = p_sorted_dummy - sorted_tris.begin();
   int prev_tri = (dummy_index == 0) ? sorted_tris[sorted_tris.size() - 1] :
                                       sorted_tris[dummy_index - 1];
+  int next_tri = (dummy_index == sorted_tris.size() - 1) ? sorted_tris[0] :
+                                                           sorted_tris[dummy_index + 1];
   if (dbg_level > 0) {
-    int next_tri = (dummy_index == sorted_tris.size() - 1) ? sorted_tris[0] :
-                                                             sorted_tris[dummy_index + 1];
     std::cout << "prev tri to dummy = " << prev_tri << ";  next tri to dummy = " << next_tri
               << "\n";
   }
@@ -1693,24 +1690,9 @@ static int find_containing_cell(const Vert *v,
  * If the closest point is on an edge, return 0, 1, or 2
  * for edges ab, bc, or ca in *r_edge; else -1.
  * (Adapted from #closest_on_tri_to_point_v3()).
- * The arguments ab, ac, ..., r are used as temporaries
- * in this routine. Passing them in from the caller can
- * avoid many allocs and frees of temporary mpq3 values
- * and the mpq_class values within them.
  */
-static mpq_class closest_on_tri_to_point(const mpq3 &p,
-                                         const mpq3 &a,
-                                         const mpq3 &b,
-                                         const mpq3 &c,
-                                         mpq3 &ab,
-                                         mpq3 &ac,
-                                         mpq3 &ap,
-                                         mpq3 &bp,
-                                         mpq3 &cp,
-                                         mpq3 &m,
-                                         mpq3 &r,
-                                         int *r_edge,
-                                         int *r_vert)
+static mpq_class closest_on_tri_to_point(
+    const mpq3 &p, const mpq3 &a, const mpq3 &b, const mpq3 &c, int *r_edge, int *r_vert)
 {
   constexpr int dbg_level = 0;
   if (dbg_level > 0) {
@@ -1718,15 +1700,11 @@ static mpq_class closest_on_tri_to_point(const mpq3 &p,
     std::cout << " a = " << a << ", b = " << b << ", c = " << c << "\n";
   }
   /* Check if p in vertex region outside a. */
-  ab = b;
-  ab -= a;
-  ac = c;
-  ac -= a;
-  ap = p;
-  ap -= a;
-
-  mpq_class d1 = mpq3::dot_with_buffer(ab, ap, m);
-  mpq_class d2 = mpq3::dot_with_buffer(ac, ap, m);
+  mpq3 ab = b - a;
+  mpq3 ac = c - a;
+  mpq3 ap = p - a;
+  mpq_class d1 = mpq3::dot(ab, ap);
+  mpq_class d2 = mpq3::dot(ac, ap);
   if (d1 <= 0 && d2 <= 0) {
     /* Barycentric coordinates (1,0,0). */
     *r_edge = -1;
@@ -1734,13 +1712,12 @@ static mpq_class closest_on_tri_to_point(const mpq3 &p,
     if (dbg_level > 0) {
       std::cout << "  answer = a\n";
     }
-    return mpq3::distance_squared_with_buffer(p, a, m);
+    return mpq3::distance_squared(p, a);
   }
   /* Check if p in vertex region outside b. */
-  bp = p;
-  bp -= b;
-  mpq_class d3 = mpq3::dot_with_buffer(ab, bp, m);
-  mpq_class d4 = mpq3::dot_with_buffer(ac, bp, m);
+  mpq3 bp = p - b;
+  mpq_class d3 = mpq3::dot(ab, bp);
+  mpq_class d4 = mpq3::dot(ac, bp);
   if (d3 >= 0 && d4 <= d3) {
     /* Barycentric coordinates (0,1,0). */
     *r_edge = -1;
@@ -1748,28 +1725,25 @@ static mpq_class closest_on_tri_to_point(const mpq3 &p,
     if (dbg_level > 0) {
       std::cout << "  answer = b\n";
     }
-    return mpq3::distance_squared_with_buffer(p, b, m);
+    return mpq3::distance_squared(p, b);
   }
   /* Check if p in region of ab. */
   mpq_class vc = d1 * d4 - d3 * d2;
   if (vc <= 0 && d1 >= 0 && d3 <= 0) {
     mpq_class v = d1 / (d1 - d3);
     /* Barycentric coordinates (1-v,v,0). */
-    r = ab;
-    r *= v;
-    r += a;
+    mpq3 r = a + v * ab;
     *r_vert = -1;
     *r_edge = 0;
     if (dbg_level > 0) {
       std::cout << "  answer = on ab at " << r << "\n";
     }
-    return mpq3::distance_squared_with_buffer(p, r, m);
+    return mpq3::distance_squared(p, r);
   }
   /* Check if p in vertex region outside c. */
-  cp = p;
-  cp -= c;
-  mpq_class d5 = mpq3::dot_with_buffer(ab, cp, m);
-  mpq_class d6 = mpq3::dot_with_buffer(ac, cp, m);
+  mpq3 cp = p - c;
+  mpq_class d5 = mpq3::dot(ab, cp);
+  mpq_class d6 = mpq3::dot(ac, cp);
   if (d6 >= 0 && d5 <= d6) {
     /* Barycentric coordinates (0,0,1). */
     *r_edge = -1;
@@ -1777,67 +1751,49 @@ static mpq_class closest_on_tri_to_point(const mpq3 &p,
     if (dbg_level > 0) {
       std::cout << "  answer = c\n";
     }
-    return mpq3::distance_squared_with_buffer(p, c, m);
+    return mpq3::distance_squared(p, c);
   }
   /* Check if p in edge region of ac. */
   mpq_class vb = d5 * d2 - d1 * d6;
   if (vb <= 0 && d2 >= 0 && d6 <= 0) {
     mpq_class w = d2 / (d2 - d6);
     /* Barycentric coordinates (1-w,0,w). */
-    r = ac;
-    r *= w;
-    r += a;
+    mpq3 r = a + w * ac;
     *r_vert = -1;
     *r_edge = 2;
     if (dbg_level > 0) {
       std::cout << "  answer = on ac at " << r << "\n";
     }
-    return mpq3::distance_squared_with_buffer(p, r, m);
+    return mpq3::distance_squared(p, r);
   }
   /* Check if p in edge region of bc. */
   mpq_class va = d3 * d6 - d5 * d4;
   if (va <= 0 && (d4 - d3) >= 0 && (d5 - d6) >= 0) {
     mpq_class w = (d4 - d3) / ((d4 - d3) + (d5 - d6));
     /* Barycentric coordinates (0,1-w,w). */
-    r = c;
-    r -= b;
-    r *= w;
-    r += b;
+    mpq3 r = c - b;
+    r = w * r;
+    r = r + b;
     *r_vert = -1;
     *r_edge = 1;
     if (dbg_level > 0) {
       std::cout << "  answer = on bc at " << r << "\n";
     }
-    return mpq3::distance_squared_with_buffer(p, r, m);
+    return mpq3::distance_squared(p, r);
   }
   /* p inside face region. Compute barycentric coordinates (u,v,w). */
   mpq_class denom = 1 / (va + vb + vc);
   mpq_class v = vb * denom;
   mpq_class w = vc * denom;
-  ac *= w;
-  r = ab;
-  r *= v;
-  r += a;
-  r += ac;
+  ac = w * ac;
+  mpq3 r = a + v * ab;
+  r = r + ac;
   *r_vert = -1;
   *r_edge = -1;
   if (dbg_level > 0) {
     std::cout << "  answer = inside at " << r << "\n";
   }
-  return mpq3::distance_squared_with_buffer(p, r, m);
-}
-
-static float closest_on_tri_to_point_float_dist_squared(const float3 &p,
-                                                        const double3 &a,
-                                                        const double3 &b,
-                                                        const double3 &c)
-{
-  float3 fa, fb, fc, closest;
-  copy_v3fl_v3db(fa, a);
-  copy_v3fl_v3db(fb, b);
-  copy_v3fl_v3db(fc, c);
-  closest_on_tri_to_point_v3(closest, p, fa, fb, fc);
-  return len_squared_v3v3(p, closest);
+  return mpq3::distance_squared(p, r);
 }
 
 struct ComponentContainer {
@@ -1863,7 +1819,6 @@ static Vector<ComponentContainer> find_component_containers(int comp,
                                                             const IMesh &tm,
                                                             const PatchesInfo &pinfo,
                                                             const TriMeshTopology &tmtopo,
-                                                            Array<BoundingBox> &comp_bb,
                                                             IMeshArena *arena)
 {
   constexpr int dbg_level = 0;
@@ -1877,11 +1832,6 @@ static Vector<ComponentContainer> find_component_containers(int comp,
   if (dbg_level > 0) {
     std::cout << "test vertex in comp: " << test_v << "\n";
   }
-  const double3 &test_v_d = test_v->co;
-  float3 test_v_f(test_v_d[0], test_v_d[1], test_v_d[2]);
-
-  mpq3 buf[7];
-
   for (int comp_other : components.index_range()) {
     if (comp == comp_other) {
       continue;
@@ -1889,17 +1839,10 @@ static Vector<ComponentContainer> find_component_containers(int comp,
     if (dbg_level > 0) {
       std::cout << "comp_other = " << comp_other << "\n";
     }
-    if (!bbs_might_intersect(comp_bb[comp], comp_bb[comp_other])) {
-      if (dbg_level > 0) {
-        std::cout << "bounding boxes don't overlap\n";
-      }
-      continue;
-    }
     int nearest_tri = NO_INDEX;
     int nearest_tri_close_vert = -1;
     int nearest_tri_close_edge = -1;
     mpq_class nearest_tri_dist_squared;
-    float nearest_tri_dist_squared_float = FLT_MAX;
     for (int p : components[comp_other]) {
       const Patch &patch = pinfo.patch(p);
       for (int t : patch.tris()) {
@@ -1909,23 +1852,10 @@ static Vector<ComponentContainer> find_component_containers(int comp,
         }
         int close_vert;
         int close_edge;
-        /* Try a cheap float test first. */
-        float d2_f = closest_on_tri_to_point_float_dist_squared(
-            test_v_f, tri[0]->co, tri[1]->co, tri[2]->co);
-        if (d2_f - FLT_EPSILON > nearest_tri_dist_squared_float) {
-          continue;
-        }
         mpq_class d2 = closest_on_tri_to_point(test_v->co_exact,
                                                tri[0]->co_exact,
                                                tri[1]->co_exact,
                                                tri[2]->co_exact,
-                                               buf[0],
-                                               buf[1],
-                                               buf[2],
-                                               buf[3],
-                                               buf[4],
-                                               buf[5],
-                                               buf[6],
                                                &close_edge,
                                                &close_vert);
         if (dbg_level > 1) {
@@ -1937,7 +1867,6 @@ static Vector<ComponentContainer> find_component_containers(int comp,
           nearest_tri_close_edge = close_edge;
           nearest_tri_close_vert = close_vert;
           nearest_tri_dist_squared = d2;
-          nearest_tri_dist_squared_float = d2_f;
         }
       }
     }
@@ -1966,51 +1895,6 @@ static Vector<ComponentContainer> find_component_containers(int comp,
     }
   }
   return ans;
-}
-
-/**
- * Populate the per-component bounding boxes, expanding them
- * by an appropriate epsilon so that we conservatively will say
- * that components could intersect if the BBs overlap.
- */
-static void populate_comp_bbs(const Vector<Vector<int>> &components,
-                              const PatchesInfo &pinfo,
-                              const IMesh &im,
-                              Array<BoundingBox> &comp_bb)
-{
-  const int comp_grainsize = 16;
-  /* To get a good expansion epsilon, we need to find the maximum
-   * absolute value of any coordinate. Do it first per component,
-   * then get the overall max. */
-  Array<double> max_abs(components.size(), 0.0);
-  threading::parallel_for(components.index_range(), comp_grainsize, [&](IndexRange comp_range) {
-    for (int c : comp_range) {
-      BoundingBox &bb = comp_bb[c];
-      double &maxa = max_abs[c];
-      for (int p : components[c]) {
-        const Patch &patch = pinfo.patch(p);
-        for (int t : patch.tris()) {
-          const Face &tri = *im.face(t);
-          for (const Vert *v : tri) {
-            bb.combine(v->co);
-            for (int i = 0; i < 3; ++i) {
-              maxa = max_dd(maxa, fabs(v->co[i]));
-            }
-          }
-        }
-      }
-    }
-  });
-  double all_max_abs = 0.0;
-  for (int c : components.index_range()) {
-    all_max_abs = max_dd(all_max_abs, max_abs[c]);
-  }
-  constexpr float pad_factor = 10.0f;
-  float pad = all_max_abs == 0.0 ? FLT_EPSILON : 2 * FLT_EPSILON * all_max_abs;
-  pad *= pad_factor;
-  for (int c : components.index_range()) {
-    comp_bb[c].expand(pad);
-  }
 }
 
 /**
@@ -2055,23 +1939,19 @@ static void finish_patch_cell_graph(const IMesh &tm,
   }
   int tot_components = components.size();
   Array<Vector<ComponentContainer>> comp_cont(tot_components);
-  if (tot_components > 1) {
-    Array<BoundingBox> comp_bb(tot_components);
-    populate_comp_bbs(components, pinfo, tm, comp_bb);
-    for (int comp : components.index_range()) {
-      comp_cont[comp] = find_component_containers(
-          comp, components, ambient_cell, tm, pinfo, tmtopo, comp_bb, arena);
-    }
-    if (dbg_level > 0) {
-      std::cout << "component containers:\n";
-      for (int comp : comp_cont.index_range()) {
-        std::cout << comp << ": ";
-        for (const ComponentContainer &cc : comp_cont[comp]) {
-          std::cout << "[containing_comp=" << cc.containing_component
-                    << ", nearest_cell=" << cc.nearest_cell << ", d2=" << cc.dist_to_cell << "] ";
-        }
-        std::cout << "\n";
+  for (int comp : components.index_range()) {
+    comp_cont[comp] = find_component_containers(
+        comp, components, ambient_cell, tm, pinfo, tmtopo, arena);
+  }
+  if (dbg_level > 0) {
+    std::cout << "component containers:\n";
+    for (int comp : comp_cont.index_range()) {
+      std::cout << comp << ": ";
+      for (const ComponentContainer &cc : comp_cont[comp]) {
+        std::cout << "[containing_comp=" << cc.containing_component
+                  << ", nearest_cell=" << cc.nearest_cell << ", d2=" << cc.dist_to_cell << "] ";
       }
+      std::cout << "\n";
     }
   }
   if (dbg_level > 1) {
@@ -2687,58 +2567,47 @@ static IMesh raycast_tris_boolean(const IMesh &tm,
   BVHTree *tree = raycast_tree(tm);
   Vector<Face *> out_faces;
   out_faces.reserve(tm.face_size());
-#  ifdef WITH_TBB
-  tbb::spin_mutex mtx;
-#  endif
-  const int grainsize = 256;
-  threading::parallel_for(IndexRange(tm.face_size()), grainsize, [&](IndexRange range) {
-    Array<float> in_shape(nshapes, 0);
-    Array<int> winding(nshapes, 0);
-    for (int t : range) {
-      Face &tri = *tm.face(t);
-      int shape = shape_fn(tri.orig);
+  Array<float> in_shape(nshapes, 0);
+  Array<int> winding(nshapes, 0);
+  for (int t : tm.face_index_range()) {
+    Face &tri = *tm.face(t);
+    int shape = shape_fn(tri.orig);
+    if (dbg_level > 0) {
+      std::cout << "process triangle " << t << " = " << &tri << "\n";
+      std::cout << "shape = " << shape << "\n";
+    }
+    test_tri_inside_shapes(tm, shape_fn, nshapes, t, tree, in_shape);
+    for (int other_shape = 0; other_shape < nshapes; ++other_shape) {
+      if (other_shape == shape) {
+        continue;
+      }
+      /* The in_shape array has a confidence value for "insideness".
+       * For most operations, even a hint of being inside
+       * gives good results, but when shape is a cutter in a Difference
+       * operation, we want to be pretty sure that the point is inside other_shape.
+       * E.g., T75827.
+       * Also, when the operation is intersection, we also want high confidence.
+       */
+      bool need_high_confidence = (op == BoolOpType::Difference && shape != 0) ||
+                                  op == BoolOpType::Intersect;
+      bool inside = in_shape[other_shape] >= (need_high_confidence ? 0.5f : 0.1f);
       if (dbg_level > 0) {
-        std::cout << "process triangle " << t << " = " << &tri << "\n";
-        std::cout << "shape = " << shape << "\n";
+        std::cout << "test point is " << (inside ? "inside" : "outside") << " other_shape "
+                  << other_shape << " val = " << in_shape[other_shape] << "\n";
       }
-      test_tri_inside_shapes(tm, shape_fn, nshapes, t, tree, in_shape);
-      for (int other_shape = 0; other_shape < nshapes; ++other_shape) {
-        if (other_shape == shape) {
-          continue;
-        }
-        /* The in_shape array has a confidence value for "insideness".
-         * For most operations, even a hint of being inside
-         * gives good results, but when shape is a cutter in a Difference
-         * operation, we want to be pretty sure that the point is inside other_shape.
-         * E.g., T75827.
-         * Also, when the operation is intersection, we also want high confidence.
-         */
-        bool need_high_confidence = (op == BoolOpType::Difference && shape != 0) ||
-                                    op == BoolOpType::Intersect;
-        bool inside = in_shape[other_shape] >= (need_high_confidence ? 0.5f : 0.1f);
-        if (dbg_level > 0) {
-          std::cout << "test point is " << (inside ? "inside" : "outside") << " other_shape "
-                    << other_shape << " val = " << in_shape[other_shape] << "\n";
-        }
-        winding[other_shape] = inside;
+      winding[other_shape] = inside;
+    }
+    bool do_flip;
+    bool do_remove = raycast_test_remove(op, winding, shape, &do_flip);
+    if (!do_remove) {
+      if (!do_flip) {
+        out_faces.append(&tri);
       }
-      bool do_flip;
-      bool do_remove = raycast_test_remove(op, winding, shape, &do_flip);
-      {
-#  ifdef WITH_TBB
-        tbb::spin_mutex::scoped_lock lock(mtx);
-#  endif
-        if (!do_remove) {
-          if (!do_flip) {
-            out_faces.append(&tri);
-          }
-          else {
-            raycast_add_flipped(out_faces, tri, arena);
-          }
-        }
+      else {
+        raycast_add_flipped(out_faces, tri, arena);
       }
     }
-  });
+  }
   BLI_bvhtree_free(tree);
   ans.set_faces(out_faces);
   return ans;
@@ -3390,13 +3259,9 @@ static IMesh polymesh_from_trimesh_with_dissolve(const IMesh &tm_out,
     std::cout << "\nPOLYMESH_FROM_TRIMESH_WITH_DISSOLVE\n";
   }
   /* For now: need plane normals for all triangles. */
-  const int grainsize = 1024;
-  threading::parallel_for(tm_out.face_index_range(), grainsize, [&](IndexRange range) {
-    for (int i : range) {
-      Face *tri = tm_out.face(i);
-      tri->populate_plane(false);
-    }
-  });
+  for (Face *tri : tm_out.faces()) {
+    tri->populate_plane(false);
+  }
   /* Gather all output triangles that are part of each input face.
    * face_output_tris[f] will be indices of triangles in tm_out
    * that have f as their original face. */

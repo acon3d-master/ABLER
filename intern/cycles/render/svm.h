@@ -44,13 +44,10 @@ class SVMShaderManager : public ShaderManager {
   SVMShaderManager();
   ~SVMShaderManager();
 
-  void reset(Scene *scene) override;
+  void reset(Scene *scene);
 
-  void device_update_specific(Device *device,
-                              DeviceScene *dscene,
-                              Scene *scene,
-                              Progress &progress) override;
-  void device_free(Device *device, DeviceScene *dscene, Scene *scene) override;
+  void device_update(Device *device, DeviceScene *dscene, Scene *scene, Progress &progress);
+  void device_free(Device *device, DeviceScene *dscene, Scene *scene);
 
  protected:
   void device_update_shader(Scene *scene,

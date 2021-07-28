@@ -358,7 +358,6 @@ static const struct bUnitCollection *bUnitSystems[][B_UNIT_TYPE_TOT] = {
      NULL,
      &buNaturalRotCollection,
      &buNaturalTimeCollection,
-     &buNaturalTimeCollection,
      NULL,
      NULL,
      NULL,
@@ -371,7 +370,6 @@ static const struct bUnitCollection *bUnitSystems[][B_UNIT_TYPE_TOT] = {
      &buMetricVolCollection,
      &buMetricMassCollection,
      &buNaturalRotCollection,
-     &buNaturalTimeCollection,
      &buNaturalTimeCollection,
      &buMetricVelCollection,
      &buMetricAclCollection,
@@ -386,13 +384,12 @@ static const struct bUnitCollection *bUnitSystems[][B_UNIT_TYPE_TOT] = {
      &buImperialMassCollection,
      &buNaturalRotCollection,
      &buNaturalTimeCollection,
-     &buNaturalTimeCollection,
      &buImperialVelCollection,
      &buImperialAclCollection,
      &buCameraLenCollection,
      &buPowerCollection,
      &buImperialTempCollection},
-    {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
+    {NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL},
 };
 
 static const bUnitCollection *unit_get_system(int system, int type)
@@ -946,7 +943,7 @@ static int unit_scale_str(char *str,
 
     /* Add the addition sign, the bias, and the close parenthesis after the value. */
     int value_end_ofs = find_end_of_value_chars(str, len_max, prev_op_ofs + 2);
-    int len_bias_num = BLI_snprintf_rlen(str_tmp, TEMP_STR_SIZE, "+%.9g)", unit->bias);
+    int len_bias_num = BLI_snprintf(str_tmp, TEMP_STR_SIZE, "+%.9g)", unit->bias);
     if (value_end_ofs + len_bias_num < len_max) {
       memmove(str + value_end_ofs + len_bias_num, str + value_end_ofs, len - value_end_ofs + 1);
       memcpy(str + value_end_ofs, str_tmp, len_bias_num);
@@ -960,8 +957,7 @@ static int unit_scale_str(char *str,
   int len_move = (len - (found_ofs + len_name)) + 1; /* 1+ to copy the string terminator. */
 
   /* "#" Removed later */
-  int len_num = BLI_snprintf_rlen(
-      str_tmp, TEMP_STR_SIZE, "*%.9g" SEP_STR, unit->scalar / scale_pref);
+  int len_num = BLI_snprintf(str_tmp, TEMP_STR_SIZE, "*%.9g" SEP_STR, unit->scalar / scale_pref);
 
   if (len_num > len_max) {
     len_num = len_max;

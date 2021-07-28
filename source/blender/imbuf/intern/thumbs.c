@@ -112,13 +112,13 @@ static bool get_thumb_dir(char *dir, ThumbSize size)
 #endif
   switch (size) {
     case THB_NORMAL:
-      subdir = SEP_STR THUMBNAILS SEP_STR "normal" SEP_STR;
+      subdir = "/" THUMBNAILS "/normal/";
       break;
     case THB_LARGE:
-      subdir = SEP_STR THUMBNAILS SEP_STR "large" SEP_STR;
+      subdir = "/" THUMBNAILS "/large/";
       break;
     case THB_FAIL:
-      subdir = SEP_STR THUMBNAILS SEP_STR "fail" SEP_STR "blender" SEP_STR;
+      subdir = "/" THUMBNAILS "/fail/blender/";
       break;
     default:
       return 0; /* unknown size */

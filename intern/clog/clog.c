@@ -322,9 +322,7 @@ static bool clg_ctx_filter_check(CLogContext *ctx, const char *identifier)
       if (flt->match[0] == '*' && flt->match[len - 1] == '*') {
         char *match = MEM_callocN(sizeof(char) * len - 1, __func__);
         memcpy(match, flt->match + 1, len - 2);
-        const bool success = (strstr(identifier, match) != NULL);
-        MEM_freeN(match);
-        if (success) {
+        if (strstr(identifier, match) != NULL) {
           return (bool)i;
         }
       }

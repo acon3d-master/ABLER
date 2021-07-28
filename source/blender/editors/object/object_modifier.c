@@ -63,7 +63,6 @@
 #include "BKE_lattice.h"
 #include "BKE_lib_id.h"
 #include "BKE_main.h"
-#include "BKE_material.h"
 #include "BKE_mesh.h"
 #include "BKE_mesh_mapping.h"
 #include "BKE_mesh_runtime.h"
@@ -211,7 +210,7 @@ ModifierData *ED_object_modifier_add(
     /* special cases */
     if (type == eModifierType_Softbody) {
       if (!ob->soft) {
-        ob->soft = sbNew();
+        ob->soft = sbNew(scene);
         ob->softflag |= OB_SB_GOAL | OB_SB_EDGES;
       }
     }
@@ -773,8 +772,6 @@ static bool modifier_apply_obdata(
         return false;
       }
 
-      Main *bmain = DEG_get_bmain(depsgraph);
-      BKE_object_material_from_eval_data(bmain, ob, &mesh_applied->id);
       BKE_mesh_nomain_to_mesh(mesh_applied, me, ob, &CD_MASK_MESH, true);
 
       if (md_eval->type == eModifierType_Multires) {
@@ -1123,10 +1120,10 @@ bool edit_modifier_invoke_properties(bContext *C, wmOperator *op)
  * with a UI panel below the mouse cursor, unless a specific modifier is set with a context
  * pointer. Used in order to apply modifier operators on hover over their panels.
  */
-static bool edit_modifier_invoke_properties_with_hover(bContext *C,
-                                                       wmOperator *op,
-                                                       const wmEvent *event,
-                                                       int *r_retval)
+bool edit_modifier_invoke_properties_with_hover(bContext *C,
+                                                wmOperator *op,
+                                                const wmEvent *event,
+                                                int *r_retval)
 {
   if (RNA_struct_property_is_set(op->ptr, "modifier")) {
     return true;

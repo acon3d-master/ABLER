@@ -25,7 +25,6 @@ class ExecutionGroup;
 #include "COM_ExecutionGroup.h"
 #include "COM_Node.h"
 #include "COM_NodeOperation.h"
-#include "COM_SharedOperationBuffers.h"
 
 #include "DNA_color_types.h"
 #include "DNA_node_types.h"
@@ -116,20 +115,12 @@ namespace blender::compositor {
  * \see ExecutionGroup class representing the ExecutionGroup
  */
 
-/* Forward declarations. */
-class ExecutionModel;
-
 /**
  * \brief the ExecutionSystem contains the whole compositor tree.
  */
 class ExecutionSystem {
- private:
-  /**
-   * Contains operations active buffers data. Buffers will be disposed once reader operations are
-   * finished.
-   */
-  SharedOperationBuffers active_buffers_;
 
+ private:
   /**
    * \brief the context used during execution
    */
@@ -144,11 +135,6 @@ class ExecutionSystem {
    * \brief vector of groups
    */
   Vector<ExecutionGroup *> m_groups;
-
-  /**
-   * Active execution model implementation.
-   */
-  ExecutionModel *execution_model_;
 
  private:  // methods
  public:
@@ -192,14 +178,9 @@ class ExecutionSystem {
     return this->m_context;
   }
 
-  SharedOperationBuffers &get_active_buffers()
-  {
-    return active_buffers_;
-  }
-
-  void execute_work(const rcti &work_rect, std::function<void(const rcti &split_rect)> work_func);
-
  private:
+  void execute_groups(eCompositorPriority priority);
+
   /* allow the DebugInfo class to look at internals */
   friend class DebugInfo;
 

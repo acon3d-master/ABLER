@@ -112,13 +112,12 @@ set(SRC
   intern/curve_convert.c
   intern/curve_decimate.c
   intern/curve_deform.c
-  intern/curve_eval.cc
   intern/curveprofile.c
   intern/customdata.c
   intern/customdata_file.c
   intern/data_transfer.c
   intern/deform.c
-  intern/displist.cc
+  intern/displist.c
   intern/displist_tangent.c
   intern/dynamicpaint.c
   intern/editlattice.c
@@ -134,7 +133,6 @@ set(SRC
   intern/fmodifier.c
   intern/font.c
   intern/freestyle.c
-  intern/geometry_component_curve.cc
   intern/geometry_component_instances.cc
   intern/geometry_component_mesh.cc
   intern/geometry_component_pointcloud.cc
@@ -192,7 +190,6 @@ set(SRC
   intern/mesh_remap.c
   intern/mesh_remesh_voxel.c
   intern/mesh_runtime.c
-  intern/mesh_sample.cc
   intern/mesh_tangent.c
   intern/mesh_validate.c
   intern/mesh_validate.cc
@@ -243,10 +240,6 @@ set(SRC
   intern/softbody.c
   intern/sound.c
   intern/speaker.c
-  intern/spline_base.cc
-  intern/spline_bezier.cc
-  intern/spline_nurbs.cc
-  intern/spline_poly.cc
   intern/studiolight.c
   intern/subdiv.c
   intern/subdiv_ccg.c
@@ -328,7 +321,6 @@ set(SRC
   BKE_customdata_file.h
   BKE_data_transfer.h
   BKE_deform.h
-  BKE_spline.hh
   BKE_displist.h
   BKE_displist_tangent.h
   BKE_duplilist.h
@@ -387,7 +379,6 @@ set(SRC
   BKE_mesh_remap.h
   BKE_mesh_remesh_voxel.h
   BKE_mesh_runtime.h
-  BKE_mesh_sample.hh
   BKE_mesh_tangent.h
   BKE_mesh_types.h
   BKE_mesh_wrapper.h
@@ -406,6 +397,7 @@ set(SRC
   BKE_paint.h
   BKE_particle.h
   BKE_pbvh.h
+  BKE_persistent_data_handle.hh
   BKE_pointcache.h
   BKE_pointcloud.h
   BKE_preferences.h
@@ -769,7 +761,6 @@ if(WITH_GTESTS)
     intern/fcurve_test.cc
     intern/lattice_deform_test.cc
     intern/layer_test.cc
-    intern/lib_id_test.cc
     intern/tracking_test.cc
   )
   set(TEST_INC

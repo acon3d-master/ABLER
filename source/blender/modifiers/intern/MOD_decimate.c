@@ -300,6 +300,7 @@ ModifierTypeInfo modifierType_Decimate = {
     /* modifyMesh */ modifyMesh,
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
+    /* modifyVolume */ NULL,
 
     /* initData */ initData,
     /* requiredDataMask */ requiredDataMask,

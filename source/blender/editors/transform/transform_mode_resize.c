@@ -113,10 +113,10 @@ static void applyResize(TransInfo *t, const int UNUSED(mval[2]))
         pvec[j++] = t->values_final[i];
       }
     }
-    headerResize(t, pvec, str, sizeof(str));
+    headerResize(t, pvec, str);
   }
   else {
-    headerResize(t, t->values_final, str, sizeof(str));
+    headerResize(t, t->values_final, str);
   }
 
   copy_m3_m3(t->mat, mat); /* used in gizmo */
@@ -176,6 +176,7 @@ void initResize(TransInfo *t)
   t->num.val_flag[2] |= NUM_NULL_ONE;
   t->num.flag |= NUM_AFFECT_ALL;
   if ((t->flag & T_EDIT) == 0) {
+    t->flag |= T_NO_ZERO;
 #ifdef USE_NUM_NO_ZERO
     t->num.val_flag[0] |= NUM_NO_ZERO;
     t->num.val_flag[1] |= NUM_NO_ZERO;

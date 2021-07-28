@@ -117,7 +117,6 @@
 #include "ED_physics.h"
 #include "ED_render.h"
 #include "ED_screen.h"
-#include "ED_select_utils.h"
 #include "ED_transform.h"
 #include "ED_view3d.h"
 
@@ -456,53 +455,49 @@ void ED_object_add_mesh_props(wmOperatorType *ot)
 bool ED_object_add_generic_get_opts(bContext *C,
                                     wmOperator *op,
                                     const char view_align_axis,
-                                    float r_loc[3],
-                                    float r_rot[3],
-                                    float r_scale[3],
-                                    bool *r_enter_editmode,
-                                    ushort *r_local_view_bits,
-                                    bool *r_is_view_aligned)
+                                    float loc[3],
+                                    float rot[3],
+                                    float scale[3],
+                                    bool *enter_editmode,
+                                    ushort *local_view_bits,
+                                    bool *is_view_aligned)
 {
-  /* Edit Mode! (optional) */
-  {
-    bool _enter_editmode;
-    if (!r_enter_editmode) {
-      r_enter_editmode = &_enter_editmode;
-    }
-    /* Only to ensure the value is _always_ set.
-     * Typically the property will exist when the argument is non-NULL. */
-    *r_enter_editmode = false;
+  PropertyRNA *prop;
 
-    PropertyRNA *prop = RNA_struct_find_property(op->ptr, "enter_editmode");
-    if (prop != NULL) {
-      if (RNA_property_is_set(op->ptr, prop) && r_enter_editmode) {
-        *r_enter_editmode = RNA_property_boolean_get(op->ptr, prop);
-      }
-      else {
-        *r_enter_editmode = (U.flag & USER_ADD_EDITMODE) != 0;
-        RNA_property_boolean_set(op->ptr, prop, *r_enter_editmode);
-      }
+  /* Switch to Edit mode? optional prop */
+  if ((prop = RNA_struct_find_property(op->ptr, "enter_editmode"))) {
+    bool _enter_editmode;
+    if (!enter_editmode) {
+      enter_editmode = &_enter_editmode;
+    }
+
+    if (RNA_property_is_set(op->ptr, prop) && enter_editmode) {
+      *enter_editmode = RNA_property_boolean_get(op->ptr, prop);
+    }
+    else {
+      *enter_editmode = (U.flag & USER_ADD_EDITMODE) != 0;
+      RNA_property_boolean_set(op->ptr, prop, *enter_editmode);
     }
   }
 
-  if (r_local_view_bits) {
+  if (local_view_bits) {
     View3D *v3d = CTX_wm_view3d(C);
-    *r_local_view_bits = (v3d && v3d->localvd) ? v3d->local_view_uuid : 0;
+    *local_view_bits = (v3d && v3d->localvd) ? v3d->local_view_uuid : 0;
   }
 
   /* Location! */
   {
     float _loc[3];
-    if (!r_loc) {
-      r_loc = _loc;
+    if (!loc) {
+      loc = _loc;
     }
 
     if (RNA_struct_property_is_set(op->ptr, "location")) {
-      RNA_float_get_array(op->ptr, "location", r_loc);
+      RNA_float_get_array(op->ptr, "location", loc);
     }
     else {
-      ED_object_location_from_view(C, r_loc);
-      RNA_float_set_array(op->ptr, "location", r_loc);
+      ED_object_location_from_view(C, loc);
+      RNA_float_set_array(op->ptr, "location", loc);
     }
   }
 
@@ -510,33 +505,33 @@ bool ED_object_add_generic_get_opts(bContext *C,
   {
     bool _is_view_aligned;
     float _rot[3];
-    if (!r_is_view_aligned) {
-      r_is_view_aligned = &_is_view_aligned;
+    if (!is_view_aligned) {
+      is_view_aligned = &_is_view_aligned;
     }
-    if (!r_rot) {
-      r_rot = _rot;
+    if (!rot) {
+      rot = _rot;
     }
 
     if (RNA_struct_property_is_set(op->ptr, "rotation")) {
       /* If rotation is set, always use it. Alignment (and corresponding user preference)
        * can be ignored since this is in world space anyways.
        * To not confuse (e.g. on redo), don't set it to #ALIGN_WORLD in the op UI though. */
-      *r_is_view_aligned = false;
-      RNA_float_get_array(op->ptr, "rotation", r_rot);
+      *is_view_aligned = false;
+      RNA_float_get_array(op->ptr, "rotation", rot);
     }
     else {
       int alignment = ALIGN_WORLD;
-      PropertyRNA *prop = RNA_struct_find_property(op->ptr, "align");
+      prop = RNA_struct_find_property(op->ptr, "align");
 
       if (RNA_property_is_set(op->ptr, prop)) {
         /* If alignment is set, always use it. */
-        *r_is_view_aligned = alignment == ALIGN_VIEW;
+        *is_view_aligned = alignment == ALIGN_VIEW;
         alignment = RNA_property_enum_get(op->ptr, prop);
       }
       else {
         /* If alignment is not set, use User Preferences. */
-        *r_is_view_aligned = (U.flag & USER_ADD_VIEWALIGNED) != 0;
-        if (*r_is_view_aligned) {
+        *is_view_aligned = (U.flag & USER_ADD_VIEWALIGNED) != 0;
+        if (*is_view_aligned) {
           RNA_property_enum_set(op->ptr, prop, ALIGN_VIEW);
           alignment = ALIGN_VIEW;
         }
@@ -551,18 +546,18 @@ bool ED_object_add_generic_get_opts(bContext *C,
       }
       switch (alignment) {
         case ALIGN_WORLD:
-          RNA_float_get_array(op->ptr, "rotation", r_rot);
+          RNA_float_get_array(op->ptr, "rotation", rot);
           break;
         case ALIGN_VIEW:
-          ED_object_rotation_from_view(C, r_rot, view_align_axis);
-          RNA_float_set_array(op->ptr, "rotation", r_rot);
+          ED_object_rotation_from_view(C, rot, view_align_axis);
+          RNA_float_set_array(op->ptr, "rotation", rot);
           break;
         case ALIGN_CURSOR: {
           const Scene *scene = CTX_data_scene(C);
           float tmat[3][3];
           BKE_scene_cursor_rot_to_mat3(&scene->cursor, tmat);
-          mat3_normalized_to_eul(r_rot, tmat);
-          RNA_float_set_array(op->ptr, "rotation", r_rot);
+          mat3_normalized_to_eul(rot, tmat);
+          RNA_float_set_array(op->ptr, "rotation", rot);
           break;
         }
       }
@@ -572,21 +567,19 @@ bool ED_object_add_generic_get_opts(bContext *C,
   /* Scale! */
   {
     float _scale[3];
-    if (!r_scale) {
-      r_scale = _scale;
+    if (!scale) {
+      scale = _scale;
     }
 
     /* For now this is optional, we can make it always use. */
-    copy_v3_fl(r_scale, 1.0f);
-
-    PropertyRNA *prop = RNA_struct_find_property(op->ptr, "scale");
-    if (prop != NULL) {
+    copy_v3_fl(scale, 1.0f);
+    if ((prop = RNA_struct_find_property(op->ptr, "scale"))) {
       if (RNA_property_is_set(op->ptr, prop)) {
-        RNA_property_float_get_array(op->ptr, prop, r_scale);
+        RNA_property_float_get_array(op->ptr, prop, scale);
       }
       else {
-        copy_v3_fl(r_scale, 1.0f);
-        RNA_property_float_set_array(op->ptr, prop, r_scale);
+        copy_v3_fl(scale, 1.0f);
+        RNA_property_float_set_array(op->ptr, prop, scale);
       }
     }
   }
@@ -1318,7 +1311,6 @@ static int object_gpencil_add_exec(bContext *C, wmOperator *op)
 
   const int type = RNA_enum_get(op->ptr, "type");
   const bool use_in_front = RNA_boolean_get(op->ptr, "use_in_front");
-  const bool use_lights = RNA_boolean_get(op->ptr, "use_lights");
   const int stroke_depth_order = RNA_enum_get(op->ptr, "stroke_depth_order");
 
   ushort local_view_bits;
@@ -1330,14 +1322,12 @@ static int object_gpencil_add_exec(bContext *C, wmOperator *op)
   if (!ED_object_add_generic_get_opts(C, op, 'Y', loc, rot, NULL, NULL, &local_view_bits, NULL)) {
     return OPERATOR_CANCELLED;
   }
-  /* Add new object if not currently editing a GP object. */
-  if ((gpd == NULL) || (GPENCIL_ANY_MODE(gpd) == false)) {
+  /* add new object if not currently editing a GP object,
+   * or if "empty" was chosen (i.e. user wants a blank GP canvas)
+   */
+  if ((gpd == NULL) || (GPENCIL_ANY_MODE(gpd) == false) || (type == GP_EMPTY)) {
     const char *ob_name = NULL;
     switch (type) {
-      case GP_EMPTY: {
-        ob_name = "GPencil";
-        break;
-      }
       case GP_MONKEY: {
         ob_name = "Suzanne";
         break;
@@ -1368,13 +1358,6 @@ static int object_gpencil_add_exec(bContext *C, wmOperator *op)
 
   /* create relevant geometry */
   switch (type) {
-    case GP_EMPTY: {
-      float mat[4][4];
-
-      ED_object_new_primitive_matrix(C, ob, loc, rot, mat);
-      ED_gpencil_create_blank(C, ob, mat);
-      break;
-    }
     case GP_STROKE: {
       float radius = RNA_float_get(op->ptr, "radius");
       float mat[4][4];
@@ -1439,13 +1422,6 @@ static int object_gpencil_add_exec(bContext *C, wmOperator *op)
         id_us_plus(&md->target_material->id);
       }
 
-      if (use_lights) {
-        ob->dtx |= OB_USE_GPENCIL_LIGHTS;
-      }
-      else {
-        ob->dtx &= ~OB_USE_GPENCIL_LIGHTS;
-      }
-
       /* Stroke object is drawn in front of meshes by default. */
       if (use_in_front) {
         ob->dtx |= OB_DRAW_IN_FRONT;
@@ -1458,6 +1434,10 @@ static int object_gpencil_add_exec(bContext *C, wmOperator *op)
 
       break;
     }
+    case GP_EMPTY:
+      /* do nothing */
+      break;
+
     default:
       BKE_report(op->reports, RPT_WARNING, "Not implemented");
       break;
@@ -1488,7 +1468,6 @@ static void object_add_ui(bContext *UNUSED(C), wmOperator *op)
 
   int type = RNA_enum_get(op->ptr, "type");
   if (type == GP_LRT_COLLECTION || type == GP_LRT_OBJECT || type == GP_LRT_SCENE) {
-    uiItemR(layout, op->ptr, "use_lights", 0, NULL, ICON_NONE);
     uiItemR(layout, op->ptr, "use_in_front", 0, NULL, ICON_NONE);
     bool in_front = RNA_boolean_get(op->ptr, "use_in_front");
     uiLayout *row = uiLayoutRow(layout, false);
@@ -1532,11 +1511,9 @@ void OBJECT_OT_gpencil_add(wmOperatorType *ot)
   ot->prop = RNA_def_enum(ot->srna, "type", rna_enum_object_gpencil_type_items, 0, "Type", "");
   RNA_def_boolean(ot->srna,
                   "use_in_front",
-                  false,
+                  true,
                   "In Front",
                   "Show line art grease pencil in front of everything");
-  RNA_def_boolean(
-      ot->srna, "use_lights", false, "Use Lights", "Use lights for this grease pencil object");
   RNA_def_enum(
       ot->srna,
       "stroke_depth_order",
@@ -2154,7 +2131,8 @@ static void copy_object_set_idnew(bContext *C)
   FOREACH_MAIN_ID_END;
 #endif
 
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_tag_all(bmain, LIB_TAG_NEW, false);
+  BKE_main_id_clear_newpoins(bmain);
 }
 
 /** \} */
@@ -2475,7 +2453,7 @@ static void make_object_duplilist_real(bContext *C,
 
   free_object_duplilist(lb_duplis);
 
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_clear_newpoins(bmain);
 
   base->object->transflag &= ~OB_DUPLI;
   DEG_id_tag_update(&base->object->id, ID_RECALC_COPY_ON_WRITE);
@@ -2490,7 +2468,7 @@ static int object_duplicates_make_real_exec(bContext *C, wmOperator *op)
   const bool use_base_parent = RNA_boolean_get(op->ptr, "use_base_parent");
   const bool use_hierarchy = RNA_boolean_get(op->ptr, "use_hierarchy");
 
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_clear_newpoins(bmain);
 
   CTX_DATA_BEGIN (C, Base *, base, selected_editable_bases) {
     make_object_duplilist_real(C, depsgraph, scene, base, use_base_parent, use_hierarchy);
@@ -2702,7 +2680,6 @@ static int object_convert_exec(bContext *C, wmOperator *op)
 
   int a, mballConverted = 0;
   bool gpencilConverted = false;
-  bool gpencilCurveConverted = false;
 
   /* don't forget multiple users! */
 
@@ -2915,7 +2892,6 @@ static int object_convert_exec(bContext *C, wmOperator *op)
       me_eval = BKE_mesh_copy_for_eval(me_eval, false);
       /* Full (edge-angle based) draw calculation should ideally be performed. */
       BKE_mesh_edges_set_draw_render(me_eval);
-      BKE_object_material_from_eval_data(bmain, newob, &me_eval->id);
       BKE_mesh_nomain_to_mesh(me_eval, newob->data, newob, &CD_MASK_MESH, true);
       BKE_object_free_modifiers(newob, 0); /* after derivedmesh calls! */
     }
@@ -2987,16 +2963,6 @@ static int object_convert_exec(bContext *C, wmOperator *op)
         object_data_convert_curve_to_mesh(bmain, depsgraph, newob);
         /* meshes doesn't use displist */
         BKE_object_free_curve_cache(newob);
-      }
-      else if (target == OB_GPENCIL) {
-        ushort local_view_bits = (v3d && v3d->localvd) ? v3d->local_view_uuid : 0;
-        Object *ob_gpencil = ED_gpencil_add_object(C, newob->loc, local_view_bits);
-        copy_v3_v3(ob_gpencil->rot, newob->rot);
-        copy_v3_v3(ob_gpencil->scale, newob->scale);
-        BKE_gpencil_convert_curve(bmain, scene, ob_gpencil, newob, false, 1.0f, 0.0f);
-        gpencilConverted = true;
-        gpencilCurveConverted = true;
-        basen = NULL;
       }
     }
     else if (ELEM(ob->type, OB_CURVE, OB_SURF)) {
@@ -3179,17 +3145,6 @@ static int object_convert_exec(bContext *C, wmOperator *op)
       FOREACH_SCENE_OBJECT_END;
     }
   }
-  else {
-    /* Remove Text curves converted to Grease Pencil object to avoid duplicated curves. */
-    if (gpencilCurveConverted) {
-      FOREACH_SCENE_OBJECT_BEGIN (scene, ob_delete) {
-        if (ELEM(ob_delete->type, OB_CURVE) && (ob_delete->flag & OB_DONE)) {
-          ED_object_base_free_and_unlink(bmain, scene, ob_delete);
-        }
-      }
-      FOREACH_SCENE_OBJECT_END;
-    }
-  }
 
   // XXX  ED_object_editmode_enter(C, 0);
   // XXX  exit_editmode(C, EM_FREEDATA|); /* freedata, but no undo */
@@ -3213,21 +3168,24 @@ static int object_convert_exec(bContext *C, wmOperator *op)
   return OPERATOR_FINISHED;
 }
 
-static void object_convert_ui(bContext *UNUSED(C), wmOperator *op)
+static void object_convert_ui(bContext *C, wmOperator *op)
 {
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
+  PointerRNA ptr;
 
   uiLayoutSetPropSep(layout, true);
 
-  uiItemR(layout, op->ptr, "target", 0, NULL, ICON_NONE);
-  uiItemR(layout, op->ptr, "keep_original", 0, NULL, ICON_NONE);
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
+  uiItemR(layout, &ptr, "target", 0, NULL, ICON_NONE);
+  uiItemR(layout, &ptr, "keep_original", 0, NULL, ICON_NONE);
 
-  if (RNA_enum_get(op->ptr, "target") == OB_GPENCIL) {
-    uiItemR(layout, op->ptr, "thickness", 0, NULL, ICON_NONE);
-    uiItemR(layout, op->ptr, "angle", 0, NULL, ICON_NONE);
-    uiItemR(layout, op->ptr, "offset", 0, NULL, ICON_NONE);
-    uiItemR(layout, op->ptr, "seams", 0, NULL, ICON_NONE);
-    uiItemR(layout, op->ptr, "faces", 0, NULL, ICON_NONE);
+  if (RNA_enum_get(&ptr, "target") == OB_GPENCIL) {
+    uiItemR(layout, &ptr, "thickness", 0, NULL, ICON_NONE);
+    uiItemR(layout, &ptr, "angle", 0, NULL, ICON_NONE);
+    uiItemR(layout, &ptr, "offset", 0, NULL, ICON_NONE);
+    uiItemR(layout, &ptr, "seams", 0, NULL, ICON_NONE);
+    uiItemR(layout, &ptr, "faces", 0, NULL, ICON_NONE);
   }
 }
 
@@ -3375,7 +3333,7 @@ Base *ED_object_add_duplicate(
     DEG_id_tag_update_ex(bmain, (ID *)ob->data, ID_RECALC_EDITORS);
   }
 
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_clear_newpoins(bmain);
 
   return basen;
 }
@@ -3391,7 +3349,8 @@ static int duplicate_exec(bContext *C, wmOperator *op)
 
   /* We need to handle that here ourselves, because we may duplicate several objects, in which case
    * we also want to remap pointers between those... */
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_tag_all(bmain, LIB_TAG_NEW, false);
+  BKE_main_id_clear_newpoins(bmain);
 
   CTX_DATA_BEGIN (C, Base *, base, selected_bases) {
     Base *basen = object_add_duplicate_internal(
@@ -3468,19 +3427,6 @@ void OBJECT_OT_duplicate(wmOperatorType *ot)
  * Use for drag & drop.
  * \{ */
 
-static Base *object_add_ensure_in_view_layer(Main *bmain, ViewLayer *view_layer, Object *ob)
-{
-  Base *base = BKE_view_layer_base_find(view_layer, ob);
-
-  if (!base) {
-    LayerCollection *layer_collection = BKE_layer_collection_get_active(view_layer);
-    BKE_collection_object_add(bmain, layer_collection->collection, ob);
-    base = BKE_view_layer_base_find(view_layer, ob);
-  }
-
-  return base;
-}
-
 static int object_add_named_exec(bContext *C, wmOperator *op)
 {
   Main *bmain = CTX_data_main(C);
@@ -3488,8 +3434,7 @@ static int object_add_named_exec(bContext *C, wmOperator *op)
   ViewLayer *view_layer = CTX_data_view_layer(C);
   Base *basen;
   Object *ob;
-  const bool duplicate = RNA_boolean_get(op->ptr, "duplicate");
-  const bool linked = duplicate && RNA_boolean_get(op->ptr, "linked");
+  const bool linked = RNA_boolean_get(op->ptr, "linked");
   const eDupli_ID_Flags dupflag = (linked) ? 0 : (eDupli_ID_Flags)U.dupflag;
   char name[MAX_ID_NAME - 2];
 
@@ -3503,30 +3448,10 @@ static int object_add_named_exec(bContext *C, wmOperator *op)
   }
 
   /* prepare dupli */
-  if (duplicate) {
-    basen = object_add_duplicate_internal(
-        bmain,
-        scene,
-        view_layer,
-        ob,
-        dupflag,
-        /* Sub-process flag because the new-ID remapping (#BKE_libblock_relink_to_newid()) in this
-         * function will only work if the object is already linked in the view layer, which is not
-         * the case here. So we have to do the new-ID relinking ourselves
-         * (#copy_object_set_idnew()).
-         */
-        LIB_ID_DUPLICATE_IS_SUBPROCESS);
-  }
-  else {
-    /* basen is actually not a new base in this case. */
-    basen = object_add_ensure_in_view_layer(bmain, view_layer, ob);
-  }
+  basen = object_add_duplicate_internal(bmain, scene, view_layer, ob, dupflag, 0);
 
   if (basen == NULL) {
-    BKE_report(op->reports,
-               RPT_ERROR,
-               duplicate ? "Object could not be duplicated" :
-                           "Object could not be linked to the view layer");
+    BKE_report(op->reports, RPT_ERROR, "Object could not be duplicated");
     return OPERATOR_CANCELLED;
   }
 
@@ -3540,7 +3465,7 @@ static int object_add_named_exec(bContext *C, wmOperator *op)
 
   /* object_add_duplicate_internal() doesn't deselect other objects, unlike object_add_common() or
    * BKE_view_layer_base_deselect_all(). */
-  ED_object_base_deselect_all(view_layer, NULL, SEL_DESELECT);
+  ED_object_base_deselect_all(view_layer, NULL, BA_DESELECT);
   ED_object_base_select(basen, BA_SELECT);
   ED_object_base_activate(C, basen);
 
@@ -3573,24 +3498,11 @@ void OBJECT_OT_add_named(wmOperatorType *ot)
   /* flags */
   ot->flag = OPTYPE_REGISTER | OPTYPE_UNDO;
 
-  PropertyRNA *prop;
-
-  prop = RNA_def_boolean(
-      ot->srna,
-      "duplicate",
-      true,
-      "Duplicate",
-      "Create a duplicate of the object. If not set, only ensures the object is linked into the "
-      "active view layer, positions and selects/activates it (deselecting others)");
-  RNA_def_property_flag(prop, PROP_HIDDEN);
-
   RNA_def_boolean(ot->srna,
                   "linked",
-                  false,
+                  0,
                   "Linked",
-                  "Duplicate object but not object data, linking to the original data (ignored if "
-                  "'duplicate' is false)");
-
+                  "Duplicate object but not object data, linking to the original data");
   RNA_def_string(ot->srna, "name", NULL, MAX_ID_NAME - 2, "Name", "Object name to add");
 
   object_add_drop_xy_props(ot);

@@ -18,10 +18,6 @@
 
 #pragma once
 
-#ifdef WITH_CXX_GUARDEDALLOC
-#  include "MEM_guardedalloc.h"
-#endif
-
 #include "COM_defines.h"
 
 namespace blender::compositor {

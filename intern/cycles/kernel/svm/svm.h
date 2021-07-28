@@ -537,6 +537,7 @@ ccl_device_noinline void svm_eval_nodes(
         break;
       case NODE_OUTLINE:
         svm_node_outline(kg, sd, state, stack, node);
+        break;
 #  endif /* __SHADER_RAYTRACE__ */
 #endif   /* NODES_GROUP(NODE_GROUP_LEVEL_3) */
 

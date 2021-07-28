@@ -236,12 +236,7 @@ static void edbm_inset_cancel(bContext *C, wmOperator *op)
       Object *obedit = opdata->ob_store[ob_index].ob;
       BMEditMesh *em = BKE_editmesh_from_object(obedit);
       EDBM_redo_state_free(&opdata->ob_store[ob_index].mesh_backup, em, true);
-      EDBM_update(obedit->data,
-                  &(const struct EDBMUpdate_Params){
-                      .calc_looptri = false,
-                      .calc_normals = false,
-                      .is_destructive = true,
-                  });
+      EDBM_update_generic(obedit->data, false, true);
     }
   }
 
@@ -331,12 +326,7 @@ static bool edbm_inset_calc(wmOperator *op)
       continue;
     }
 
-    EDBM_update(obedit->data,
-                &(const struct EDBMUpdate_Params){
-                    .calc_looptri = true,
-                    .calc_normals = false,
-                    .is_destructive = true,
-                });
+    EDBM_update_generic(obedit->data, true, true);
     changed = true;
   }
   return changed;

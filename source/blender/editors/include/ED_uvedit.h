@@ -42,7 +42,6 @@ struct SpaceImage;
 struct ToolSettings;
 struct ViewLayer;
 struct bNode;
-struct bNodeTree;
 struct wmKeyConfig;
 
 /* uvedit_ops.c */

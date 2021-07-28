@@ -3331,6 +3331,7 @@ void OutlineNode::compile(OSLCompiler &compiler)
   compiler.add(this, "node_outline");
 }
 
+
 /* Volume Closure */
 
 VolumeNode::VolumeNode(const NodeType *node_type) : ShaderNode(node_type)
@@ -6146,7 +6147,6 @@ NODE_DEFINE(VectorMathNode)
   type_enum.insert("reflect", NODE_VECTOR_MATH_REFLECT);
   type_enum.insert("refract", NODE_VECTOR_MATH_REFRACT);
   type_enum.insert("faceforward", NODE_VECTOR_MATH_FACEFORWARD);
-  type_enum.insert("multiply_add", NODE_VECTOR_MATH_MULTIPLY_ADD);
 
   type_enum.insert("dot_product", NODE_VECTOR_MATH_DOT_PRODUCT);
 
@@ -6219,8 +6219,7 @@ void VectorMathNode::compile(SVMCompiler &compiler)
   int vector_stack_offset = compiler.stack_assign_if_linked(vector_out);
 
   /* 3 Vector Operators */
-  if (math_type == NODE_VECTOR_MATH_WRAP || math_type == NODE_VECTOR_MATH_FACEFORWARD ||
-      math_type == NODE_VECTOR_MATH_MULTIPLY_ADD) {
+  if (math_type == NODE_VECTOR_MATH_WRAP || math_type == NODE_VECTOR_MATH_FACEFORWARD) {
     ShaderInput *vector3_in = input("Vector3");
     int vector3_stack_offset = compiler.stack_assign(vector3_in);
     compiler.add_node(

@@ -578,8 +578,8 @@ static void knife_input_ray_segment(KnifeTool_OpData *kcd,
                                     float r_origin_ofs[3])
 {
   /* unproject to find view ray */
-  ED_view3d_unproject_v3(kcd->vc.region, mval[0], mval[1], 0.0f, r_origin);
-  ED_view3d_unproject_v3(kcd->vc.region, mval[0], mval[1], ofs, r_origin_ofs);
+  ED_view3d_unproject(kcd->vc.region, mval[0], mval[1], 0.0f, r_origin);
+  ED_view3d_unproject(kcd->vc.region, mval[0], mval[1], ofs, r_origin_ofs);
 
   /* transform into object space */
   mul_m4_v3(kcd->ob_imat, r_origin);
@@ -1745,7 +1745,7 @@ static bool point_is_visible(KnifeTool_OpData *kcd,
     float view[3], p_ofs[3];
 
     /* TODO: I think there's a simpler way to get the required raycast ray */
-    ED_view3d_unproject_v3(kcd->vc.region, s[0], s[1], 0.0f, view);
+    ED_view3d_unproject(kcd->vc.region, s[0], s[1], 0.0f, view);
 
     mul_m4_v3(kcd->ob_imat, view);
 
@@ -2140,7 +2140,9 @@ static void knife_find_line_hits(KnifeTool_OpData *kcd)
   BLI_smallhash_release(&faces);
   BLI_smallhash_release(&kfes);
   BLI_smallhash_release(&kfvs);
-  MEM_freeN(results);
+  if (results) {
+    MEM_freeN(results);
+  }
 }
 
 /** \} */
@@ -2805,12 +2807,8 @@ static void knifetool_finish_ex(KnifeTool_OpData *kcd)
   knife_make_cuts(kcd);
 
   EDBM_selectmode_flush(kcd->em);
-  EDBM_update(kcd->ob->data,
-              &(const struct EDBMUpdate_Params){
-                  .calc_looptri = true,
-                  .calc_normals = true,
-                  .is_destructive = true,
-              });
+  EDBM_mesh_normals_update(kcd->em);
+  EDBM_update_generic(kcd->ob->data, true, true);
 
   /* Re-tessellating makes this invalid, don't use again by accident. */
   knifetool_free_bmbvh(kcd);

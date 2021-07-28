@@ -234,7 +234,7 @@ static bool eyedropper_cryptomatte_sample_image_fl(const bNode *node,
 {
   bool success = false;
   Image *image = (Image *)node->id;
-  BLI_assert((image == NULL) || (GS(image->id.name) == ID_IM));
+  BLI_assert(GS(image->id.name) == ID_IM);
   ImageUser *iuser = &crypto->iuser;
 
   if (image && image->type == IMA_TYPE_MULTILAYER) {
@@ -316,7 +316,7 @@ static bool eyedropper_cryptomatte_sample_fl(
   if (node->custom1 == CMP_CRYPTOMATTE_SRC_RENDER) {
     return eyedropper_cryptomatte_sample_render_fl(node, prefix, fpos, r_col);
   }
-  if (node->custom1 == CMP_CRYPTOMATTE_SRC_IMAGE) {
+  else if (node->custom1 == CMP_CRYPTOMATTE_SRC_IMAGE) {
     return eyedropper_cryptomatte_sample_image_fl(node, crypto, prefix, fpos, r_col);
   }
   return false;

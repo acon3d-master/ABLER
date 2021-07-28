@@ -1027,15 +1027,11 @@ static Object *object_for_curve_to_mesh_create(Object *object)
    *
    * Note that there are extra fields in there like bevel and path, but those are not needed during
    * conversion, so they are not copied to save unnecessary allocations. */
-  if (temp_object->runtime.curve_cache == NULL) {
+  if (object->runtime.curve_cache != NULL) {
     temp_object->runtime.curve_cache = MEM_callocN(sizeof(CurveCache),
                                                    "CurveCache for curve types");
-  }
-
-  if (object->runtime.curve_cache != NULL) {
     BKE_displist_copy(&temp_object->runtime.curve_cache->disp, &object->runtime.curve_cache->disp);
   }
-
   /* Constructive modifiers will use mesh to store result. */
   if (object->runtime.data_eval != NULL) {
     BKE_id_copy_ex(
@@ -1061,24 +1057,16 @@ static Object *object_for_curve_to_mesh_create(Object *object)
   return temp_object;
 }
 
-/**
- * Populate `object->runtime.curve_cache` which is then used to create the mesh.
- */
 static void curve_to_mesh_eval_ensure(Object *object)
 {
-  Curve *curve = (Curve *)object->data;
-  Curve remapped_curve = *curve;
-  Object remapped_object = *object;
-  BKE_object_runtime_reset(&remapped_object);
-
-  remapped_object.data = &remapped_curve;
-
   if (object->runtime.curve_cache == NULL) {
     object->runtime.curve_cache = MEM_callocN(sizeof(CurveCache), "CurveCache for Curve");
   }
-
-  /* Temporarily share the curve-cache with the temporary object, owned by `object`. */
-  remapped_object.runtime.curve_cache = object->runtime.curve_cache;
+  Curve *curve = (Curve *)object->data;
+  Curve remapped_curve = *curve;
+  Object remapped_object = *object;
+  remapped_object.runtime.bb = NULL;
+  remapped_object.data = &remapped_curve;
 
   /* Clear all modifiers for the bevel object.
    *
@@ -1090,8 +1078,8 @@ static void curve_to_mesh_eval_ensure(Object *object)
   Object bevel_object = {{NULL}};
   if (remapped_curve.bevobj != NULL) {
     bevel_object = *remapped_curve.bevobj;
+    bevel_object.runtime.bb = NULL;
     BLI_listbase_clear(&bevel_object.modifiers);
-    BKE_object_runtime_reset(&bevel_object);
     remapped_curve.bevobj = &bevel_object;
   }
 
@@ -1099,8 +1087,8 @@ static void curve_to_mesh_eval_ensure(Object *object)
   Object taper_object = {{NULL}};
   if (remapped_curve.taperobj != NULL) {
     taper_object = *remapped_curve.taperobj;
+    taper_object.runtime.bb = NULL;
     BLI_listbase_clear(&taper_object.modifiers);
-    BKE_object_runtime_reset(&taper_object);
     remapped_curve.taperobj = &taper_object;
   }
 
@@ -1113,7 +1101,7 @@ static void curve_to_mesh_eval_ensure(Object *object)
    * Brecht says hold off with that. */
   Mesh *mesh_eval = NULL;
   BKE_displist_make_curveTypes_forRender(
-      NULL, NULL, &remapped_object, &remapped_object.runtime.curve_cache->disp, false, &mesh_eval);
+      NULL, NULL, &remapped_object, &remapped_object.runtime.curve_cache->disp, &mesh_eval, false);
 
   /* Note: this is to be consistent with `BKE_displist_make_curveTypes()`, however that is not a
    * real issue currently, code here is broken in more than one way, fix(es) will be done
@@ -1122,12 +1110,12 @@ static void curve_to_mesh_eval_ensure(Object *object)
     BKE_object_eval_assign_data(&remapped_object, &mesh_eval->id, true);
   }
 
-  /* Owned by `object` & needed by the caller to create the mesh. */
-  remapped_object.runtime.curve_cache = NULL;
+  MEM_SAFE_FREE(remapped_object.runtime.bb);
+  MEM_SAFE_FREE(taper_object.runtime.bb);
+  MEM_SAFE_FREE(bevel_object.runtime.bb);
 
-  BKE_object_runtime_free_data(&remapped_object);
-  BKE_object_runtime_free_data(&taper_object);
-  BKE_object_runtime_free_data(&taper_object);
+  BKE_object_free_curve_cache(&bevel_object);
+  BKE_object_free_curve_cache(&taper_object);
 }
 
 static Mesh *mesh_new_from_curve_type_object(Object *object)
@@ -1567,7 +1555,7 @@ void BKE_mesh_nomain_to_mesh(Mesh *mesh_src,
    * check whether it is still true with Mesh */
   Mesh tmp = *mesh_dst;
   int totvert, totedge /*, totface */ /* UNUSED */, totloop, totpoly;
-  bool did_shapekeys = false;
+  int did_shapekeys = 0;
   eCDAllocType alloctype = CD_DUPLICATE;
 
   if (take_ownership /* && dm->type == DM_TYPE_CDDM && dm->needsFree */) {
@@ -1622,7 +1610,7 @@ void BKE_mesh_nomain_to_mesh(Mesh *mesh_src,
     }
 
     shapekey_layers_to_keyblocks(mesh_src, mesh_dst, uid);
-    did_shapekeys = true;
+    did_shapekeys = 1;
   }
 
   /* copy texture space */
@@ -1651,18 +1639,13 @@ void BKE_mesh_nomain_to_mesh(Mesh *mesh_src,
                          totedge);
   }
   if (!CustomData_has_layer(&tmp.pdata, CD_MPOLY)) {
-    CustomData_add_layer(&tmp.ldata,
-                         CD_MLOOP,
-                         CD_ASSIGN,
-                         (alloctype == CD_ASSIGN) ? mesh_src->mloop :
-                                                    MEM_dupallocN(mesh_src->mloop),
-                         tmp.totloop);
-    CustomData_add_layer(&tmp.pdata,
-                         CD_MPOLY,
-                         CD_ASSIGN,
-                         (alloctype == CD_ASSIGN) ? mesh_src->mpoly :
-                                                    MEM_dupallocN(mesh_src->mpoly),
-                         tmp.totpoly);
+    /* TODO(Sybren): assignment to tmp.mxxx is probably not necessary due to the
+     * BKE_mesh_update_customdata_pointers() call below. */
+    tmp.mloop = (alloctype == CD_ASSIGN) ? mesh_src->mloop : MEM_dupallocN(mesh_src->mloop);
+    tmp.mpoly = (alloctype == CD_ASSIGN) ? mesh_src->mpoly : MEM_dupallocN(mesh_src->mpoly);
+
+    CustomData_add_layer(&tmp.ldata, CD_MLOOP, CD_ASSIGN, tmp.mloop, tmp.totloop);
+    CustomData_add_layer(&tmp.pdata, CD_MPOLY, CD_ASSIGN, tmp.mpoly, tmp.totpoly);
   }
 
   /* object had got displacement layer, should copy this layer to save sculpted data */
@@ -1680,6 +1663,9 @@ void BKE_mesh_nomain_to_mesh(Mesh *mesh_src,
 
   /* yes, must be before _and_ after tessellate */
   BKE_mesh_update_customdata_pointers(&tmp, false);
+
+  /* since 2.65 caller must do! */
+  // BKE_mesh_tessface_calc(&tmp);
 
   CustomData_free(&mesh_dst->vdata, mesh_dst->totvert);
   CustomData_free(&mesh_dst->edata, mesh_dst->totedge);

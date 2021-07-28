@@ -1195,32 +1195,33 @@ static int object_origin_set_exec(bContext *C, wmOperator *op)
       else if (ID_IS_LINKED(ob->data)) {
         tot_lib_error++;
       }
+      else if (ob->type == OB_MESH) {
+        if (obedit == NULL) {
+          Mesh *me = ob->data;
 
-      if (obedit == NULL && ob->type == OB_MESH) {
-        Mesh *me = ob->data;
+          if (centermode == ORIGIN_TO_CURSOR) {
+            /* done */
+          }
+          else if (centermode == ORIGIN_TO_CENTER_OF_MASS_SURFACE) {
+            BKE_mesh_center_of_surface(me, cent);
+          }
+          else if (centermode == ORIGIN_TO_CENTER_OF_MASS_VOLUME) {
+            BKE_mesh_center_of_volume(me, cent);
+          }
+          else if (around == V3D_AROUND_CENTER_BOUNDS) {
+            BKE_mesh_center_bounds(me, cent);
+          }
+          else { /* #V3D_AROUND_CENTER_MEDIAN. */
+            BKE_mesh_center_median(me, cent);
+          }
 
-        if (centermode == ORIGIN_TO_CURSOR) {
-          /* done */
-        }
-        else if (centermode == ORIGIN_TO_CENTER_OF_MASS_SURFACE) {
-          BKE_mesh_center_of_surface(me, cent);
-        }
-        else if (centermode == ORIGIN_TO_CENTER_OF_MASS_VOLUME) {
-          BKE_mesh_center_of_volume(me, cent);
-        }
-        else if (around == V3D_AROUND_CENTER_BOUNDS) {
-          BKE_mesh_center_bounds(me, cent);
-        }
-        else { /* #V3D_AROUND_CENTER_MEDIAN. */
-          BKE_mesh_center_median(me, cent);
-        }
+          negate_v3_v3(cent_neg, cent);
+          BKE_mesh_translate(me, cent_neg, 1);
 
-        negate_v3_v3(cent_neg, cent);
-        BKE_mesh_translate(me, cent_neg, 1);
-
-        tot_change++;
-        me->id.tag |= LIB_TAG_DOIT;
-        do_inverse_offset = true;
+          tot_change++;
+          me->id.tag |= LIB_TAG_DOIT;
+          do_inverse_offset = true;
+        }
       }
       else if (ELEM(ob->type, OB_CURVE, OB_SURF)) {
         Curve *cu = ob->data;
@@ -1654,7 +1655,7 @@ static void object_transform_axis_target_calc_depth_init(struct XFormAxisData *x
   if (center_tot) {
     mul_v3_fl(center, 1.0f / center_tot);
     float center_proj[3];
-    ED_view3d_project_v3(xfd->vc.region, center, center_proj);
+    ED_view3d_project(xfd->vc.region, center, center_proj);
     xfd->prev.depth = center_proj[2];
     xfd->prev.is_depth_valid = true;
   }
@@ -1890,7 +1891,7 @@ static int object_transform_axis_target_modal(bContext *C, wmOperator *op, const
       if ((depth > depths->depth_range[0]) && (depth < depths->depth_range[1])) {
         xfd->prev.depth = depth_fl;
         xfd->prev.is_depth_valid = true;
-        if (ED_view3d_depth_unproject_v3(region, event->mval, depth, location_world)) {
+        if (ED_view3d_depth_unproject(region, event->mval, depth, location_world)) {
           if (is_translate) {
 
             float normal[3];

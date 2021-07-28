@@ -149,16 +149,6 @@ GPUVertBuf *GPU_vertbuf_duplicate(GPUVertBuf *verts_)
   return wrap(unwrap(verts_)->duplicate());
 }
 
-const void *GPU_vertbuf_read(GPUVertBuf *verts)
-{
-  return unwrap(verts)->read();
-}
-
-void *GPU_vertbuf_unmap(const GPUVertBuf *verts, const void *mapped_data)
-{
-  return unwrap(verts)->unmap(mapped_data);
-}
-
 /** Same as discard but does not free. */
 void GPU_vertbuf_clear(GPUVertBuf *verts)
 {
@@ -332,11 +322,6 @@ uint GPU_vertbuf_get_memory_usage()
 void GPU_vertbuf_use(GPUVertBuf *verts)
 {
   unwrap(verts)->upload();
-}
-
-void GPU_vertbuf_bind_as_ssbo(struct GPUVertBuf *verts, int binding)
-{
-  unwrap(verts)->bind_as_ssbo(binding);
 }
 
 /* XXX this is just a wrapper for the use of the Hair refine workaround.

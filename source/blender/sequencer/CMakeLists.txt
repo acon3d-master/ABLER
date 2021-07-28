@@ -79,7 +79,6 @@ set(SRC
   intern/render.h
   intern/sequencer.c
   intern/sequencer.h
-  intern/sequence_lookup.c
   intern/sound.c
   intern/strip_add.c
   intern/strip_edit.c

@@ -184,17 +184,13 @@ static void deformVerts(ModifierData *md,
 
     surmd->cfra = cfra;
 
-    const bool has_poly = surmd->mesh->totpoly > 0;
-    const bool has_edge = surmd->mesh->totedge > 0;
-    if (has_poly || has_edge) {
-      surmd->bvhtree = MEM_callocN(sizeof(BVHTreeFromMesh), "BVHTreeFromMesh");
+    surmd->bvhtree = MEM_callocN(sizeof(BVHTreeFromMesh), "BVHTreeFromMesh");
 
-      if (has_poly) {
-        BKE_bvhtree_from_mesh_get(surmd->bvhtree, surmd->mesh, BVHTREE_FROM_LOOPTRI, 2);
-      }
-      else if (has_edge) {
-        BKE_bvhtree_from_mesh_get(surmd->bvhtree, surmd->mesh, BVHTREE_FROM_EDGES, 2);
-      }
+    if (surmd->mesh->totpoly) {
+      BKE_bvhtree_from_mesh_get(surmd->bvhtree, surmd->mesh, BVHTREE_FROM_LOOPTRI, 2);
+    }
+    else {
+      BKE_bvhtree_from_mesh_get(surmd->bvhtree, surmd->mesh, BVHTREE_FROM_EDGES, 2);
     }
   }
 }
@@ -245,6 +241,7 @@ ModifierTypeInfo modifierType_Surface = {
     /* modifyMesh */ NULL,
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
+    /* modifyVolume */ NULL,
 
     /* initData */ initData,
     /* requiredDataMask */ NULL,

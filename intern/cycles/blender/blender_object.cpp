@@ -109,22 +109,22 @@ void BlenderSync::sync_object_motion_init(BL::Object &b_parent, BL::Object &b_ob
   }
 
   Geometry *geom = object->get_geometry();
-  geom->set_use_motion_blur(false);
-  geom->set_motion_steps(0);
 
-  uint motion_steps;
+  int motion_steps = 0;
+  bool use_motion_blur = false;
 
   if (need_motion == Scene::MOTION_BLUR) {
     motion_steps = object_motion_steps(b_parent, b_ob, Object::MAX_MOTION_STEPS);
-    geom->set_motion_steps(motion_steps);
     if (motion_steps && object_use_deform_motion(b_parent, b_ob)) {
-      geom->set_use_motion_blur(true);
+      use_motion_blur = true;
     }
   }
   else {
     motion_steps = 3;
-    geom->set_motion_steps(motion_steps);
   }
+
+  geom->set_use_motion_blur(use_motion_blur);
+  geom->set_motion_steps(motion_steps);
 
   motion.resize(motion_steps, transform_empty());
 
@@ -564,12 +564,10 @@ void BlenderSync::sync_objects(BL::Depsgraph &b_depsgraph,
   if (!cancel && !motion) {
     sync_background_light(b_v3d, use_portal);
 
-    /* Handle removed data and modified pointers, as this may free memory, delete Nodes in the
-     * right order to ensure that dependent data is freed after their users. Objects should be
-     * freed before particle systems and geometries. */
+    /* handle removed data and modified pointers */
     light_map.post_sync();
-    object_map.post_sync();
     geometry_map.post_sync();
+    object_map.post_sync();
     particle_system_map.post_sync();
   }
 
