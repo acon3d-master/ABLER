@@ -1276,7 +1276,6 @@ void ED_gpencil_stroke_reproject(Depsgraph *depsgraph,
     }
     else {
       /* Geometry - Snap to surfaces of visible geometry */
-      float ray_start[3];
       float ray_normal[3];
       /* magic value for initial depth copied from the default
        * value of Python's Scene.ray_cast function
@@ -1285,17 +1284,14 @@ void ED_gpencil_stroke_reproject(Depsgraph *depsgraph,
       float location[3] = {0.0f, 0.0f, 0.0f};
       float normal[3] = {0.0f, 0.0f, 0.0f};
 
+      ED_view3d_win_to_vector(region, xy, &ray_normal[0]);
       BLI_assert(gps->flag & GP_STROKE_3DSPACE);
-      BLI_assert(gsc->area && gsc->area->spacetype == SPACE_VIEW3D);
-      const View3D *v3d = gsc->area->spacedata.first;
-      ED_view3d_win_to_ray_clipped(
-          depsgraph, region, v3d, xy, &ray_start[0], &ray_normal[0], true);
       if (ED_transform_snap_object_project_ray(sctx,
                                                depsgraph,
                                                &(const struct SnapObjectParams){
                                                    .snap_select = SNAP_ALL,
                                                },
-                                               &ray_start[0],
+                                               &pt2.x,
                                                &ray_normal[0],
                                                &depth,
                                                &location[0],

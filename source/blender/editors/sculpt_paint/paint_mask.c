@@ -1239,9 +1239,10 @@ static void sculpt_gesture_apply_trim(SculptGestureContext *sgcontext)
                      }));
 
   const int looptris_tot = poly_to_tri_count(bm->totface, bm->totloop);
+  int tottri;
   BMLoop *(*looptris)[3];
   looptris = MEM_malloc_arrayN(looptris_tot, sizeof(*looptris), __func__);
-  BM_mesh_calc_tessellation_beauty(bm, looptris);
+  BM_mesh_calc_tessellation_beauty(bm, looptris, &tottri);
 
   BMIter iter;
   int i;
@@ -1289,7 +1290,7 @@ static void sculpt_gesture_apply_trim(SculptGestureContext *sgcontext)
         break;
     }
     BM_mesh_boolean(
-        bm, looptris, looptris_tot, bm_face_isect_pair, NULL, 2, true, true, false, boolean_mode);
+        bm, looptris, tottri, bm_face_isect_pair, NULL, 2, true, true, false, boolean_mode);
   }
 
   MEM_freeN(looptris);

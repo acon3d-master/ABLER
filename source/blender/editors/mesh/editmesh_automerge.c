@@ -76,12 +76,7 @@ void EDBM_automerge(Object *obedit, bool update, const char hflag, const float d
   BMO_op_finish(bm, &weldop);
 
   if ((totvert_prev != bm->totvert) && update) {
-    EDBM_update(obedit->data,
-                &(const struct EDBMUpdate_Params){
-                    .calc_looptri = true,
-                    .calc_normals = false,
-                    .is_destructive = true,
-                });
+    EDBM_update_generic(obedit->data, true, true);
   }
 }
 
@@ -139,12 +134,7 @@ void EDBM_automerge_and_split(Object *obedit,
 #endif
 
   if (LIKELY(ok) && update) {
-    EDBM_update(obedit->data,
-                &(const struct EDBMUpdate_Params){
-                    .calc_looptri = true,
-                    .calc_normals = false,
-                    .is_destructive = true,
-                });
+    EDBM_update_generic(obedit->data, true, true);
   }
 }
 

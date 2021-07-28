@@ -67,9 +67,10 @@ static void register_blend_extension_failed(HKEY root, const bool background)
   if (!background) {
     MessageBox(0, "Could not register file extension.", "Blender error", MB_OK | MB_ICONERROR);
   }
+  TerminateProcess(GetCurrentProcess(), 1);
 }
 
-bool BLI_windows_register_blend_extension(const bool background)
+void BLI_windows_register_blend_extension(const bool background)
 {
   LONG lresult;
   HKEY hkey = 0;
@@ -93,9 +94,9 @@ bool BLI_windows_register_blend_extension(const bool background)
   GetModuleFileName(0, BlPath, MAX_PATH);
 
   /* Replace the actual app name with the wrapper. */
-  blender_app = strstr(BlPath, "blender.exe");
+  blender_app = strstr(BlPath, "blender-app.exe");
   if (blender_app != NULL) {
-    strcpy(blender_app, "blender-launcher.exe");
+    strcpy(blender_app, "blender.exe");
   }
 
   /* root is HKLM by default */
@@ -106,7 +107,6 @@ bool BLI_windows_register_blend_extension(const bool background)
     lresult = RegOpenKeyEx(HKEY_CURRENT_USER, "Software\\Classes", 0, KEY_ALL_ACCESS, &root);
     if (lresult != ERROR_SUCCESS) {
       register_blend_extension_failed(0, background);
-      return false;
     }
   }
 
@@ -119,7 +119,6 @@ bool BLI_windows_register_blend_extension(const bool background)
   }
   if (lresult != ERROR_SUCCESS) {
     register_blend_extension_failed(root, background);
-    return false;
   }
 
   lresult = RegCreateKeyEx(root,
@@ -138,7 +137,6 @@ bool BLI_windows_register_blend_extension(const bool background)
   }
   if (lresult != ERROR_SUCCESS) {
     register_blend_extension_failed(root, background);
-    return false;
   }
 
   lresult = RegCreateKeyEx(root,
@@ -157,7 +155,6 @@ bool BLI_windows_register_blend_extension(const bool background)
   }
   if (lresult != ERROR_SUCCESS) {
     register_blend_extension_failed(root, background);
-    return false;
   }
 
   lresult = RegCreateKeyEx(
@@ -169,7 +166,6 @@ bool BLI_windows_register_blend_extension(const bool background)
   }
   if (lresult != ERROR_SUCCESS) {
     register_blend_extension_failed(root, background);
-    return false;
   }
 
   BLI_windows_get_executable_dir(InstallDir);
@@ -188,7 +184,7 @@ bool BLI_windows_register_blend_extension(const bool background)
                        "all users");
     MessageBox(0, MBox, "Blender", MB_OK | MB_ICONINFORMATION);
   }
-  return true;
+  TerminateProcess(GetCurrentProcess(), 0);
 }
 
 void BLI_windows_get_default_root_dir(char *root)

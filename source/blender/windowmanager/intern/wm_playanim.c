@@ -97,69 +97,45 @@ static AUD_Device *audio_device = NULL;
 struct PlayState;
 static void playanim_window_zoom(struct PlayState *ps, const float zoom_offset);
 
-/**
- * The current state of the player.
- *
- * \warning Don't store results of parsing command-line arguments
- * in this struct if they need to persist across playing back different
- * files as these will be cleared when playing other files (drag & drop).
- */
 typedef struct PlayState {
 
-  /** Window and viewport size. */
+  /* window and viewport size */
   int win_x, win_y;
 
-  /** Current zoom level. */
+  /* current zoom level */
   float zoom;
 
-  /** Playback direction (-1, 1). */
+  /* playback state */
   short direction;
-  /** Set the next frame to implement frame stepping (using shortcuts). */
   short next_frame;
 
-  /** Playback once then wait. */
   bool once;
-  /** Play forwards/backwards. */
+  bool turbo;
   bool pingpong;
-  /** Disable frame skipping. */
   bool noskip;
-  /** Display current frame over the window. */
   bool indicator;
-  /** Single-frame stepping has been enabled (frame loading and update pending). */
   bool sstep;
-  /** Playback has stopped the image has been displayed. */
   bool wait2;
-  /** Playback stopped state once stop/start variables have been handled. */
   bool stopped;
-  /**
-   * When disabled the current animation will exit,
-   * after this either the application exits or a new animation window is opened.
-   *
-   * This is used so drag & drop can load new files which setup a newly created animation window.
-   */
   bool go;
-  /** True when waiting for images to load. */
+  /* waiting for images to load */
   bool loading;
-  /** X/Y image flip (set via key bindings). */
+  /* x/y image flip */
   bool draw_flip[2];
 
-  /** The number of frames to step each update (default to 1, command line argument). */
   int fstep;
 
-  /** Current frame (picture). */
+  /* current picture */
   struct PlayAnimPict *picture;
 
-  /** Image size in pixels, set once at the start. */
+  /* set once at the start */
   int ibufx, ibufy;
-  /** Mono-space font ID. */
   int fontid;
 
-  /** Restarts player for file drop (drag & drop). */
+  /* restarts player for file drop */
   char dropped_file[FILE_MAX];
 
-  /** Force update when scrubbing with the cursor. */
   bool need_frame_update;
-  /** The current frame calculated by scrubbing the mouse cursor. */
   int frame_cursor_x;
 
   ColorManagedViewSettings view_settings;
@@ -168,14 +144,17 @@ typedef struct PlayState {
 
 /* for debugging */
 #if 0
-static void print_ps(PlayState *ps)
+void print_ps(PlayState *ps)
 {
   printf("ps:\n");
   printf("    direction=%d,\n", (int)ps->direction);
+  printf("    next=%d,\n", ps->next);
   printf("    once=%d,\n", ps->once);
+  printf("    turbo=%d,\n", ps->turbo);
   printf("    pingpong=%d,\n", ps->pingpong);
   printf("    noskip=%d,\n", ps->noskip);
   printf("    sstep=%d,\n", ps->sstep);
+  printf("    pause=%d,\n", ps->pause);
   printf("    wait2=%d,\n", ps->wait2);
   printf("    stopped=%d,\n", ps->stopped);
   printf("    go=%d,\n\n", ps->go);
@@ -890,13 +869,15 @@ static void change_frame(PlayState *ps)
 static int ghost_event_proc(GHOST_EventHandle evt, GHOST_TUserDataPtr ps_void)
 {
   PlayState *ps = (PlayState *)ps_void;
-  const GHOST_TEventType type = GHOST_GetEventType(evt);
-  /* Convert ghost event into value keyboard or mouse. */
-  const int val = ELEM(type, GHOST_kEventKeyDown, GHOST_kEventButtonDown);
+  GHOST_TEventType type = GHOST_GetEventType(evt);
+  int val;
 
   // print_ps(ps);
 
   playanim_event_qual_update();
+
+  /* convert ghost event into value keyboard or mouse */
+  val = ELEM(type, GHOST_kEventKeyDown, GHOST_kEventButtonDown);
 
   /* first check if we're busy loading files */
   if (ps->loading) {
@@ -921,8 +902,8 @@ static int ghost_event_proc(GHOST_EventHandle evt, GHOST_TUserDataPtr ps_void)
     return 1;
   }
 
-  if (ps->wait2 && ps->stopped == false) {
-    ps->stopped = true;
+  if (ps->wait2 && ps->stopped) {
+    ps->stopped = false;
   }
 
   if (ps->wait2) {
@@ -1398,9 +1379,7 @@ static void playanim_window_zoom(PlayState *ps, const float zoom_offset)
   GHOST_SetClientSize(g_WS.ghost_window, sizex, sizey);
 }
 
-/**
- * \return The a path used to restart the animation player or NULL to exit.
- */
+/* return path for restart */
 static char *wm_main_playanim_intern(int argc, const char **argv)
 {
   struct ImBuf *ibuf = NULL;
@@ -1419,6 +1398,7 @@ static char *wm_main_playanim_intern(int argc, const char **argv)
   ps.direction = true;
   ps.next_frame = 1;
   ps.once = false;
+  ps.turbo = false;
   ps.pingpong = false;
   ps.noskip = false;
   ps.sstep = false;
@@ -1440,7 +1420,6 @@ static char *wm_main_playanim_intern(int argc, const char **argv)
           IMB_colormanagement_role_colorspace_name_get(COLOR_ROLE_DEFAULT_BYTE));
   IMB_colormanagement_init_default_view_settings(&ps.view_settings, &ps.display_settings);
 
-  /* Skip the first argument which is assumed to be '-a' (used to launch this player). */
   while (argc > 1) {
     if (argv[1][0] == '-') {
       switch (argv[1][1]) {
@@ -1741,15 +1720,14 @@ static char *wm_main_playanim_intern(int argc, const char **argv)
 
       ps.wait2 = ps.sstep;
 
-      if (ps.wait2 == false && ps.stopped) {
-        ps.stopped = false;
+      if (ps.wait2 == false && ps.stopped == false) {
+        ps.stopped = true;
       }
 
       pupdate_time();
 
       if (ps.picture && ps.next_frame) {
-        /* Advance to the next frame, always at least set one step.
-         * Implement frame-skipping when enabled and playback is not fast enough. */
+        /* always at least set one step */
         while (ps.picture) {
           ps.picture = playanim_step(ps.picture, ps.next_frame);
 
@@ -1762,7 +1740,7 @@ static char *wm_main_playanim_intern(int argc, const char **argv)
             }
           }
 
-          if (ps.wait2 || ptottime < swaptime || ps.noskip) {
+          if (ps.wait2 || ptottime < swaptime || ps.turbo || ps.noskip) {
             break;
           }
           ptottime -= swaptime;

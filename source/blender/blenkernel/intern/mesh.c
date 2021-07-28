@@ -900,11 +900,9 @@ Mesh *BKE_mesh_new_nomain(
   return mesh;
 }
 
-/**
- * Copy user editable settings that we want to preserve
- * when a new mesh is based on an existing mesh.
- */
-void BKE_mesh_copy_parameters(Mesh *me_dst, const Mesh *me_src)
+/* Copy user editable settings that we want to preserve through the modifier stack
+ * or operations where a mesh with new topology is created based on another mesh. */
+void BKE_mesh_copy_settings(Mesh *me_dst, const Mesh *me_src)
 {
   /* Copy general settings. */
   me_dst->editflag = me_src->editflag;
@@ -922,20 +920,6 @@ void BKE_mesh_copy_parameters(Mesh *me_dst, const Mesh *me_src)
   me_dst->texflag = me_src->texflag;
   copy_v3_v3(me_dst->loc, me_src->loc);
   copy_v3_v3(me_dst->size, me_src->size);
-}
-
-/**
- * A version of #BKE_mesh_copy_parameters that is intended for evaluated output
- * (the modifier stack for example).
- *
- * \warning User counts are not handled for ID's.
- */
-void BKE_mesh_copy_parameters_for_eval(Mesh *me_dst, const Mesh *me_src)
-{
-  /* User counts aren't handled, don't copy into a mesh from #G_MAIN. */
-  BLI_assert(me_dst->id.tag & (LIB_TAG_NO_MAIN | LIB_TAG_COPIED_ON_WRITE));
-
-  BKE_mesh_copy_parameters(me_dst, me_src);
 
   /* Copy materials. */
   if (me_dst->mat != NULL) {
@@ -967,7 +951,7 @@ Mesh *BKE_mesh_new_nomain_from_template_ex(const Mesh *me_src,
   me_dst->totpoly = polys_len;
 
   me_dst->cd_flag = me_src->cd_flag;
-  BKE_mesh_copy_parameters_for_eval(me_dst, me_src);
+  BKE_mesh_copy_settings(me_dst, me_src);
 
   CustomData_copy(&me_src->vdata, &me_dst->vdata, mask.vmask, CD_CALLOC, verts_len);
   CustomData_copy(&me_src->edata, &me_dst->edata, mask.emask, CD_CALLOC, edges_len);
@@ -1054,7 +1038,7 @@ Mesh *BKE_mesh_from_bmesh_nomain(BMesh *bm,
   BLI_assert(params->calc_object_remap == false);
   Mesh *mesh = BKE_id_new_nomain(ID_ME, NULL);
   BM_mesh_bm_to_me(NULL, bm, mesh, params);
-  BKE_mesh_copy_parameters_for_eval(mesh, me_settings);
+  BKE_mesh_copy_settings(mesh, me_settings);
   return mesh;
 }
 
@@ -1064,7 +1048,7 @@ Mesh *BKE_mesh_from_bmesh_for_eval_nomain(BMesh *bm,
 {
   Mesh *mesh = BKE_id_new_nomain(ID_ME, NULL);
   BM_mesh_bm_to_me_for_eval(bm, mesh, cd_mask_extra);
-  BKE_mesh_copy_parameters_for_eval(mesh, me_settings);
+  BKE_mesh_copy_settings(mesh, me_settings);
   return mesh;
 }
 
@@ -1537,12 +1521,12 @@ void BKE_mesh_transform(Mesh *me, const float mat[4][4], bool do_keys)
 
 void BKE_mesh_translate(Mesh *me, const float offset[3], const bool do_keys)
 {
-  CustomData_duplicate_referenced_layer(&me->vdata, CD_MVERT, me->totvert);
+  MVert *mvert = CustomData_duplicate_referenced_layer(&me->vdata, CD_MVERT, me->totvert);
   /* If the referenced layer has been re-allocated need to update pointers stored in the mesh. */
   BKE_mesh_update_customdata_pointers(me, false);
 
   int i = me->totvert;
-  for (MVert *mvert = me->mvert; i--; mvert++) {
+  for (mvert = me->mvert; i--; mvert++) {
     add_v3_v3(mvert->co, offset);
   }
 
@@ -2103,6 +2087,14 @@ void BKE_mesh_split_faces(Mesh *mesh, bool free_loop_normals)
 
   SplitFaceNewVert *new_verts = NULL;
   SplitFaceNewEdge *new_edges = NULL;
+
+  /* Ensure we own the layers, we need to do this before split_faces_prepare_new_verts as it will
+   * directly assign new indices to existing edges and loops. */
+  CustomData_duplicate_referenced_layers(&mesh->vdata, mesh->totvert);
+  CustomData_duplicate_referenced_layers(&mesh->edata, mesh->totedge);
+  CustomData_duplicate_referenced_layers(&mesh->ldata, mesh->totloop);
+  /* Update pointers in case we duplicated referenced layers. */
+  BKE_mesh_update_customdata_pointers(mesh, false);
 
   /* Detect loop normal spaces (a.k.a. smooth fans) that will need a new vert. */
   const int num_new_verts = split_faces_prepare_new_verts(

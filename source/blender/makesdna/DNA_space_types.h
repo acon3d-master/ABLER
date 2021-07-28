@@ -780,15 +780,7 @@ typedef struct FileAssetSelectParams {
   FileSelectParams base_params;
 
   FileSelectAssetLibraryUID asset_library;
-
-  short import_type; /* eFileAssetImportType */
-  char _pad[6];
 } FileAssetSelectParams;
-
-typedef enum eFileAssetImportType {
-  FILE_ASSET_IMPORT_LINK = 0,
-  FILE_ASSET_IMPORT_APPEND = 1,
-} eFileAssetImportType;
 
 /**
  * A wrapper to store previous and next folder lists (#FolderList) for a specific browse mode
@@ -1917,7 +1909,7 @@ typedef struct SpaceSpreadsheet {
   /**
    * List of #SpreadsheetContext.
    * This is a path to the data that is displayed in the spreadsheet.
-   * It can be set explicitly by an action of the user (e.g. clicking the preview icon in a
+   * It can be set explicitely by an action of the user (e.g. clicking the preview icon in a
    * geometry node) or it can be derived from context automatically based on some heuristic.
    */
   ListBase context_path;

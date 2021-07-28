@@ -121,7 +121,6 @@ struct AbcMeshData {
   P3fArraySamplePtr positions;
   P3fArraySamplePtr ceil_positions;
 
-  AbcUvScope uv_scope;
   V2fArraySamplePtr uvs;
   UInt32ArraySamplePtr uvs_indices;
 };
@@ -193,9 +192,8 @@ static void read_mpolys(CDStreamConfig &config, const AbcMeshData &mesh_data)
 
   const UInt32ArraySamplePtr &uvs_indices = mesh_data.uvs_indices;
 
-  const bool do_uvs = (mloopuvs && uvs && uvs_indices);
-  const bool do_uvs_per_loop = do_uvs && mesh_data.uv_scope == ABC_UV_SCOPE_LOOP;
-  BLI_assert(!do_uvs || mesh_data.uv_scope != ABC_UV_SCOPE_NONE);
+  const bool do_uvs = (mloopuvs && uvs && uvs_indices) &&
+                      (uvs_indices->size() == face_indices->size());
   unsigned int loop_index = 0;
   unsigned int rev_loop_index = 0;
   unsigned int uv_index = 0;
@@ -229,7 +227,8 @@ static void read_mpolys(CDStreamConfig &config, const AbcMeshData &mesh_data)
 
       if (do_uvs) {
         MLoopUV &loopuv = mloopuvs[rev_loop_index];
-        uv_index = (*uvs_indices)[do_uvs_per_loop ? loop_index : loop.v];
+
+        uv_index = (*uvs_indices)[loop_index];
 
         /* Some Alembic files are broken (or at least export UVs in a way we don't expect). */
         if (uv_index >= uvs_size) {
@@ -358,29 +357,22 @@ BLI_INLINE void read_uvs_params(CDStreamConfig &config,
   IV2fGeomParam::Sample uvsamp;
   uv.getIndexed(uvsamp, selector);
 
-  UInt32ArraySamplePtr uvs_indices = uvsamp.getIndices();
-
-  const AbcUvScope uv_scope = get_uv_scope(uv.getScope(), config, uvs_indices);
-
-  if (uv_scope == ABC_UV_SCOPE_NONE) {
-    return;
-  }
-
-  abc_data.uv_scope = uv_scope;
   abc_data.uvs = uvsamp.getVals();
-  abc_data.uvs_indices = uvs_indices;
+  abc_data.uvs_indices = uvsamp.getIndices();
 
-  std::string name = Alembic::Abc::GetSourceName(uv.getMetaData());
+  if (abc_data.uvs_indices->size() == config.totloop) {
+    std::string name = Alembic::Abc::GetSourceName(uv.getMetaData());
 
-  /* According to the convention, primary UVs should have had their name
-   * set using Alembic::Abc::SetSourceName, but you can't expect everyone
-   * to follow it! :) */
-  if (name.empty()) {
-    name = uv.getName();
+    /* According to the convention, primary UVs should have had their name
+     * set using Alembic::Abc::SetSourceName, but you can't expect everyone
+     * to follow it! :) */
+    if (name.empty()) {
+      name = uv.getName();
+    }
+
+    void *cd_ptr = config.add_customdata_cb(config.mesh, name.c_str(), CD_MLOOPUV);
+    config.mloopuv = static_cast<MLoopUV *>(cd_ptr);
   }
-
-  void *cd_ptr = config.add_customdata_cb(config.mesh, name.c_str(), CD_MLOOPUV);
-  config.mloopuv = static_cast<MLoopUV *>(cd_ptr);
 }
 
 static void *add_customdata_cb(Mesh *mesh, const char *name, int data_type)
@@ -447,7 +439,6 @@ static void read_mesh_sample(const std::string &iobject_full_name,
 
   if ((settings->read_flag & MOD_MESHSEQ_READ_VERT) != 0) {
     read_mverts(config, abc_mesh_data);
-    read_generated_coordinates(schema.getArbGeomParams(), config, selector);
   }
 
   if ((settings->read_flag & MOD_MESHSEQ_READ_POLY) != 0) {
@@ -470,7 +461,6 @@ CDStreamConfig get_config(Mesh *mesh, const bool use_vertex_interpolation)
   config.mvert = mesh->mvert;
   config.mloop = mesh->mloop;
   config.mpoly = mesh->mpoly;
-  config.totvert = mesh->totvert;
   config.totloop = mesh->totloop;
   config.totpoly = mesh->totpoly;
   config.loopdata = &mesh->ldata;
@@ -568,7 +558,7 @@ void AbcMeshReader::readObjectData(Main *bmain, const Alembic::Abc::ISampleSelec
     /* XXX fixme after 2.80; mesh->flag isn't copied by BKE_mesh_nomain_to_mesh() */
     /* read_mesh can be freed by BKE_mesh_nomain_to_mesh(), so get the flag before that happens. */
     short autosmooth = (read_mesh->flag & ME_AUTOSMOOTH);
-    BKE_mesh_nomain_to_mesh(read_mesh, mesh, m_object, &CD_MASK_EVERYTHING, true);
+    BKE_mesh_nomain_to_mesh(read_mesh, mesh, m_object, &CD_MASK_MESH, true);
     mesh->flag |= autosmooth;
   }
 
@@ -878,7 +868,7 @@ void AbcSubDReader::readObjectData(Main *bmain, const Alembic::Abc::ISampleSelec
 
   Mesh *read_mesh = this->read_mesh(mesh, sample_sel, MOD_MESHSEQ_READ_ALL, nullptr);
   if (read_mesh != mesh) {
-    BKE_mesh_nomain_to_mesh(read_mesh, mesh, m_object, &CD_MASK_EVERYTHING, true);
+    BKE_mesh_nomain_to_mesh(read_mesh, mesh, m_object, &CD_MASK_MESH, true);
   }
 
   ISubDSchema::Sample sample;

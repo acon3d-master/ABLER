@@ -52,7 +52,7 @@ static blender::bke::cryptomatte::CryptomatteSessionPtr cryptomatte_init_from_no
   BLI_assert(GS(scene->id.name) == ID_SCE);
 
   if (use_meta_data) {
-    Render *render = RE_GetSceneRender(scene);
+    Render *render = (scene) ? RE_GetSceneRender(scene) : nullptr;
     RenderResult *render_result = render ? RE_AcquireResultRead(render) : nullptr;
     if (render_result) {
       session = blender::bke::cryptomatte::CryptomatteSessionPtr(

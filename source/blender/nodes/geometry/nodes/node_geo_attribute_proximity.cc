@@ -62,7 +62,7 @@ namespace blender::nodes {
 
 static void proximity_calc(MutableSpan<float> distance_span,
                            MutableSpan<float3> location_span,
-                           const VArray<float3> &positions,
+                           Span<float3> positions,
                            BVHTreeFromMesh &tree_data_mesh,
                            BVHTreeFromPointCloud &tree_data_pointcloud,
                            const bool bvh_mesh_success,
@@ -71,7 +71,7 @@ static void proximity_calc(MutableSpan<float> distance_span,
                            const bool store_locations)
 {
   IndexRange range = positions.index_range();
-  threading::parallel_for(range, 512, [&](IndexRange range) {
+  parallel_for(range, 512, [&](IndexRange range) {
     BVHTreeNearest nearest_from_mesh;
     BVHTreeNearest nearest_from_pointcloud;
 
@@ -169,18 +169,19 @@ static void attribute_calc_proximity(GeometryComponent &component,
   const AttributeDomain result_domain = ATTR_DOMAIN_POINT;
 
   const std::string distance_attribute_name = params.get_input<std::string>("Distance");
-  OutputAttribute_Typed<float> distance_attribute =
-      component.attribute_try_get_for_output_only<float>(distance_attribute_name, result_domain);
+  OutputAttributePtr distance_attribute = component.attribute_try_get_for_output(
+      distance_attribute_name, result_domain, CD_PROP_FLOAT);
 
   const std::string location_attribute_name = params.get_input<std::string>("Position");
-  OutputAttribute_Typed<float3> location_attribute =
-      component.attribute_try_get_for_output_only<float3>(location_attribute_name, result_domain);
+  OutputAttributePtr location_attribute = component.attribute_try_get_for_output(
+      location_attribute_name, result_domain, CD_PROP_FLOAT3);
 
-  ReadAttributeLookup position_attribute = component.attribute_try_get_for_read("position");
+  ReadAttributePtr position_attribute = component.attribute_try_get_for_read("position");
+  BLI_assert(position_attribute->custom_data_type() == CD_PROP_FLOAT3);
+
   if (!position_attribute || (!distance_attribute && !location_attribute)) {
     return;
   }
-  BLI_assert(position_attribute.varray->type().is<float3>());
 
   const bNode &node = params.node();
   const NodeGeometryAttributeProximity &storage = *(const NodeGeometryAttributeProximity *)
@@ -203,15 +204,18 @@ static void attribute_calc_proximity(GeometryComponent &component,
                                                  tree_data_pointcloud);
   }
 
-  GVArray_Typed<float3> positions{*position_attribute.varray};
-  MutableSpan<float> distance_span = distance_attribute ? distance_attribute.as_span() :
-                                                          MutableSpan<float>();
-  MutableSpan<float3> location_span = location_attribute ? location_attribute.as_span() :
-                                                           MutableSpan<float3>();
+  Span<float3> position_span = position_attribute->get_span<float3>();
+
+  MutableSpan<float> distance_span = distance_attribute ?
+                                         distance_attribute->get_span_for_write_only<float>() :
+                                         MutableSpan<float>();
+  MutableSpan<float3> location_span = location_attribute ?
+                                          location_attribute->get_span_for_write_only<float3>() :
+                                          MutableSpan<float3>();
 
   proximity_calc(distance_span,
                  location_span,
-                 positions,
+                 position_span,
                  tree_data_mesh,
                  tree_data_pointcloud,
                  bvh_mesh_success,
@@ -227,10 +231,10 @@ static void attribute_calc_proximity(GeometryComponent &component,
   }
 
   if (distance_attribute) {
-    distance_attribute.save();
+    distance_attribute.apply_span_and_save();
   }
   if (location_attribute) {
-    location_attribute.save();
+    location_attribute.apply_span_and_save();
   }
 }
 
@@ -252,10 +256,6 @@ static void geo_node_attribute_proximity_exec(GeoNodeExecParams params)
   if (geometry_set.has<PointCloudComponent>()) {
     attribute_calc_proximity(
         geometry_set.get_component_for_write<PointCloudComponent>(), geometry_set_target, params);
-  }
-  if (geometry_set.has<CurveComponent>()) {
-    attribute_calc_proximity(
-        geometry_set.get_component_for_write<CurveComponent>(), geometry_set_target, params);
   }
 
   params.set_output("Geometry", geometry_set);

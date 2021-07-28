@@ -56,7 +56,7 @@ typedef struct LibraryForeachIDData {
    */
   ID *self_id;
 
-  /** Flags controlling the behavior of the 'foreach id' looping code. */
+  /** Flags controlling the bahaviour of the 'foreach id' looping code. */
   int flag;
   /** Generic flags to be passed to all callback calls for current processed data. */
   int cb_flag;
@@ -244,10 +244,9 @@ static void library_foreach_ID_link(Main *bmain,
      * (the node tree), but re-use those generated for the 'owner' ID (the material). */
     if (inherit_data == NULL) {
       data.cb_flag = ID_IS_LINKED(id) ? IDWALK_CB_INDIRECT_USAGE : 0;
-      /* When an ID is defined as not refcounting its ID usages, it should never do it. */
-      data.cb_flag_clear = (id->tag & LIB_TAG_NO_USER_REFCOUNT) ?
-                               IDWALK_CB_USER | IDWALK_CB_USER_ONE :
-                               0;
+      /* When an ID is not in Main database, it should never refcount IDs it is using.
+       * Exceptions: NodeTrees (yeah!) directly used by Materials. */
+      data.cb_flag_clear = (id->tag & LIB_TAG_NO_MAIN) ? IDWALK_CB_USER | IDWALK_CB_USER_ONE : 0;
     }
     else {
       data.cb_flag = inherit_data->cb_flag;

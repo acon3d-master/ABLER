@@ -142,8 +142,7 @@ static void draw_tile(int sx, int sy, int width, int height, int colorid, int sh
       color);
 }
 
-static void file_draw_icon(const SpaceFile *sfile,
-                           uiBlock *block,
+static void file_draw_icon(uiBlock *block,
                            const FileDirEntry *file,
                            const char *path,
                            int sx,
@@ -178,14 +177,10 @@ static void file_draw_icon(const SpaceFile *sfile,
       ImBuf *preview_image = filelist_file_getimage(file);
       char blend_path[FILE_MAX_LIBEXTRA];
       if (BLO_library_path_explode(path, blend_path, NULL, NULL)) {
-        const FileAssetSelectParams *asset_params = ED_fileselect_get_asset_params(sfile);
-        BLI_assert(asset_params != NULL);
-
         UI_but_drag_set_asset(but,
                               file->name,
                               BLI_strdup(blend_path),
                               file->blentype,
-                              asset_params->import_type,
                               icon,
                               preview_image,
                               UI_DPI_FAC);
@@ -304,8 +299,7 @@ void file_calc_previews(const bContext *C, ARegion *region)
   UI_view2d_totRect_set(v2d, sfile->layout->width, sfile->layout->height);
 }
 
-static void file_draw_preview(const SpaceFile *sfile,
-                              uiBlock *block,
+static void file_draw_preview(uiBlock *block,
                               const FileDirEntry *file,
                               const char *path,
                               int sx,
@@ -329,7 +323,6 @@ static void file_draw_preview(const SpaceFile *sfile,
   int ex, ey;
   bool show_outline = !is_icon &&
                       (file->typeflag & (FILE_TYPE_IMAGE | FILE_TYPE_MOVIE | FILE_TYPE_BLENDER));
-  const bool is_offline = (file->attributes & FILE_ATTR_OFFLINE);
 
   BLI_assert(imb != NULL);
 
@@ -426,14 +419,14 @@ static void file_draw_preview(const SpaceFile *sfile,
         icon_x, icon_y, icon, icon_aspect / U.dpi_fac, icon_opacity, 0.0f, icon_color, false);
   }
 
-  if (is_link || is_offline) {
-    /* Icon at bottom to indicate it is a shortcut, link, alias, or offline. */
+  if (is_link) {
+    /* Arrow icon to indicate it is a shortcut, link, or alias. */
     float icon_x, icon_y;
     icon_x = xco + (2.0f * UI_DPI_FAC);
     icon_y = yco + (2.0f * UI_DPI_FAC);
-    const int arrow = is_link ? ICON_LOOP_FORWARDS : ICON_URL;
+    const int arrow = ICON_LOOP_FORWARDS;
     if (!is_icon) {
-      /* At very bottom-left if preview style. */
+      /* Arrow at very bottom-left if preview style. */
       const uchar dark[4] = {0, 0, 0, 255};
       const uchar light[4] = {255, 255, 255, 255};
       UI_icon_draw_ex(icon_x + 1, icon_y - 1, arrow, 1.0f / U.dpi_fac, 0.2f, 0.0f, dark, false);
@@ -490,19 +483,9 @@ static void file_draw_preview(const SpaceFile *sfile,
     /* path is no more static, cannot give it directly to but... */
     else if (file->typeflag & FILE_TYPE_ASSET) {
       char blend_path[FILE_MAX_LIBEXTRA];
-
       if (BLO_library_path_explode(path, blend_path, NULL, NULL)) {
-        const FileAssetSelectParams *asset_params = ED_fileselect_get_asset_params(sfile);
-        BLI_assert(asset_params != NULL);
-
-        UI_but_drag_set_asset(but,
-                              file->name,
-                              BLI_strdup(blend_path),
-                              file->blentype,
-                              asset_params->import_type,
-                              icon,
-                              imb,
-                              scale);
+        UI_but_drag_set_asset(
+            but, file->name, BLI_strdup(blend_path), file->blentype, icon, imb, scale);
       }
     }
     else {
@@ -941,8 +924,7 @@ void file_draw_list(const bContext *C, ARegion *region)
         is_icon = 1;
       }
 
-      file_draw_preview(sfile,
-                        block,
+      file_draw_preview(block,
                         file,
                         path,
                         sx,
@@ -957,8 +939,7 @@ void file_draw_list(const bContext *C, ARegion *region)
                         is_link);
     }
     else {
-      file_draw_icon(sfile,
-                     block,
+      file_draw_icon(block,
                      file,
                      path,
                      sx,

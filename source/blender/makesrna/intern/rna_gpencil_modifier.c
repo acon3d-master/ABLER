@@ -109,11 +109,6 @@ const EnumPropertyItem rna_enum_object_greasepencil_modifier_type_items[] = {
      ICON_MOD_LATTICE,
      "Lattice",
      "Deform strokes using lattice"},
-    {eGpencilModifierType_Length,
-     "GP_LENGTH",
-     ICON_MOD_EDGESPLIT,
-     "Length",
-     "Extend or shrink strokes"},
     {eGpencilModifierType_Noise, "GP_NOISE", ICON_MOD_NOISE, "Noise", "Add noise to strokes"},
     {eGpencilModifierType_Offset,
      "GP_OFFSET",
@@ -193,11 +188,6 @@ static const EnumPropertyItem gpencil_tint_type_items[] = {
     {GP_TINT_GRADIENT, "GRADIENT", 0, "Gradient", ""},
     {0, NULL, 0, NULL, NULL},
 };
-static const EnumPropertyItem gpencil_length_mode_items[] = {
-    {GP_LENGTH_RELATIVE, "RELATIVE", 0, "Relative", "Length in ratio to the stroke's length"},
-    {GP_LENGTH_ABSOLUTE, "ABSOLUTE", 0, "Absolute", "Length in geometry space"},
-    {0, NULL, 0, NULL, NULL},
-};
 #endif
 
 #ifdef RNA_RUNTIME
@@ -243,8 +233,6 @@ static StructRNA *rna_GpencilModifier_refine(struct PointerRNA *ptr)
       return &RNA_OpacityGpencilModifier;
     case eGpencilModifierType_Lattice:
       return &RNA_LatticeGpencilModifier;
-    case eGpencilModifierType_Length:
-      return &RNA_LengthGpencilModifier;
     case eGpencilModifierType_Mirror:
       return &RNA_MirrorGpencilModifier;
     case eGpencilModifierType_Smooth:
@@ -363,8 +351,6 @@ static void greasepencil_modifier_object_set(Object *self,
 RNA_GP_MOD_OBJECT_SET(Armature, object, OB_ARMATURE);
 RNA_GP_MOD_OBJECT_SET(Lattice, object, OB_LATTICE);
 RNA_GP_MOD_OBJECT_SET(Mirror, object, OB_EMPTY);
-RNA_GP_MOD_OBJECT_SET(Opacity, object, OB_EMPTY);
-RNA_GP_MOD_OBJECT_SET(Thick, object, OB_EMPTY);
 
 #  undef RNA_GP_MOD_OBJECT_SET
 
@@ -650,8 +636,6 @@ static void rna_def_modifier_gpencilnoise(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "NoiseGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_NOISE);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -659,6 +643,7 @@ static void rna_def_modifier_gpencilnoise(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_NoiseGpencilModifier_material_set",
@@ -777,8 +762,6 @@ static void rna_def_modifier_gpencilnoise(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_NOISE_INVERT_LAYERPASS);
   RNA_def_property_ui_text(prop, "Inverse Pass", "Inverse filter");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilsmooth(BlenderRNA *brna)
@@ -791,8 +774,6 @@ static void rna_def_modifier_gpencilsmooth(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "SmoothGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_SMOOTH);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -800,6 +781,7 @@ static void rna_def_modifier_gpencilsmooth(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_SmoothGpencilModifier_material_set",
@@ -898,8 +880,6 @@ static void rna_def_modifier_gpencilsmooth(BlenderRNA *brna)
   RNA_def_property_pointer_sdna(prop, NULL, "curve_intensity");
   RNA_def_property_ui_text(prop, "Curve", "Custom curve to apply effect");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilsubdiv(BlenderRNA *brna)
@@ -912,8 +892,6 @@ static void rna_def_modifier_gpencilsubdiv(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "SubdivGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_SUBSURF);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -921,6 +899,7 @@ static void rna_def_modifier_gpencilsubdiv(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_SubdivGpencilModifier_material_set",
@@ -972,8 +951,6 @@ static void rna_def_modifier_gpencilsubdiv(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_SUBDIV_INVERT_LAYERPASS);
   RNA_def_property_ui_text(prop, "Inverse Pass", "Inverse filter");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilsimplify(BlenderRNA *brna)
@@ -1010,8 +987,6 @@ static void rna_def_modifier_gpencilsimplify(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "SimplifyGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_SIMPLIFY);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -1019,6 +994,7 @@ static void rna_def_modifier_gpencilsimplify(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_SimplifyGpencilModifier_material_set",
@@ -1093,8 +1069,6 @@ static void rna_def_modifier_gpencilsimplify(BlenderRNA *brna)
   RNA_def_property_ui_range(prop, 0, 1.0, 0.01, 3);
   RNA_def_property_ui_text(prop, "Distance", "Distance between points");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilthick(BlenderRNA *brna)
@@ -1107,8 +1081,6 @@ static void rna_def_modifier_gpencilthick(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "ThickGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_THICKNESS);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -1116,6 +1088,7 @@ static void rna_def_modifier_gpencilthick(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_ThickGpencilModifier_material_set",
@@ -1141,37 +1114,6 @@ static void rna_def_modifier_gpencilthick(BlenderRNA *brna)
   RNA_def_property_range(prop, 0.0, FLT_MAX);
   RNA_def_property_ui_range(prop, 0.0, 10.0, 0.1, 3);
   RNA_def_property_ui_text(prop, "Thickness Factor", "Factor to multiply the thickness with");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "use_fading", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_THICK_FADING);
-  RNA_def_property_ui_text(prop, "Fading", "Fading effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  /* Distance reference object */
-  prop = RNA_def_property(srna, "object", PROP_POINTER, PROP_NONE);
-  RNA_def_property_ui_text(prop, "Object", "Object used as distance reference");
-  RNA_def_property_pointer_funcs(prop, NULL, "rna_ThickGpencilModifier_object_set", NULL, NULL);
-  RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
-
-  prop = RNA_def_property(srna, "fading_start", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "fading_start");
-  RNA_def_property_ui_range(prop, 0, 1000.0, 1.0, 2);
-  RNA_def_property_ui_text(prop, "Fading Start", "Start distance of fading effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "fading_end", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "fading_end");
-  RNA_def_property_ui_range(prop, 0, 1000.0, 1.0, 2);
-  RNA_def_property_ui_text(prop, "Fading End", "End distance of fading effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "fading_end_factor", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "fading_end_factor");
-  RNA_def_property_range(prop, 0.0, FLT_MAX);
-  RNA_def_property_ui_range(prop, 0.0, 10.0, 0.1, 3);
-  RNA_def_property_ui_text(prop, "End Factor", "Fading end thickness factor");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
 
   prop = RNA_def_property(srna, "pass_index", PROP_INT, PROP_NONE);
@@ -1226,8 +1168,6 @@ static void rna_def_modifier_gpencilthick(BlenderRNA *brna)
   RNA_def_property_pointer_sdna(prop, NULL, "curve_thickness");
   RNA_def_property_ui_text(prop, "Curve", "Custom curve to apply effect");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpenciloffset(BlenderRNA *brna)
@@ -1240,8 +1180,6 @@ static void rna_def_modifier_gpenciloffset(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "OffsetGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_OFFSET);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -1249,6 +1187,7 @@ static void rna_def_modifier_gpenciloffset(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_OffsetGpencilModifier_material_set",
@@ -1317,36 +1256,6 @@ static void rna_def_modifier_gpenciloffset(BlenderRNA *brna)
   RNA_def_property_ui_text(prop, "Scale", "Values for changes in scale");
   RNA_def_property_ui_range(prop, -FLT_MAX, FLT_MAX, 1, RNA_TRANSLATION_PREC_DEFAULT);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "random_offset", PROP_FLOAT, PROP_XYZ);
-  RNA_def_property_float_sdna(prop, NULL, "rnd_offset");
-  RNA_def_property_ui_text(prop, "Random Offset", "Value for changes in location");
-  RNA_def_property_ui_range(prop, -FLT_MAX, FLT_MAX, 1, RNA_TRANSLATION_PREC_DEFAULT);
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "random_rotation", PROP_FLOAT, PROP_EULER);
-  RNA_def_property_float_sdna(prop, NULL, "rnd_rot");
-  RNA_def_property_ui_text(prop, "Random Rotation", "Value for changes in rotation");
-  RNA_def_property_ui_range(prop, -FLT_MAX, FLT_MAX, 1, RNA_TRANSLATION_PREC_DEFAULT);
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "random_scale", PROP_FLOAT, PROP_XYZ);
-  RNA_def_property_float_sdna(prop, NULL, "rnd_scale");
-  RNA_def_property_ui_text(prop, "Scale", "Value for changes in scale");
-  RNA_def_property_ui_range(prop, -FLT_MAX, FLT_MAX, 1, RNA_TRANSLATION_PREC_DEFAULT);
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "seed", PROP_INT, PROP_UNSIGNED);
-  RNA_def_property_ui_text(prop, "Seed", "Random seed");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "use_uniform_random_scale", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_OFFSET_UNIFORM_RANDOM_SCALE);
-  RNA_def_property_ui_text(
-      prop, "Uniform Scale", "Use the same random seed for each scale axis for a uniform scale");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpenciltint(BlenderRNA *brna)
@@ -1367,11 +1276,10 @@ static void rna_def_modifier_gpenciltint(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "TintGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_COLOR);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "object", PROP_POINTER, PROP_NONE);
   RNA_def_property_ui_text(prop, "Object", "Parent object to define the center of the effect");
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop, NULL, "rna_TintGpencilModifier_object_set", NULL, NULL);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
 
@@ -1382,6 +1290,7 @@ static void rna_def_modifier_gpenciltint(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_TintGpencilModifier_material_set",
@@ -1487,8 +1396,6 @@ static void rna_def_modifier_gpenciltint(BlenderRNA *brna)
   RNA_def_property_pointer_sdna(prop, NULL, "curve_intensity");
   RNA_def_property_ui_text(prop, "Curve", "Custom curve to apply effect");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpenciltime(BlenderRNA *brna)
@@ -1500,8 +1407,6 @@ static void rna_def_modifier_gpenciltime(BlenderRNA *brna)
   RNA_def_struct_ui_text(srna, "Time Offset Modifier", "Time offset modifier");
   RNA_def_struct_sdna(srna, "TimeGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_TIME);
-
-  RNA_define_lib_overridable(true);
 
   prop = RNA_def_property(srna, "mode", PROP_ENUM, PROP_NONE);
   RNA_def_property_enum_sdna(prop, NULL, "mode");
@@ -1570,8 +1475,6 @@ static void rna_def_modifier_gpenciltime(BlenderRNA *brna)
   RNA_def_property_ui_text(
       prop, "Custom Range", "Define a custom range of frames to use in modifier");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilcolor(BlenderRNA *brna)
@@ -1583,8 +1486,6 @@ static void rna_def_modifier_gpencilcolor(BlenderRNA *brna)
   RNA_def_struct_ui_text(srna, "Hue/Saturation Modifier", "Change Hue/Saturation modifier");
   RNA_def_struct_sdna(srna, "ColorGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_TINT);
-
-  RNA_define_lib_overridable(true);
 
   prop = RNA_def_property(srna, "modify_color", PROP_ENUM, PROP_NONE);
   RNA_def_property_enum_items(prop, modifier_modify_color_items); /* share the enum */
@@ -1598,6 +1499,7 @@ static void rna_def_modifier_gpencilcolor(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_ColorGpencilModifier_material_set",
@@ -1669,8 +1571,6 @@ static void rna_def_modifier_gpencilcolor(BlenderRNA *brna)
   RNA_def_property_pointer_sdna(prop, NULL, "curve_intensity");
   RNA_def_property_ui_text(prop, "Curve", "Custom curve to apply effect");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilopacity(BlenderRNA *brna)
@@ -1682,8 +1582,6 @@ static void rna_def_modifier_gpencilopacity(BlenderRNA *brna)
   RNA_def_struct_ui_text(srna, "Opacity Modifier", "Opacity of Strokes modifier");
   RNA_def_struct_sdna(srna, "OpacityGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_OPACITY);
-
-  RNA_define_lib_overridable(true);
 
   prop = RNA_def_property(srna, "modify_color", PROP_ENUM, PROP_NONE);
   RNA_def_property_enum_items(prop, modifier_modify_opacity_items);
@@ -1697,6 +1595,7 @@ static void rna_def_modifier_gpencilopacity(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_OpacityGpencilModifier_material_set",
@@ -1724,37 +1623,6 @@ static void rna_def_modifier_gpencilopacity(BlenderRNA *brna)
   RNA_def_property_range(prop, 0.0, FLT_MAX);
   RNA_def_property_ui_range(prop, 0.0, FLT_MAX, 0.1, 2);
   RNA_def_property_ui_text(prop, "Hardness", "Factor of stroke hardness");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "use_fading", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_OPACITY_FADING);
-  RNA_def_property_ui_text(prop, "Fading", "Fading effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  /* Distance reference object */
-  prop = RNA_def_property(srna, "object", PROP_POINTER, PROP_NONE);
-  RNA_def_property_ui_text(prop, "Object", "Object used as distance reference");
-  RNA_def_property_pointer_funcs(prop, NULL, "rna_OpacityGpencilModifier_object_set", NULL, NULL);
-  RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
-
-  prop = RNA_def_property(srna, "fading_start", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "fading_start");
-  RNA_def_property_ui_range(prop, 0, 1000.0, 1.0, 2);
-  RNA_def_property_ui_text(prop, "Fading Start", "Start distance of fading effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "fading_end", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "fading_end");
-  RNA_def_property_ui_range(prop, 0, 1000.0, 1.0, 2);
-  RNA_def_property_ui_text(prop, "Fading End", "End distance of fading effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "fading_end_factor", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "fading_end_factor");
-  RNA_def_property_range(prop, 0.0, FLT_MAX);
-  RNA_def_property_ui_range(prop, 0.0, 10.0, 0.1, 3);
-  RNA_def_property_ui_text(prop, "End Factor", "Fading end thickness factor");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
 
   prop = RNA_def_property(srna, "pass_index", PROP_INT, PROP_NONE);
@@ -1809,8 +1677,6 @@ static void rna_def_modifier_gpencilopacity(BlenderRNA *brna)
   RNA_def_property_pointer_sdna(prop, NULL, "curve_intensity");
   RNA_def_property_ui_text(prop, "Curve", "Custom curve to apply effect");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilarray(BlenderRNA *brna)
@@ -1823,8 +1689,6 @@ static void rna_def_modifier_gpencilarray(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "ArrayGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_ARRAY);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -1832,6 +1696,7 @@ static void rna_def_modifier_gpencilarray(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_ArrayGpencilModifier_material_set",
@@ -1861,6 +1726,7 @@ static void rna_def_modifier_gpencilarray(BlenderRNA *brna)
       "Use the location and rotation of another object to determine the distance and "
       "rotational change between arrayed items");
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
 
   prop = RNA_def_property(srna, "constant_offset", PROP_FLOAT, PROP_TRANSLATION);
@@ -1955,8 +1821,6 @@ static void rna_def_modifier_gpencilarray(BlenderRNA *brna)
   RNA_def_property_ui_text(
       prop, "Uniform Scale", "Use the same random seed for each scale axis for a uniform scale");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilbuild(BlenderRNA *brna)
@@ -2018,8 +1882,6 @@ static void rna_def_modifier_gpencilbuild(BlenderRNA *brna)
   RNA_def_struct_ui_text(srna, "Build Modifier", "Animate strokes appearing and disappearing");
   RNA_def_struct_sdna(srna, "BuildGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_BUILD);
-
-  RNA_define_lib_overridable(true);
 
   /* Mode */
   prop = RNA_def_property(srna, "mode", PROP_ENUM, PROP_NONE);
@@ -2118,8 +1980,6 @@ static void rna_def_modifier_gpencilbuild(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_BUILD_INVERT_LAYERPASS);
   RNA_def_property_ui_text(prop, "Inverse Pass", "Inverse filter");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencillattice(BlenderRNA *brna)
@@ -2133,8 +1993,6 @@ static void rna_def_modifier_gpencillattice(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "LatticeGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_LATTICE);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -2142,6 +2000,7 @@ static void rna_def_modifier_gpencillattice(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_LatticeGpencilModifier_material_set",
@@ -2198,6 +2057,7 @@ static void rna_def_modifier_gpencillattice(BlenderRNA *brna)
   RNA_def_property_pointer_funcs(
       prop, NULL, "rna_LatticeGpencilModifier_object_set", NULL, "rna_Lattice_object_poll");
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
 
   prop = RNA_def_property(srna, "strength", PROP_FLOAT, PROP_NONE);
@@ -2205,8 +2065,6 @@ static void rna_def_modifier_gpencillattice(BlenderRNA *brna)
   RNA_def_property_ui_range(prop, 0, 1, 10, 2);
   RNA_def_property_ui_text(prop, "Strength", "Strength of modifier effect");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilmirror(BlenderRNA *brna)
@@ -2219,8 +2077,6 @@ static void rna_def_modifier_gpencilmirror(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "MirrorGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_MIRROR);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -2228,6 +2084,7 @@ static void rna_def_modifier_gpencilmirror(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_MirrorGpencilModifier_material_set",
@@ -2272,6 +2129,7 @@ static void rna_def_modifier_gpencilmirror(BlenderRNA *brna)
   RNA_def_property_ui_text(prop, "Object", "Object used as center");
   RNA_def_property_pointer_funcs(prop, NULL, "rna_MirrorGpencilModifier_object_set", NULL, NULL);
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
 
   prop = RNA_def_property(srna, "use_clip", PROP_BOOLEAN, PROP_NONE);
@@ -2293,8 +2151,6 @@ static void rna_def_modifier_gpencilmirror(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_MIRROR_AXIS_Z);
   RNA_def_property_ui_text(prop, "Z", "Mirror the Z axis");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilhook(BlenderRNA *brna)
@@ -2308,12 +2164,11 @@ static void rna_def_modifier_gpencilhook(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "HookGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_HOOK);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "object", PROP_POINTER, PROP_NONE);
   RNA_def_property_ui_text(
       prop, "Object", "Parent Object for hook, also recalculates and clears offset");
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop, NULL, "rna_HookGpencilModifier_object_set", NULL, NULL);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
 
@@ -2332,6 +2187,7 @@ static void rna_def_modifier_gpencilhook(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_HookGpencilModifier_material_set",
@@ -2424,8 +2280,6 @@ static void rna_def_modifier_gpencilhook(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_HOOK_UNIFORM_SPACE);
   RNA_def_property_ui_text(prop, "Uniform Falloff", "Compensate for non-uniform object scale");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilarmature(BlenderRNA *brna)
@@ -2439,13 +2293,12 @@ static void rna_def_modifier_gpencilarmature(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "ArmatureGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_ARMATURE);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "object", PROP_POINTER, PROP_NONE);
   RNA_def_property_ui_text(prop, "Object", "Armature object to deform with");
   RNA_def_property_pointer_funcs(
       prop, NULL, "rna_ArmatureGpencilModifier_object_set", NULL, "rna_Armature_object_poll");
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
 
   prop = RNA_def_property(srna, "use_bone_envelopes", PROP_BOOLEAN, PROP_NONE);
@@ -2477,8 +2330,6 @@ static void rna_def_modifier_gpencilarmature(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "deformflag", ARM_DEF_INVERT_VGROUP);
   RNA_def_property_ui_text(prop, "Invert", "Invert vertex group influence");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencilmultiply(BlenderRNA *brna)
@@ -2491,8 +2342,6 @@ static void rna_def_modifier_gpencilmultiply(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "MultiplyGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_GP_MULTIFRAME_EDITING);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -2500,6 +2349,7 @@ static void rna_def_modifier_gpencilmultiply(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_MultiplyGpencilModifier_material_set",
@@ -2577,8 +2427,6 @@ static void rna_def_modifier_gpencilmultiply(BlenderRNA *brna)
   RNA_def_property_range(prop, 0, 1);
   RNA_def_property_ui_text(prop, "Center", "Fade center");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpenciltexture(BlenderRNA *brna)
@@ -2617,8 +2465,6 @@ static void rna_def_modifier_gpenciltexture(BlenderRNA *brna)
   RNA_def_struct_sdna(srna, "TextureGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_TEXTURE);
 
-  RNA_define_lib_overridable(true);
-
   prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
   RNA_def_property_string_sdna(prop, NULL, "layername");
   RNA_def_property_ui_text(prop, "Layer", "Layer name");
@@ -2631,6 +2477,7 @@ static void rna_def_modifier_gpenciltexture(BlenderRNA *brna)
 
   prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_TextureGpencilModifier_material_set",
@@ -2729,8 +2576,6 @@ static void rna_def_modifier_gpenciltexture(BlenderRNA *brna)
   RNA_def_property_enum_items(prop, mode_items);
   RNA_def_property_ui_text(prop, "Mode", "");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
@@ -2750,8 +2595,6 @@ static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
       srna, "Line Art Modifier", "Generate line art strokes from selected source");
   RNA_def_struct_sdna(srna, "LineartGpencilModifierData");
   RNA_def_struct_ui_icon(srna, ICON_MOD_EDGESPLIT);
-
-  RNA_define_lib_overridable(true);
 
   prop = RNA_def_property(srna, "use_fuzzy_intersections", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_boolean_sdna(prop, NULL, "calculation_flags", LRT_INTERSECTION_AS_CONTOUR);
@@ -2829,6 +2672,7 @@ static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
   prop = RNA_def_property(srna, "source_object", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
   RNA_def_property_struct_type(prop, "Object");
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_ui_text(
       prop, "Source Object", "Source object that this modifier uses data from");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
@@ -2836,6 +2680,7 @@ static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
   prop = RNA_def_property(srna, "source_collection", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
   RNA_def_property_struct_type(prop, "Collection");
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_ui_text(
       prop, "Source Collection", "Source collection that this modifier uses data from");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_dependency_update");
@@ -2888,6 +2733,7 @@ static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
   prop = RNA_def_property(srna, "target_material", PROP_POINTER, PROP_NONE);
   RNA_def_property_flag(prop, PROP_EDITABLE);
   RNA_def_property_struct_type(prop, "Material");
+  RNA_def_property_override_flag(prop, PROPOVERRIDE_OVERRIDABLE_LIBRARY);
   RNA_def_property_pointer_funcs(prop,
                                  NULL,
                                  "rna_LineartGpencilModifier_material_set",
@@ -2930,14 +2776,6 @@ static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
   RNA_def_property_ui_text(prop, "Is Baked", "This modifier has baked data");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
 
-  prop = RNA_def_property(srna, "use_cache", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flags", LRT_GPENCIL_USE_CACHE);
-  RNA_def_property_ui_text(prop,
-                           "Use Cache",
-                           "Use cached scene data from the first line art modifier in the stack. "
-                           "Certain settings will be unavailable");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
   prop = RNA_def_property(srna, "thickness", PROP_INT, PROP_NONE);
   RNA_def_property_ui_text(prop, "Thickness", "The thickness for the generated strokes");
   RNA_def_property_ui_range(prop, 1, 100, 1, 1);
@@ -2967,92 +2805,6 @@ static void rna_def_modifier_gpencillineart(BlenderRNA *brna)
   RNA_def_property_array(prop, 8);
   RNA_def_property_ui_text(prop, "Mask", "");
   RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
-}
-
-static void rna_def_modifier_gpencillength(BlenderRNA *brna)
-{
-  StructRNA *srna;
-  PropertyRNA *prop;
-
-  srna = RNA_def_struct(brna, "LengthGpencilModifier", "GpencilModifier");
-  RNA_def_struct_ui_text(srna, "Length Modifier", "Stretch or shrink strokes");
-  RNA_def_struct_sdna(srna, "LengthGpencilModifierData");
-  RNA_def_struct_ui_icon(srna, ICON_MOD_EDGESPLIT);
-
-  RNA_define_lib_overridable(true);
-
-  prop = RNA_def_property(srna, "start_factor", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "start_fac");
-  RNA_def_property_ui_range(prop, -10.0f, 10.0f, 0.1, 1);
-  RNA_def_property_ui_text(prop, "Start Factor", "Length difference for each segment");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "end_factor", PROP_FLOAT, PROP_NONE);
-  RNA_def_property_float_sdna(prop, NULL, "end_fac");
-  RNA_def_property_ui_range(prop, -10.0f, 10.0f, 0.1, 1);
-  RNA_def_property_ui_text(prop, "End Factor", "Length difference for each segment");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "overshoot_factor", PROP_FLOAT, PROP_FACTOR);
-  RNA_def_property_float_sdna(prop, NULL, "overshoot_fac");
-  RNA_def_property_range(prop, 0.0f, 1.0f);
-  RNA_def_property_ui_text(
-      prop,
-      "Overshoot Factor",
-      "Defines how precise must follow the stroke trajectory for the overshoot extremes");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "mode", PROP_ENUM, PROP_NONE);
-  RNA_def_property_enum_sdna(prop, NULL, "mode");
-  RNA_def_property_enum_items(prop, gpencil_length_mode_items);
-  RNA_def_property_ui_text(prop, "Mode", "Mode to define length");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "layer", PROP_STRING, PROP_NONE);
-  RNA_def_property_string_sdna(prop, NULL, "layername");
-  RNA_def_property_ui_text(prop, "Layer", "Layer name");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "material", PROP_POINTER, PROP_NONE);
-  RNA_def_property_flag(prop, PROP_EDITABLE | PROP_ID_SELF_CHECK);
-  RNA_def_property_ui_text(prop, "Material", "Material used for filtering effect");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "pass_index", PROP_INT, PROP_NONE);
-  RNA_def_property_int_sdna(prop, NULL, "pass_index");
-  RNA_def_property_range(prop, 0, 100);
-  RNA_def_property_ui_text(prop, "Pass", "Pass index");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "invert_layers", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_LENGTH_INVERT_LAYER);
-  RNA_def_property_ui_text(prop, "Inverse Layers", "Inverse filter");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "invert_materials", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_LENGTH_INVERT_MATERIAL);
-  RNA_def_property_ui_text(prop, "Inverse Materials", "Inverse filter");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "invert_material_pass", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_LENGTH_INVERT_PASS);
-  RNA_def_property_ui_text(prop, "Inverse Pass", "Inverse filter");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "layer_pass", PROP_INT, PROP_NONE);
-  RNA_def_property_int_sdna(prop, NULL, "layer_pass");
-  RNA_def_property_range(prop, 0, 100);
-  RNA_def_property_ui_text(prop, "Pass", "Layer pass index");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  prop = RNA_def_property(srna, "invert_layer_pass", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "flag", GP_LENGTH_INVERT_LAYERPASS);
-  RNA_def_property_ui_text(prop, "Inverse Pass", "Inverse filter");
-  RNA_def_property_update(prop, 0, "rna_GpencilModifier_update");
-
-  RNA_define_lib_overridable(false);
 }
 
 void RNA_def_greasepencil_modifier(BlenderRNA *brna)
@@ -3130,7 +2882,6 @@ void RNA_def_greasepencil_modifier(BlenderRNA *brna)
   rna_def_modifier_gpencilmultiply(brna);
   rna_def_modifier_gpenciltexture(brna);
   rna_def_modifier_gpencillineart(brna);
-  rna_def_modifier_gpencillength(brna);
 }
 
 #endif

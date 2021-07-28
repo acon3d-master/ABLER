@@ -153,8 +153,6 @@ static SpaceLink *action_duplicate(SpaceLink *sl)
 {
   SpaceAction *sactionn = MEM_dupallocN(sl);
 
-  memset(&sactionn->runtime, 0x0, sizeof(sactionn->runtime));
-
   /* clear or remove stuff from old */
 
   return (SpaceLink *)sactionn;

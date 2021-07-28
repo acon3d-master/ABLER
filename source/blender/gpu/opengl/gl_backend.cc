@@ -38,45 +38,53 @@ namespace blender::gpu {
 /** \name Platform
  * \{ */
 
+static bool match_renderer(StringRef renderer, const Vector<std::string> &items)
+{
+  for (const std::string &item : items) {
+    const std::string wrapped = " " + item + " ";
+    if (renderer.endswith(item) || renderer.find(wrapped) != StringRef::not_found) {
+      return true;
+    }
+  }
+  return false;
+}
+
 void GLBackend::platform_init()
 {
   BLI_assert(!GPG.initialized);
+  GPG.initialized = true;
+
+#ifdef _WIN32
+  GPG.os = GPU_OS_WIN;
+#elif defined(__APPLE__)
+  GPG.os = GPU_OS_MAC;
+#else
+  GPG.os = GPU_OS_UNIX;
+#endif
 
   const char *vendor = (const char *)glGetString(GL_VENDOR);
   const char *renderer = (const char *)glGetString(GL_RENDERER);
   const char *version = (const char *)glGetString(GL_VERSION);
-  eGPUDeviceType device = GPU_DEVICE_ANY;
-  eGPUOSType os = GPU_OS_ANY;
-  eGPUDriverType driver = GPU_DRIVER_ANY;
-  eGPUSupportLevel support_level = GPU_SUPPORT_LEVEL_SUPPORTED;
-
-#ifdef _WIN32
-  os = GPU_OS_WIN;
-#elif defined(__APPLE__)
-  os = GPU_OS_MAC;
-#else
-  os = GPU_OS_UNIX;
-#endif
 
   if (strstr(vendor, "ATI") || strstr(vendor, "AMD")) {
-    device = GPU_DEVICE_ATI;
-    driver = GPU_DRIVER_OFFICIAL;
+    GPG.device = GPU_DEVICE_ATI;
+    GPG.driver = GPU_DRIVER_OFFICIAL;
   }
   else if (strstr(vendor, "NVIDIA")) {
-    device = GPU_DEVICE_NVIDIA;
-    driver = GPU_DRIVER_OFFICIAL;
+    GPG.device = GPU_DEVICE_NVIDIA;
+    GPG.driver = GPU_DRIVER_OFFICIAL;
   }
   else if (strstr(vendor, "Intel") ||
            /* src/mesa/drivers/dri/intel/intel_context.c */
            strstr(renderer, "Mesa DRI Intel") || strstr(renderer, "Mesa DRI Mobile Intel")) {
-    device = GPU_DEVICE_INTEL;
-    driver = GPU_DRIVER_OFFICIAL;
+    GPG.device = GPU_DEVICE_INTEL;
+    GPG.driver = GPU_DRIVER_OFFICIAL;
 
     if (strstr(renderer, "UHD Graphics") ||
         /* Not UHD but affected by the same bugs. */
         strstr(renderer, "HD Graphics 530") || strstr(renderer, "Kaby Lake GT2") ||
         strstr(renderer, "Whiskey Lake")) {
-      device |= GPU_DEVICE_INTEL_UHD;
+      GPG.device |= GPU_DEVICE_INTEL_UHD;
     }
   }
   else if ((strstr(renderer, "Mesa DRI R")) ||
@@ -84,47 +92,49 @@ void GLBackend::platform_init()
            (strstr(renderer, "AMD") && strstr(vendor, "X.Org")) ||
            (strstr(renderer, "Gallium ") && strstr(renderer, " on ATI ")) ||
            (strstr(renderer, "Gallium ") && strstr(renderer, " on AMD "))) {
-    device = GPU_DEVICE_ATI;
-    driver = GPU_DRIVER_OPENSOURCE;
+    GPG.device = GPU_DEVICE_ATI;
+    GPG.driver = GPU_DRIVER_OPENSOURCE;
   }
   else if (strstr(renderer, "Nouveau") || strstr(vendor, "nouveau")) {
-    device = GPU_DEVICE_NVIDIA;
-    driver = GPU_DRIVER_OPENSOURCE;
+    GPG.device = GPU_DEVICE_NVIDIA;
+    GPG.driver = GPU_DRIVER_OPENSOURCE;
   }
   else if (strstr(vendor, "Mesa")) {
-    device = GPU_DEVICE_SOFTWARE;
-    driver = GPU_DRIVER_SOFTWARE;
+    GPG.device = GPU_DEVICE_SOFTWARE;
+    GPG.driver = GPU_DRIVER_SOFTWARE;
   }
   else if (strstr(vendor, "Microsoft")) {
-    device = GPU_DEVICE_SOFTWARE;
-    driver = GPU_DRIVER_SOFTWARE;
+    GPG.device = GPU_DEVICE_SOFTWARE;
+    GPG.driver = GPU_DRIVER_SOFTWARE;
   }
   else if (strstr(vendor, "Apple")) {
     /* Apple Silicon. */
-    device = GPU_DEVICE_APPLE;
-    driver = GPU_DRIVER_OFFICIAL;
+    GPG.device = GPU_DEVICE_APPLE;
+    GPG.driver = GPU_DRIVER_OFFICIAL;
   }
   else if (strstr(renderer, "Apple Software Renderer")) {
-    device = GPU_DEVICE_SOFTWARE;
-    driver = GPU_DRIVER_SOFTWARE;
+    GPG.device = GPU_DEVICE_SOFTWARE;
+    GPG.driver = GPU_DRIVER_SOFTWARE;
   }
   else if (strstr(renderer, "llvmpipe") || strstr(renderer, "softpipe")) {
-    device = GPU_DEVICE_SOFTWARE;
-    driver = GPU_DRIVER_SOFTWARE;
+    GPG.device = GPU_DEVICE_SOFTWARE;
+    GPG.driver = GPU_DRIVER_SOFTWARE;
   }
   else {
     printf("Warning: Could not find a matching GPU name. Things may not behave as expected.\n");
     printf("Detected OpenGL configuration:\n");
     printf("Vendor: %s\n", vendor);
     printf("Renderer: %s\n", renderer);
+    GPG.device = GPU_DEVICE_ANY;
+    GPG.driver = GPU_DRIVER_ANY;
   }
 
   /* Detect support level */
   if (!GLEW_VERSION_3_3) {
-    support_level = GPU_SUPPORT_LEVEL_UNSUPPORTED;
+    GPG.support_level = GPU_SUPPORT_LEVEL_UNSUPPORTED;
   }
   else {
-    if ((device & GPU_DEVICE_INTEL) && (os & GPU_OS_WIN)) {
+    if (GPU_type_matches(GPU_DEVICE_INTEL, GPU_OS_WIN, GPU_DRIVER_ANY)) {
       /* Old Intel drivers with known bugs that cause material properties to crash.
        * Version Build 10.18.14.5067 is the latest available and appears to be working
        * ok with our workarounds, so excluded from this list. */
@@ -133,19 +143,19 @@ void GLBackend::platform_init()
           strstr(version, "Build 9.18") || strstr(version, "Build 10.18.10.3") ||
           strstr(version, "Build 10.18.10.4") || strstr(version, "Build 10.18.10.5") ||
           strstr(version, "Build 10.18.14.4")) {
-        support_level = GPU_SUPPORT_LEVEL_LIMITED;
+        GPG.support_level = GPU_SUPPORT_LEVEL_LIMITED;
       }
     }
-    if ((device & GPU_DEVICE_ATI) && (os & GPU_OS_UNIX)) {
+    if (GPU_type_matches(GPU_DEVICE_ATI, GPU_OS_UNIX, GPU_DRIVER_ANY)) {
       /* Platform seems to work when SB backend is disabled. This can be done
        * by adding the environment variable `R600_DEBUG=nosb`. */
       if (strstr(renderer, "AMD CEDAR")) {
-        support_level = GPU_SUPPORT_LEVEL_LIMITED;
+        GPG.support_level = GPU_SUPPORT_LEVEL_LIMITED;
       }
     }
   }
-
-  GPG.init(device, os, driver, support_level, vendor, renderer, version);
+  GPG.create_key(GPG.support_level, vendor, renderer, version);
+  GPG.create_gpu_name(vendor, renderer, version);
 }
 
 void GLBackend::platform_exit()
@@ -203,11 +213,6 @@ static bool detect_mip_render_workaround()
   debug::check_gl_error("Cubemap Workaround End9");
 
   return enable_workaround;
-}
-
-static const char *gl_extension_get(int i)
-{
-  return (char *)glGetStringi(GL_EXTENSIONS, i);
 }
 
 static void detect_workarounds()
@@ -288,14 +293,25 @@ static void detect_workarounds()
    * The work around uses `GPU_RGBA16I`.
    */
   if (GPU_type_matches(GPU_DEVICE_ATI, GPU_OS_ANY, GPU_DRIVER_OFFICIAL)) {
-    if (strstr(renderer, " RX 460 ") || strstr(renderer, " RX 470 ") ||
-        strstr(renderer, " RX 480 ") || strstr(renderer, " RX 490 ") ||
-        strstr(renderer, " RX 560 ") || strstr(renderer, " RX 560X ") ||
-        strstr(renderer, " RX 570 ") || strstr(renderer, " RX 580 ") ||
-        strstr(renderer, " RX 580X ") || strstr(renderer, " RX 590 ") ||
-        strstr(renderer, " RX550/550 ") || strstr(renderer, "(TM) 520 ") ||
-        strstr(renderer, "(TM) 530 ") || strstr(renderer, "(TM) 535 ") ||
-        strstr(renderer, " R5 ") || strstr(renderer, " R7 ") || strstr(renderer, " R9 ")) {
+    const Vector<std::string> matches = {"RX 460",
+                                         "RX 470",
+                                         "RX 480",
+                                         "RX 490",
+                                         "RX 560",
+                                         "RX 560X",
+                                         "RX 570",
+                                         "RX 580",
+                                         "RX 580X",
+                                         "RX 590",
+                                         "RX550/550",
+                                         "(TM) 520",
+                                         "(TM) 530",
+                                         "(TM) 535",
+                                         "R5",
+                                         "R7",
+                                         "R9"};
+
+    if (match_renderer(renderer, matches)) {
       GCaps.use_hq_normals_workaround = true;
     }
   }
@@ -425,28 +441,8 @@ void GLBackend::capabilities_init()
   glGetIntegerv(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS, &GCaps.max_textures_vert);
   glGetIntegerv(GL_MAX_GEOMETRY_TEXTURE_IMAGE_UNITS, &GCaps.max_textures_geom);
   glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &GCaps.max_textures);
-  glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &GCaps.max_uniforms_vert);
-  glGetIntegerv(GL_MAX_FRAGMENT_UNIFORM_COMPONENTS, &GCaps.max_uniforms_frag);
-  glGetIntegerv(GL_MAX_ELEMENTS_INDICES, &GCaps.max_batch_indices);
-  glGetIntegerv(GL_MAX_ELEMENTS_VERTICES, &GCaps.max_batch_vertices);
-  glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &GCaps.max_vertex_attribs);
-  glGetIntegerv(GL_MAX_VARYING_FLOATS, &GCaps.max_varying_floats);
-
-  glGetIntegerv(GL_NUM_EXTENSIONS, &GCaps.extensions_len);
-  GCaps.extension_get = gl_extension_get;
-
   GCaps.mem_stats_support = GLEW_NVX_gpu_memory_info || GLEW_ATI_meminfo;
   GCaps.shader_image_load_store_support = GLEW_ARB_shader_image_load_store;
-  GCaps.compute_shader_support = GLEW_ARB_compute_shader;
-  if (GCaps.compute_shader_support) {
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 0, &GCaps.max_work_group_count[0]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 1, &GCaps.max_work_group_count[1]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_COUNT, 2, &GCaps.max_work_group_count[2]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 0, &GCaps.max_work_group_size[0]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 1, &GCaps.max_work_group_size[1]);
-    glGetIntegeri_v(GL_MAX_COMPUTE_WORK_GROUP_SIZE, 2, &GCaps.max_work_group_size[2]);
-  }
-  GCaps.shader_storage_buffer_objects_support = GLEW_ARB_shader_storage_buffer_object;
   /* GL specific capabilities. */
   glGetIntegerv(GL_MAX_3D_TEXTURE_SIZE, &GLContext::max_texture_3d_size);
   glGetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, &GLContext::max_cubemap_size);

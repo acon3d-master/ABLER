@@ -497,12 +497,7 @@ static int similar_face_select_exec(bContext *C, wmOperator *op)
 
     if (changed) {
       EDBM_selectmode_flush(em);
-      EDBM_update(ob->data,
-                  &(const struct EDBMUpdate_Params){
-                      .calc_looptri = false,
-                      .calc_normals = false,
-                      .is_destructive = false,
-                  });
+      EDBM_update_generic(ob->data, false, false);
     }
   }
 
@@ -524,12 +519,7 @@ static int similar_face_select_exec(bContext *C, wmOperator *op)
         }
       }
       EDBM_selectmode_flush(em);
-      EDBM_update(ob->data,
-                  &(const struct EDBMUpdate_Params){
-                      .calc_looptri = false,
-                      .calc_normals = false,
-                      .is_destructive = false,
-                  });
+      EDBM_update_generic(ob->data, false, false);
     }
   }
 
@@ -927,12 +917,7 @@ static int similar_edge_select_exec(bContext *C, wmOperator *op)
 
     if (changed) {
       EDBM_selectmode_flush(em);
-      EDBM_update(ob->data,
-                  &(const struct EDBMUpdate_Params){
-                      .calc_looptri = false,
-                      .calc_normals = false,
-                      .is_destructive = false,
-                  });
+      EDBM_update_generic(ob->data, false, false);
     }
   }
 
@@ -954,12 +939,7 @@ static int similar_edge_select_exec(bContext *C, wmOperator *op)
         }
       }
       EDBM_selectmode_flush(em);
-      EDBM_update(ob->data,
-                  &(const struct EDBMUpdate_Params){
-                      .calc_looptri = false,
-                      .calc_normals = false,
-                      .is_destructive = false,
-                  });
+      EDBM_update_generic(ob->data, false, false);
     }
   }
 
@@ -1233,12 +1213,7 @@ static int similar_vert_select_exec(bContext *C, wmOperator *op)
 
     if (changed) {
       EDBM_selectmode_flush(em);
-      EDBM_update(ob->data,
-                  &(const struct EDBMUpdate_Params){
-                      .calc_looptri = false,
-                      .calc_normals = false,
-                      .is_destructive = false,
-                  });
+      EDBM_update_generic(ob->data, false, false);
     }
   }
 

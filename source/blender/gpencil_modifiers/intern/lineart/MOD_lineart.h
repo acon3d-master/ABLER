@@ -23,7 +23,6 @@
 
 #pragma once
 
-#include "BLI_linklist.h"
 #include "BLI_listbase.h"
 #include "BLI_math.h" /* Needed here for inline functions. */
 #include "BLI_threads.h"
@@ -94,8 +93,8 @@ typedef struct LineartElementLinkNode {
   float crease_threshold;
 } LineartElementLinkNode;
 
-typedef struct LineartEdgeSegment {
-  struct LineartEdgeSegment *next, *prev;
+typedef struct LineartLineSegment {
+  struct LineartLineSegment *next, *prev;
   /** at==0: left  at==1: right  (this is in 2D projected space) */
   double at;
   /** Occlusion level after "at" point */
@@ -108,7 +107,7 @@ typedef struct LineartEdgeSegment {
    * enough for most cases.
    */
   unsigned char transparency_mask;
-} LineartEdgeSegment;
+} LineartLineSegment;
 
 typedef struct LineartVert {
   double gloc[3];
@@ -156,7 +155,7 @@ typedef struct LineartEdge {
 
   /**
    * Still need this entry because culled lines will not add to object
-   * #LineartElementLinkNode node (known as `eln` internally).
+   * #LineartElementLinkNode node (known as `reln` internally).
    *
    * TODO: If really need more savings, we can allocate this in a "extended" way too, but we need
    * another bit in flags to be able to show the difference.
@@ -164,8 +163,8 @@ typedef struct LineartEdge {
   struct Object *object_ref;
 } LineartEdge;
 
-typedef struct LineartEdgeChain {
-  struct LineartEdgeChain *next, *prev;
+typedef struct LineartLineChain {
+  struct LineartLineChain *next, *prev;
   ListBase chain;
 
   /** Calculated before draw command. */
@@ -180,10 +179,10 @@ typedef struct LineartEdgeChain {
   unsigned char transparency_mask;
 
   struct Object *object_ref;
-} LineartEdgeChain;
+} LineartLineChain;
 
-typedef struct LineartEdgeChainItem {
-  struct LineartEdgeChainItem *next, *prev;
+typedef struct LineartLineChainItem {
+  struct LineartLineChainItem *next, *prev;
   /** Need z value for fading */
   float pos[3];
   /** For restoring position to 3d space */
@@ -193,29 +192,18 @@ typedef struct LineartEdgeChainItem {
   char occlusion;
   unsigned char transparency_mask;
   size_t index;
-} LineartEdgeChainItem;
+} LineartLineChainItem;
 
 typedef struct LineartChainRegisterEntry {
   struct LineartChainRegisterEntry *next, *prev;
-  LineartEdgeChain *ec;
-  LineartEdgeChainItem *eci;
+  LineartLineChain *rlc;
+  LineartLineChainItem *rlci;
   char picked;
 
   /* left/right mark.
    * Because we revert list in chaining so we need the flag. */
   char is_left;
 } LineartChainRegisterEntry;
-
-enum eLineArtTileRecursiveLimit {
-  /* If tile gets this small, it's already much smaller than a pixel. No need to continue
-   * splitting. */
-  LRT_TILE_RECURSIVE_PERSPECTIVE = 30,
-  /* This is a tried-and-true safe value for high poly models that also needed ortho rendering. */
-  LRT_TILE_RECURSIVE_ORTHO = 10,
-};
-
-#define LRT_TILE_SPLITTING_TRIANGLE_LIMIT 100
-#define LRT_TILE_EDGE_COUNT_INITIAL 32
 
 typedef struct LineartRenderBuffer {
   struct LineartRenderBuffer *prev, *next;
@@ -227,15 +215,9 @@ typedef struct LineartRenderBuffer {
   int tile_count_x, tile_count_y;
   double width_per_tile, height_per_tile;
   double view_projection[4][4];
-  double view[4][4];
 
   struct LineartBoundingArea *initial_bounding_areas;
   unsigned int bounding_area_count;
-
-  /* When splitting bounding areas, if there's an ortho camera placed at a straight angle, there
-   * will be a lot of triangles aligned in line which can not be separated by continue subdividing
-   * the tile. So we set a strict limit when using ortho camera. See eLineArtTileRecursiveLimit. */
-  int tile_recursive_level;
 
   ListBase vertex_buffer_pointers;
   ListBase line_buffer_pointers;
@@ -250,23 +232,36 @@ typedef struct LineartRenderBuffer {
   ListBase wasted_cuts;
   SpinLock lock_cuts;
 
-  /* This is just a pointer to LineartCache::chain_data_pool, which acts as a cache for line
-   * chains. */
-  LineartStaticMemPool *chain_data_pool;
-
   /*  Render status */
   double view_vector[3];
 
   int triangle_size;
 
-  /* Although using ListBase here, LineartEdge is single linked list.
-   * list.last is used to store worker progress along the list.
-   * See lineart_main_occlusion_begin() for more info. */
-  ListBase contour;
-  ListBase intersection;
-  ListBase crease;
-  ListBase material;
-  ListBase edge_mark;
+  unsigned int contour_count;
+  unsigned int contour_processed;
+  LineartEdge *contour_managed;
+  /** A single linked list (cast to #LinkNode). */
+  LineartEdge *contours;
+
+  unsigned int intersection_count;
+  unsigned int intersection_processed;
+  LineartEdge *intersection_managed;
+  LineartEdge *intersection_lines;
+
+  unsigned int crease_count;
+  unsigned int crease_processed;
+  LineartEdge *crease_managed;
+  LineartEdge *crease_lines;
+
+  unsigned int material_line_count;
+  unsigned int material_processed;
+  LineartEdge *material_managed;
+  LineartEdge *material_lines;
+
+  unsigned int edge_mark_count;
+  unsigned int edge_mark_processed;
+  LineartEdge *edge_mark_managed;
+  LineartEdge *edge_marks;
 
   ListBase chains;
 
@@ -313,22 +308,10 @@ typedef struct LineartRenderBuffer {
 
 } LineartRenderBuffer;
 
-typedef struct LineartCache {
-  /** Separate memory pool for chain data, this goes to the cache, so when we free the main pool,
-   * chains will still be available. */
-  LineartStaticMemPool chain_data_pool;
-
-  /** A copy of rb->chains so we have that data available after rb has been destroyed. */
-  ListBase chains;
-
-  /** Cache only contains edge types specified in this variable. */
-  char rb_edge_types;
-} LineartCache;
-
 #define DBL_TRIANGLE_LIM 1e-8
 #define DBL_EDGE_LIM 1e-9
 
-#define LRT_MEMORY_POOL_1MB (1 << 20)
+#define LRT_MEMORY_POOL_64MB (1 << 26)
 
 typedef enum eLineartTriangleFlags {
   LRT_CULL_DONT_CARE = 0,
@@ -339,11 +322,9 @@ typedef enum eLineartTriangleFlags {
   LRT_TRIANGLE_NO_INTERSECTION = (1 << 4),
 } eLineartTriangleFlags;
 
-/**
- * Controls how many edges a worker thread is processing at one request.
+/** Controls how many edges a worker thread is processing at one request.
  * There's no significant performance impact on choosing different values.
- * Don't make it too small so that the worker thread won't request too many times.
- */
+ * Don't make it too small so that the worker thread won't request too many times. */
 #define LRT_THREAD_EDGE_COUNT 1000
 
 typedef struct LineartRenderTaskInfo {
@@ -351,50 +332,22 @@ typedef struct LineartRenderTaskInfo {
 
   int thread_id;
 
-  /* These lists only denote the part of the main edge list that the thread should iterate over.
-   * Be careful to not iterate outside of these bounds as it is not thread safe to do so. */
-  ListBase contour;
-  ListBase intersection;
-  ListBase crease;
-  ListBase material;
-  ListBase edge_mark;
+  LineartEdge *contour;
+  LineartEdge *contour_end;
+
+  LineartEdge *intersection;
+  LineartEdge *intersection_end;
+
+  LineartEdge *crease;
+  LineartEdge *crease_end;
+
+  LineartEdge *material;
+  LineartEdge *material_end;
+
+  LineartEdge *edge_mark;
+  LineartEdge *edge_mark_end;
 
 } LineartRenderTaskInfo;
-
-struct BMesh;
-
-typedef struct LineartObjectInfo {
-  struct LineartObjectInfo *next;
-  struct Object *original_ob;
-  struct Mesh *original_me;
-  double model_view_proj[4][4];
-  double model_view[4][4];
-  double normal[4][4];
-  LineartElementLinkNode *v_reln;
-  int usage;
-  int global_i_offset;
-
-  bool free_use_mesh;
-
-  /* Threads will add lines inside here, when all threads are done, we combine those into the
-   * ones in LineartRenderBuffer.  */
-  ListBase contour;
-  ListBase intersection;
-  ListBase crease;
-  ListBase material;
-  ListBase edge_mark;
-  ListBase floating;
-
-} LineartObjectInfo;
-
-typedef struct LineartObjectLoadTaskInfo {
-  struct LineartRenderBuffer *rb;
-  struct Depsgraph *dg;
-  /* LinkNode styled list */
-  LineartObjectInfo *pending;
-  /* Used to spread the load across several threads. This can not overflow. */
-  long unsigned int total_faces;
-} LineartObjectLoadTaskInfo;
 
 /**
  * Bounding area diagram:
@@ -432,14 +385,10 @@ typedef struct LineartBoundingArea {
   ListBase up;
   ListBase bp;
 
-  int16_t triangle_count;
-  int16_t max_triangle_count;
-  int16_t line_count;
-  int16_t max_line_count;
+  short triangle_count;
 
-  /* Use array for speeding up multiple accesses. */
-  struct LineartTriangle **linked_triangles;
-  struct LineartEdge **linked_lines;
+  ListBase linked_triangles;
+  ListBase linked_lines;
 
   /** Reserved for image space reduction && multi-thread chaining. */
   ListBase linked_chains;
@@ -578,12 +527,11 @@ void MOD_lineart_chain_connect(LineartRenderBuffer *rb);
 void MOD_lineart_chain_discard_short(LineartRenderBuffer *rb, const float threshold);
 void MOD_lineart_chain_split_angle(LineartRenderBuffer *rb, float angle_threshold_rad);
 
-int MOD_lineart_chain_count(const LineartEdgeChain *ec);
-void MOD_lineart_chain_clear_picked_flag(LineartCache *lc);
+int MOD_lineart_chain_count(const LineartLineChain *rlc);
+void MOD_lineart_chain_clear_picked_flag(struct LineartRenderBuffer *rb);
 
 bool MOD_lineart_compute_feature_lines(struct Depsgraph *depsgraph,
-                                       struct LineartGpencilModifierData *lmd,
-                                       LineartCache **cached_result);
+                                       struct LineartGpencilModifierData *lmd);
 
 struct Scene;
 
@@ -596,7 +544,7 @@ LineartBoundingArea *MOD_lineart_get_bounding_area(LineartRenderBuffer *rb, doub
 struct bGPDlayer;
 struct bGPDframe;
 
-void MOD_lineart_gpencil_generate(LineartCache *cache,
+void MOD_lineart_gpencil_generate(LineartRenderBuffer *rb,
                                   struct Depsgraph *depsgraph,
                                   struct Object *ob,
                                   struct bGPDlayer *gpl,
@@ -615,6 +563,6 @@ void MOD_lineart_gpencil_generate(LineartCache *cache,
                                   const char *vgname,
                                   int modifier_flags);
 
-float MOD_lineart_chain_compute_length(LineartEdgeChain *ec);
+float MOD_lineart_chain_compute_length(LineartLineChain *rlc);
 
 void ED_operatortypes_lineart(void);

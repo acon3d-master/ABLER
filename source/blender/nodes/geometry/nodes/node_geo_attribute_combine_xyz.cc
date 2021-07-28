@@ -77,9 +77,9 @@ static AttributeDomain get_result_domain(const GeometryComponent &component,
                                          StringRef result_name)
 {
   /* Use the domain of the result attribute if it already exists. */
-  std::optional<AttributeMetaData> result_info = component.attribute_get_meta_data(result_name);
-  if (result_info) {
-    return result_info->domain;
+  ReadAttributePtr result_attribute = component.attribute_try_get_for_read(result_name);
+  if (result_attribute) {
+    return result_attribute->domain();
   }
 
   /* Otherwise use the highest priority domain from existing input attributes, or the default. */
@@ -94,25 +94,27 @@ static void combine_attributes(GeometryComponent &component, const GeoNodeExecPa
   }
   const AttributeDomain result_domain = get_result_domain(component, params, result_name);
 
-  OutputAttribute_Typed<float3> attribute_result =
-      component.attribute_try_get_for_output_only<float3>(result_name, result_domain);
+  OutputAttributePtr attribute_result = component.attribute_try_get_for_output(
+      result_name, result_domain, CD_PROP_FLOAT3);
   if (!attribute_result) {
     return;
   }
-  GVArray_Typed<float> attribute_x = params.get_input_attribute<float>(
+  FloatReadAttribute attribute_x = params.get_input_attribute<float>(
       "X", component, result_domain, 0.0f);
-  GVArray_Typed<float> attribute_y = params.get_input_attribute<float>(
+  FloatReadAttribute attribute_y = params.get_input_attribute<float>(
       "Y", component, result_domain, 0.0f);
-  GVArray_Typed<float> attribute_z = params.get_input_attribute<float>(
+  FloatReadAttribute attribute_z = params.get_input_attribute<float>(
       "Z", component, result_domain, 0.0f);
 
-  for (const int i : IndexRange(attribute_result->size())) {
+  MutableSpan<float3> results = attribute_result->get_span_for_write_only<float3>();
+  for (const int i : results.index_range()) {
     const float x = attribute_x[i];
     const float y = attribute_y[i];
     const float z = attribute_z[i];
-    attribute_result->set(i, {x, y, z});
+    const float3 result = float3(x, y, z);
+    results[i] = result;
   }
-  attribute_result.save();
+  attribute_result.apply_span_and_save();
 }
 
 static void geo_node_attribute_combine_xyz_exec(GeoNodeExecParams params)
@@ -126,9 +128,6 @@ static void geo_node_attribute_combine_xyz_exec(GeoNodeExecParams params)
   }
   if (geometry_set.has<PointCloudComponent>()) {
     combine_attributes(geometry_set.get_component_for_write<PointCloudComponent>(), params);
-  }
-  if (geometry_set.has<CurveComponent>()) {
-    combine_attributes(geometry_set.get_component_for_write<CurveComponent>(), params);
   }
 
   params.set_output("Geometry", geometry_set);

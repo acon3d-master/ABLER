@@ -1160,6 +1160,7 @@ void ui_but_add_shortcut(uiBut *but, const char *shortcut_str, const bool do_str
   MEM_freeN(butstr_orig);
   but->str = but->strdata;
   but->flag |= UI_BUT_HAS_SEP_CHAR;
+  but->drawflag |= UI_BUT_HAS_SHORTCUT;
   ui_but_update(but);
 }
 
@@ -2326,14 +2327,6 @@ bool ui_but_is_float(const uiBut *but)
   return false;
 }
 
-PropertyScaleType ui_but_scale_type(const uiBut *but)
-{
-  if (but->rnaprop) {
-    return RNA_property_ui_scale(but->rnaprop);
-  }
-  return PROP_SCALE_LINEAR;
-}
-
 bool ui_but_is_bool(const uiBut *but)
 {
   if (ELEM(but->type,
@@ -3206,17 +3199,19 @@ void ui_but_range_set_hard(uiBut *but)
 
   const PropertyType type = RNA_property_type(but->rnaprop);
 
+  /* clamp button range to something reasonable in case
+   * we get -inf/inf from RNA properties */
   if (type == PROP_INT) {
     int imin, imax;
     RNA_property_int_range(&but->rnapoin, but->rnaprop, &imin, &imax);
-    but->hardmin = imin;
-    but->hardmax = imax;
+    but->hardmin = (imin == INT_MIN) ? -1e4 : imin;
+    but->hardmax = (imin == INT_MAX) ? 1e4 : imax;
   }
   else if (type == PROP_FLOAT) {
     float fmin, fmax;
     RNA_property_float_range(&but->rnapoin, but->rnaprop, &fmin, &fmax);
-    but->hardmin = fmin;
-    but->hardmax = fmax;
+    but->hardmin = (fmin == -FLT_MAX) ? (float)-1e4 : fmin;
+    but->hardmax = (fmax == FLT_MAX) ? (float)1e4 : fmax;
   }
 }
 
@@ -6143,7 +6138,6 @@ void UI_but_drag_set_asset(uiBut *but,
                            const char *name,
                            const char *path,
                            int id_type,
-                           int import_type,
                            int icon,
                            struct ImBuf *imb,
                            float scale)
@@ -6153,7 +6147,6 @@ void UI_but_drag_set_asset(uiBut *but,
   BLI_strncpy(asset_drag->name, name, sizeof(asset_drag->name));
   asset_drag->path = path;
   asset_drag->id_type = id_type;
-  asset_drag->import_type = import_type;
 
   but->dragtype = WM_DRAG_ASSET;
   ui_def_but_icon(but, icon, 0); /* no flag UI_HAS_ICON, so icon doesn't draw in button */

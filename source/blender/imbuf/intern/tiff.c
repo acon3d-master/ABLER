@@ -38,7 +38,6 @@
 
 #include "imbuf.h"
 
-#include "BLI_endian_defines.h"
 #include "BLI_math.h"
 #include "BLI_utildefines.h"
 
@@ -375,7 +374,7 @@ static void scanline_separate_32bit(float *rectf, const float *fbuf, int scanlin
 
 static void imb_read_tiff_resolution(ImBuf *ibuf, TIFF *image)
 {
-  uint16_t unit;
+  uint16 unit;
   float xres;
   float yres;
 
@@ -570,7 +569,7 @@ ImBuf *imb_loadtiff(const unsigned char *mem,
   TIFF *image = NULL;
   ImBuf *ibuf = NULL, *hbuf;
   ImbTIFFMemFile memFile;
-  uint32_t width, height;
+  uint32 width, height;
   char *format = NULL;
   int level;
   short spp;
@@ -691,7 +690,7 @@ void imb_loadtiletiff(
     ImBuf *ibuf, const unsigned char *mem, size_t size, int tx, int ty, unsigned int *rect)
 {
   TIFF *image = NULL;
-  uint32_t width, height;
+  uint32 width, height;
   ImbTIFFMemFile memFile;
 
   image = imb_tiff_client_open(&memFile, mem, size);
@@ -762,7 +761,7 @@ void imb_loadtiletiff(
 bool imb_savetiff(ImBuf *ibuf, const char *filepath, int flags)
 {
   TIFF *image = NULL;
-  uint16_t samplesperpixel, bitspersample;
+  uint16 samplesperpixel, bitspersample;
   size_t npixels;
   unsigned char *pixels = NULL;
   unsigned char *from = NULL, *to = NULL;
@@ -775,7 +774,7 @@ bool imb_savetiff(ImBuf *ibuf, const char *filepath, int flags)
   /* check for a valid number of bytes per pixel.  Like the PNG writer,
    * the TIFF writer supports 1, 3 or 4 bytes per pixel, corresponding
    * to gray, RGB, RGBA respectively. */
-  samplesperpixel = (uint16_t)((ibuf->planes + 7) >> 3);
+  samplesperpixel = (uint16)((ibuf->planes + 7) >> 3);
   if ((samplesperpixel > 4) || (samplesperpixel == 2)) {
     fprintf(stderr,
             "imb_savetiff: unsupported number of bytes per "

@@ -31,7 +31,6 @@
 
 #include "BLI_linklist.h"
 #include "BLI_math.h"
-#include "BLI_task.h"
 #include "BLI_threads.h"
 #include "BLI_utildefines.h"
 
@@ -159,26 +158,6 @@ void bvhcache_free(BVHCache *bvh_cache)
   }
   BLI_mutex_end(&bvh_cache->mutex);
   MEM_freeN(bvh_cache);
-}
-
-/* BVH tree balancing inside a mutex lock must be run in isolation. Balancing
- * is multithreaded, and we do not want the current thread to start another task
- * that may involve acquiring the same mutex lock that it is waiting for. */
-static void bvhtree_balance_isolated(void *userdata)
-{
-  BLI_bvhtree_balance((BVHTree *)userdata);
-}
-
-static void bvhtree_balance(BVHTree *tree, const bool isolate)
-{
-  if (tree) {
-    if (isolate) {
-      BLI_task_isolate(bvhtree_balance_isolated, tree);
-    }
-    else {
-      BLI_bvhtree_balance(tree);
-    }
-  }
 }
 
 /** \} */
@@ -587,6 +566,7 @@ static BVHTree *bvhtree_from_editmesh_verts_create_tree(float epsilon,
       BLI_bvhtree_insert(tree, i, eve->co, 1);
     }
     BLI_assert(BLI_bvhtree_get_len(tree) == verts_num_active);
+    BLI_bvhtree_balance(tree);
   }
 
   return tree;
@@ -620,6 +600,7 @@ static BVHTree *bvhtree_from_mesh_verts_create_tree(float epsilon,
         BLI_bvhtree_insert(tree, i, vert[i].co, 1);
       }
       BLI_assert(BLI_bvhtree_get_len(tree) == verts_num_active);
+      BLI_bvhtree_balance(tree);
     }
   }
 
@@ -668,7 +649,6 @@ BVHTree *bvhtree_from_editmesh_verts_ex(BVHTreeFromEditMesh *data,
     if (data->cached == false) {
       tree = bvhtree_from_editmesh_verts_create_tree(
           epsilon, tree_type, axis, em, verts_mask, verts_num_active);
-      bvhtree_balance(tree, true);
 
       /* Save on cache for later use */
       /* printf("BVHTree built and saved on cache\n"); */
@@ -680,7 +660,6 @@ BVHTree *bvhtree_from_editmesh_verts_ex(BVHTreeFromEditMesh *data,
   else {
     tree = bvhtree_from_editmesh_verts_create_tree(
         epsilon, tree_type, axis, em, verts_mask, verts_num_active);
-    bvhtree_balance(tree, false);
   }
 
   if (tree) {
@@ -732,7 +711,6 @@ BVHTree *bvhtree_from_mesh_verts_ex(BVHTreeFromMesh *data,
   if (in_cache == false) {
     tree = bvhtree_from_mesh_verts_create_tree(
         epsilon, tree_type, axis, vert, verts_num, verts_mask, verts_num_active);
-    bvhtree_balance(tree, bvh_cache_p != NULL);
 
     if (bvh_cache_p) {
       /* Save on cache for later use */
@@ -793,6 +771,7 @@ static BVHTree *bvhtree_from_editmesh_edges_create_tree(float epsilon,
       BLI_bvhtree_insert(tree, i, co[0], 2);
     }
     BLI_assert(BLI_bvhtree_get_len(tree) == edges_num_active);
+    BLI_bvhtree_balance(tree);
   }
 
   return tree;
@@ -830,6 +809,7 @@ static BVHTree *bvhtree_from_mesh_edges_create_tree(const MVert *vert,
 
         BLI_bvhtree_insert(tree, i, co[0], 2);
       }
+      BLI_bvhtree_balance(tree);
     }
   }
 
@@ -881,7 +861,7 @@ BVHTree *bvhtree_from_editmesh_edges_ex(BVHTreeFromEditMesh *data,
     if (data->cached == false) {
       tree = bvhtree_from_editmesh_edges_create_tree(
           epsilon, tree_type, axis, em, edges_mask, edges_num_active);
-      bvhtree_balance(tree, true);
+
       /* Save on cache for later use */
       /* printf("BVHTree built and saved on cache\n"); */
       bvhcache_insert(bvh_cache, tree, bvh_cache_type);
@@ -892,7 +872,6 @@ BVHTree *bvhtree_from_editmesh_edges_ex(BVHTreeFromEditMesh *data,
   else {
     tree = bvhtree_from_editmesh_edges_create_tree(
         epsilon, tree_type, axis, em, edges_mask, edges_num_active);
-    bvhtree_balance(tree, false);
   }
 
   if (tree) {
@@ -949,16 +928,11 @@ BVHTree *bvhtree_from_mesh_edges_ex(BVHTreeFromMesh *data,
         vert, edge, edges_num, edges_mask, edges_num_active, epsilon, tree_type, axis);
 
     if (bvh_cache_p) {
-      bvhtree_balance(tree, true);
-
       BVHCache *bvh_cache = *bvh_cache_p;
       /* Save on cache for later use */
       /* printf("BVHTree built and saved on cache\n"); */
       bvhcache_insert(bvh_cache, tree, bvh_cache_type);
       in_cache = true;
-    }
-    else {
-      bvhtree_balance(tree, false);
     }
   }
 
@@ -1020,6 +994,7 @@ static BVHTree *bvhtree_from_mesh_faces_create_tree(float epsilon,
         }
       }
       BLI_assert(BLI_bvhtree_get_len(tree) == faces_num_active);
+      BLI_bvhtree_balance(tree);
     }
   }
 
@@ -1082,7 +1057,6 @@ BVHTree *bvhtree_from_mesh_faces_ex(BVHTreeFromMesh *data,
   if (in_cache == false) {
     tree = bvhtree_from_mesh_faces_create_tree(
         epsilon, tree_type, axis, vert, face, numFaces, faces_mask, faces_num_active);
-    bvhtree_balance(tree, bvh_cache_p != NULL);
 
     if (bvh_cache_p) {
       /* Save on cache for later use */
@@ -1153,6 +1127,7 @@ static BVHTree *bvhtree_from_editmesh_looptri_create_tree(float epsilon,
         }
       }
       BLI_assert(BLI_bvhtree_get_len(tree) == looptri_num_active);
+      BLI_bvhtree_balance(tree);
     }
   }
 
@@ -1198,6 +1173,7 @@ static BVHTree *bvhtree_from_mesh_looptri_create_tree(float epsilon,
         }
       }
       BLI_assert(BLI_bvhtree_get_len(tree) == looptri_num_active);
+      BLI_bvhtree_balance(tree);
     }
   }
 
@@ -1253,7 +1229,6 @@ BVHTree *bvhtree_from_editmesh_looptri_ex(BVHTreeFromEditMesh *data,
     bool in_cache = bvhcache_find(
         bvh_cache_p, bvh_cache_type, &tree, &lock_started, mesh_eval_mutex);
     BVHCache *bvh_cache = *bvh_cache_p;
-    bvhtree_balance(tree, true);
 
     if (in_cache == false) {
       tree = bvhtree_from_editmesh_looptri_create_tree(
@@ -1268,7 +1243,6 @@ BVHTree *bvhtree_from_editmesh_looptri_ex(BVHTreeFromEditMesh *data,
   else {
     tree = bvhtree_from_editmesh_looptri_create_tree(
         epsilon, tree_type, axis, em, looptri_mask, looptri_num_active);
-    bvhtree_balance(tree, false);
   }
 
   if (tree) {
@@ -1328,8 +1302,6 @@ BVHTree *bvhtree_from_mesh_looptri_ex(BVHTreeFromMesh *data,
                                                  looptri_num,
                                                  looptri_mask,
                                                  looptri_num_active);
-
-    bvhtree_balance(tree, bvh_cache_p != NULL);
 
     if (bvh_cache_p) {
       BVHCache *bvh_cache = *bvh_cache_p;
@@ -1770,7 +1742,7 @@ BVHTree *BKE_bvhtree_from_pointcloud_get(BVHTreeFromPointCloud *data,
     BLI_bvhtree_insert(tree, i, pointcloud->co[i], 1);
   }
   BLI_assert(BLI_bvhtree_get_len(tree) == pointcloud->totpoint);
-  bvhtree_balance(tree, false);
+  BLI_bvhtree_balance(tree);
 
   data->coords = pointcloud->co;
   data->tree = tree;

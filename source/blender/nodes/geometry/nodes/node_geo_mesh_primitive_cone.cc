@@ -17,7 +17,6 @@
 #include "DNA_mesh_types.h"
 #include "DNA_meshdata_types.h"
 
-#include "BKE_material.h"
 #include "BKE_mesh.h"
 
 #include "UI_interface.h"
@@ -195,9 +194,9 @@ static void calculate_uvs(Mesh *mesh,
 {
   MeshComponent mesh_component;
   mesh_component.replace(mesh, GeometryOwnershipType::Editable);
-  OutputAttribute_Typed<float2> uv_attribute =
-      mesh_component.attribute_try_get_for_output_only<float2>("uv_map", ATTR_DOMAIN_CORNER);
-  MutableSpan<float2> uvs = uv_attribute.as_span();
+  OutputAttributePtr uv_attribute = mesh_component.attribute_try_get_for_output(
+      "uv_map", ATTR_DOMAIN_CORNER, CD_PROP_FLOAT2, nullptr);
+  MutableSpan<float2> uvs = uv_attribute->get_span_for_write_only<float2>();
 
   Array<float2> circle(verts_num);
   float angle = 0.0f;
@@ -272,7 +271,7 @@ static void calculate_uvs(Mesh *mesh,
     }
   }
 
-  uv_attribute.save();
+  uv_attribute.apply_span_and_save();
 }
 
 Mesh *create_cylinder_or_cone_mesh(const float radius_top,
@@ -309,7 +308,6 @@ Mesh *create_cylinder_or_cone_mesh(const float radius_top,
       0,
       corner_total(fill_type, verts_num, top_is_point, bottom_is_point),
       face_total(fill_type, verts_num, top_is_point, bottom_is_point));
-  BKE_id_material_eval_ensure_default_slot(&mesh->id);
   MutableSpan<MVert> verts{mesh->mvert, mesh->totvert};
   MutableSpan<MLoop> loops{mesh->mloop, mesh->totloop};
   MutableSpan<MEdge> edges{mesh->medge, mesh->totedge};

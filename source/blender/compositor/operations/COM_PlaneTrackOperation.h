@@ -40,7 +40,7 @@ class PlaneTrackCommon {
   /* note: this class is not an operation itself (to prevent virtual inheritance issues)
    * implementation classes must make wrappers to use these methods, see below.
    */
-  void read_and_calculate_corners(PlaneDistortBaseOperation *distort_op);
+  void readCornersFromTrack(float corners[4][2], float frame);
   void determineResolution(unsigned int resolution[2], unsigned int preferredResolution[2]);
 
  public:
@@ -62,9 +62,6 @@ class PlaneTrackCommon {
   {
     this->m_framenumber = framenumber;
   }
-
- private:
-  void readCornersFromTrack(float corners[4][2], float frame);
 };
 
 class PlaneTrackMaskOperation : public PlaneDistortMaskOperation, public PlaneTrackCommon {

@@ -109,7 +109,7 @@ static void foreachIDLink(ModifierData *md, Object *ob, IDWalkFunc walk, void *u
 {
   BooleanModifierData *bmd = (BooleanModifierData *)md;
 
-  walk(userData, ob, (ID **)&bmd->collection, IDWALK_CB_NOP);
+  walk(userData, ob, (ID **)&bmd->collection, IDWALK_CB_USER);
   walk(userData, ob, (ID **)&bmd->object, IDWALK_CB_NOP);
 }
 
@@ -283,10 +283,11 @@ static void BMD_mesh_intersection(BMesh *bm,
   /* main bmesh intersection setup */
   /* create tessface & intersect */
   const int looptris_tot = poly_to_tri_count(bm->totface, bm->totloop);
+  int tottri;
   BMLoop *(*looptris)[3] = (BMLoop * (*)[3])
       MEM_malloc_arrayN(looptris_tot, sizeof(*looptris), __func__);
 
-  BM_mesh_calc_tessellation_beauty(bm, looptris);
+  BM_mesh_calc_tessellation_beauty(bm, looptris, &tottri);
 
   /* postpone this until after tessellating
    * so we can use the original normals before the vertex are moved */
@@ -363,7 +364,7 @@ static void BMD_mesh_intersection(BMesh *bm,
 
   BM_mesh_intersect(bm,
                     looptris,
-                    looptris_tot,
+                    tottri,
                     bm_face_isect_pair,
                     nullptr,
                     false,
@@ -634,6 +635,7 @@ ModifierTypeInfo modifierType_Boolean = {
     /* modifyMesh */ modifyMesh,
     /* modifyHair */ nullptr,
     /* modifyGeometrySet */ nullptr,
+    /* modifyVolume */ nullptr,
 
     /* initData */ initData,
     /* requiredDataMask */ requiredDataMask,

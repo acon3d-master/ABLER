@@ -258,6 +258,10 @@ typedef struct ModifierTypeInfo {
                             const struct ModifierEvalContext *ctx,
                             struct GeometrySet *geometry_set);
 
+  struct Volume *(*modifyVolume)(struct ModifierData *md,
+                                 const struct ModifierEvalContext *ctx,
+                                 struct Volume *volume);
+
   /********************* Optional functions *********************/
 
   /**

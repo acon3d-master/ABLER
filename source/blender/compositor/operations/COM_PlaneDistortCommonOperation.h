@@ -32,18 +32,30 @@ namespace blender::compositor {
 
 #define PLANE_DISTORT_MAX_SAMPLES 64
 
-class PlaneDistortBaseOperation : public NodeOperation {
+class PlaneDistortWarpImageOperation : public NodeOperation {
  protected:
   struct MotionSample {
     float frameSpaceCorners[4][2]; /* Corners coordinates in pixel space. */
     float perspectiveMatrix[3][3];
   };
+  SocketReader *m_pixelReader;
   MotionSample m_samples[PLANE_DISTORT_MAX_SAMPLES];
   int m_motion_blur_samples;
   float m_motion_blur_shutter;
 
  public:
-  PlaneDistortBaseOperation();
+  PlaneDistortWarpImageOperation();
+
+  void calculateCorners(const float corners[4][2], bool normalized, int sample);
+
+  void initExecution() override;
+  void deinitExecution() override;
+
+  void executePixelSampled(float output[4], float x, float y, PixelSampler sampler) override;
+
+  bool determineDependingAreaOfInterest(rcti *input,
+                                        ReadBufferOperation *readOperation,
+                                        rcti *output) override;
 
   void setMotionBlurSamples(int samples)
   {
@@ -54,43 +66,37 @@ class PlaneDistortBaseOperation : public NodeOperation {
   {
     this->m_motion_blur_shutter = shutter;
   }
-
-  virtual void calculateCorners(const float corners[4][2], bool normalized, int sample);
-
- private:
-  friend class PlaneTrackCommon;
 };
 
-class PlaneDistortWarpImageOperation : public PlaneDistortBaseOperation {
+class PlaneDistortMaskOperation : public NodeOperation {
  protected:
-  SocketReader *m_pixelReader;
-
- public:
-  PlaneDistortWarpImageOperation();
-
-  void calculateCorners(const float corners[4][2], bool normalized, int sample) override;
-
-  void initExecution() override;
-  void deinitExecution() override;
-
-  void executePixelSampled(float output[4], float x, float y, PixelSampler sampler) override;
-
-  bool determineDependingAreaOfInterest(rcti *input,
-                                        ReadBufferOperation *readOperation,
-                                        rcti *output) override;
-};
-
-class PlaneDistortMaskOperation : public PlaneDistortBaseOperation {
- protected:
+  struct MotionSample {
+    float frameSpaceCorners[4][2]; /* Corners coordinates in pixel space. */
+  };
   int m_osa;
+  MotionSample m_samples[PLANE_DISTORT_MAX_SAMPLES];
   float m_jitter[32][2];
+  int m_motion_blur_samples;
+  float m_motion_blur_shutter;
 
  public:
   PlaneDistortMaskOperation();
 
+  void calculateCorners(const float corners[4][2], bool normalized, int sample);
+
   void initExecution() override;
 
   void executePixelSampled(float output[4], float x, float y, PixelSampler sampler) override;
+
+  void setMotionBlurSamples(int samples)
+  {
+    BLI_assert(samples <= PLANE_DISTORT_MAX_SAMPLES);
+    this->m_motion_blur_samples = samples;
+  }
+  void setMotionBlurShutter(float shutter)
+  {
+    this->m_motion_blur_shutter = shutter;
+  }
 };
 
 }  // namespace blender::compositor

@@ -400,9 +400,13 @@ static void uiCollada_exportSettings(uiLayout *layout, PointerRNA *imfptr)
   }
 }
 
-static void wm_collada_export_draw(bContext *UNUSED(C), wmOperator *op)
+static void wm_collada_export_draw(bContext *C, wmOperator *op)
 {
-  uiCollada_exportSettings(op->layout, op->ptr);
+  wmWindowManager *wm = CTX_wm_manager(C);
+  PointerRNA ptr;
+
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
+  uiCollada_exportSettings(op->layout, &ptr);
 }
 
 static bool wm_collada_export_check(bContext *UNUSED(C), wmOperator *op)
@@ -794,9 +798,13 @@ static void uiCollada_importSettings(uiLayout *layout, PointerRNA *imfptr)
   uiItemR(box, imfptr, "keep_bind_info", 0, NULL, ICON_NONE);
 }
 
-static void wm_collada_import_draw(bContext *UNUSED(C), wmOperator *op)
+static void wm_collada_import_draw(bContext *C, wmOperator *op)
 {
-  uiCollada_importSettings(op->layout, op->ptr);
+  wmWindowManager *wm = CTX_wm_manager(C);
+  PointerRNA ptr;
+
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
+  uiCollada_importSettings(op->layout, &ptr);
 }
 
 void WM_OT_collada_import(wmOperatorType *ot)

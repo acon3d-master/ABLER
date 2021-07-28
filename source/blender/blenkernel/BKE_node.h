@@ -325,7 +325,6 @@ typedef struct bNodeType {
 
   /* Execute a geometry node. */
   NodeGeometryExecFunction geometry_node_execute;
-  bool geometry_node_execute_supports_laziness;
 
   /* RNA integration */
   ExtensionRNA rna_ext;
@@ -410,9 +409,6 @@ typedef struct bNodeTreeType {
   bool (*validate_link)(struct bNodeTree *ntree, struct bNodeLink *link);
 
   void (*node_add_init)(struct bNodeTree *ntree, struct bNode *bnode);
-
-  /* Check if the socket type is valid for this tree type. */
-  bool (*valid_socket_type)(enum eNodeSocketDatatype socket_type, struct bNodeTreeType *ntreetype);
 
   /* RNA integration */
   ExtensionRNA rna_ext;
@@ -1421,25 +1417,6 @@ int ntreeTexExecTree(struct bNodeTree *ntree,
 #define GEO_NODE_ATTRIBUTE_MAP_RANGE 1040
 #define GEO_NODE_ATTRIBUTE_CLAMP 1041
 #define GEO_NODE_BOUNDING_BOX 1042
-#define GEO_NODE_SWITCH 1043
-#define GEO_NODE_ATTRIBUTE_TRANSFER 1044
-#define GEO_NODE_CURVE_TO_MESH 1045
-#define GEO_NODE_ATTRIBUTE_CURVE_MAP 1046
-#define GEO_NODE_CURVE_RESAMPLE 1047
-#define GEO_NODE_ATTRIBUTE_VECTOR_ROTATE 1048
-#define GEO_NODE_MATERIAL_ASSIGN 1049
-#define GEO_NODE_INPUT_MATERIAL 1050
-#define GEO_NODE_MATERIAL_REPLACE 1051
-#define GEO_NODE_MESH_TO_CURVE 1052
-#define GEO_NODE_DELETE_GEOMETRY 1053
-#define GEO_NODE_CURVE_LENGTH 1054
-#define GEO_NODE_SELECT_BY_MATERIAL 1055
-#define GEO_NODE_CONVEX_HULL 1056
-#define GEO_NODE_CURVE_TO_POINTS 1057
-#define GEO_NODE_CURVE_REVERSE 1058
-#define GEO_NODE_SEPARATE_COMPONENTS 1059
-#define GEO_NODE_CURVE_SUBDIVIDE 1060
-#define GEO_NODE_RAYCAST 1061
 
 /** \} */
 

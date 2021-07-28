@@ -38,8 +38,7 @@ extern "C" {
 struct MemArena;
 typedef struct MemArena MemArena;
 
-struct MemArena *BLI_memarena_new(const size_t bufsize,
-                                  const char *name) ATTR_WARN_UNUSED_RESULT ATTR_RETURNS_NONNULL
+struct MemArena *BLI_memarena_new(const size_t bufsize, const char *name) ATTR_WARN_UNUSED_RESULT
     ATTR_NONNULL(2) ATTR_MALLOC;
 void BLI_memarena_free(struct MemArena *ma) ATTR_NONNULL(1);
 void BLI_memarena_use_malloc(struct MemArena *ma) ATTR_NONNULL(1);

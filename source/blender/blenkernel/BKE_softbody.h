@@ -47,7 +47,7 @@ typedef struct BodyPoint {
 } BodyPoint;
 
 /* allocates and initializes general main data */
-extern struct SoftBody *sbNew(void);
+extern struct SoftBody *sbNew(struct Scene *scene);
 
 /* frees internal data and soft-body itself */
 extern void sbFree(struct Object *ob);

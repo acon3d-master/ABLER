@@ -17,7 +17,6 @@
 #include "DNA_mesh_types.h"
 #include "DNA_meshdata_types.h"
 
-#include "BKE_material.h"
 #include "BKE_mesh.h"
 
 #include "UI_interface.h"
@@ -45,9 +44,9 @@ static void calculate_uvs(
 {
   MeshComponent mesh_component;
   mesh_component.replace(mesh, GeometryOwnershipType::Editable);
-  OutputAttribute_Typed<float2> uv_attribute =
-      mesh_component.attribute_try_get_for_output_only<float2>("uv_map", ATTR_DOMAIN_CORNER);
-  MutableSpan<float2> uvs = uv_attribute.as_span();
+  OutputAttributePtr uv_attribute = mesh_component.attribute_try_get_for_output(
+      "uv_map", ATTR_DOMAIN_CORNER, CD_PROP_FLOAT2, nullptr);
+  MutableSpan<float2> uvs = uv_attribute->get_span_for_write_only<float2>();
 
   const float dx = (size_x == 0.0f) ? 0.0f : 1.0f / size_x;
   const float dy = (size_y == 0.0f) ? 0.0f : 1.0f / size_y;
@@ -57,7 +56,7 @@ static void calculate_uvs(
     uvs[i].y = (co.y + size_y * 0.5f) * dy;
   }
 
-  uv_attribute.save();
+  uv_attribute.apply_span_and_save();
 }
 
 static Mesh *create_grid_mesh(const int verts_x,
@@ -168,7 +167,6 @@ static void geo_node_mesh_primitive_grid_exec(GeoNodeExecParams params)
 
   Mesh *mesh = create_grid_mesh(verts_x, verts_y, size_x, size_y);
   BLI_assert(BKE_mesh_is_valid(mesh));
-  BKE_id_material_eval_ensure_default_slot(&mesh->id);
 
   params.set_output("Geometry", GeometrySet::create_with_mesh(mesh));
 }

@@ -77,8 +77,6 @@ static void applyPushPull(TransInfo *t, const int UNUSED(mval[2]))
     t->con.applyRot(t, NULL, NULL, axis_global, NULL);
   }
 
-  const bool is_data_space = (t->options & CTX_POSE_BONE) != 0;
-
   FOREACH_TRANS_DATA_CONTAINER (t, tc) {
     TransData *td = tc->data;
     for (i = 0; i < tc->data_len; i++, td++) {
@@ -103,9 +101,6 @@ static void applyPushPull(TransInfo *t, const int UNUSED(mval[2]))
         }
       }
       normalize_v3_length(vec, distance * td->factor);
-      if (is_data_space) {
-        mul_m3_v3(td->smtx, vec);
-      }
 
       add_v3_v3v3(td->loc, td->iloc, vec);
     }

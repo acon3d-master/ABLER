@@ -407,7 +407,7 @@ static bool walk_floor_distance_get(RegionView3D *rv3d,
       &(const struct SnapObjectParams){
           .snap_select = SNAP_ALL,
           /* Avoid having to convert the edit-mesh to a regular mesh. */
-          .edit_mode_type = SNAP_GEOM_EDIT,
+          .use_object_edit_cage = true,
       },
       ray_start,
       ray_normal,

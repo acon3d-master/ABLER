@@ -94,7 +94,7 @@ template<typename T> class Span {
   using iterator = const T *;
   using size_type = int64_t;
 
- protected:
+ private:
   const T *data_ = nullptr;
   int64_t size_ = 0;
 
@@ -477,7 +477,7 @@ template<typename T> class MutableSpan {
   using iterator = T *;
   using size_type = int64_t;
 
- protected:
+ private:
   T *data_;
   int64_t size_;
 
@@ -659,16 +659,6 @@ template<typename T> class MutableSpan {
   constexpr IndexRange index_range() const
   {
     return IndexRange(size_);
-  }
-
-  /**
-   * Return a reference to the first element in the array. This invokes undefined behavior when the
-   * array is empty.
-   */
-  constexpr T &first() const
-  {
-    BLI_assert(size_ > 0);
-    return data_[0];
   }
 
   /**

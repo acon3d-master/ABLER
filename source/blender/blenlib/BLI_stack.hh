@@ -232,14 +232,13 @@ class Stack {
   {
     this->push_as(std::move(value));
   }
-  /* This is similar to `std::stack::emplace`. */
-  template<typename... ForwardT> void push_as(ForwardT &&... value)
+  template<typename ForwardT> void push_as(ForwardT &&value)
   {
     if (top_ == top_chunk_->capacity_end) {
       this->activate_next_chunk(1);
     }
     try {
-      new (top_) T(std::forward<ForwardT>(value)...);
+      new (top_) T(std::forward<ForwardT>(value));
       top_++;
       size_++;
     }

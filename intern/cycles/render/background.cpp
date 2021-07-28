@@ -59,7 +59,6 @@ Background::Background() : Node(get_node_type())
 
 Background::~Background()
 {
-  dereference_all_used_nodes();
 }
 
 void Background::device_update(Device *device, DeviceScene *dscene, Scene *scene)

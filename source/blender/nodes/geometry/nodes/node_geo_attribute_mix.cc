@@ -14,8 +14,6 @@
  * Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  */
 
-#include "BLI_task.hh"
-
 #include "BKE_material.h"
 
 #include "DNA_material_types.h"
@@ -59,110 +57,73 @@ static void geo_node_attribute_mix_layout(uiLayout *layout, bContext *UNUSED(C),
 
 namespace blender::nodes {
 
-static void geo_node_attribute_mix_init(bNodeTree *UNUSED(ntree), bNode *node)
-{
-  NodeAttributeMix *data = (NodeAttributeMix *)MEM_callocN(sizeof(NodeAttributeMix),
-                                                           "attribute mix node");
-  data->blend_type = MA_RAMP_BLEND;
-  data->input_type_factor = GEO_NODE_ATTRIBUTE_INPUT_FLOAT;
-  data->input_type_a = GEO_NODE_ATTRIBUTE_INPUT_ATTRIBUTE;
-  data->input_type_b = GEO_NODE_ATTRIBUTE_INPUT_ATTRIBUTE;
-  node->storage = data;
-}
-
-static void geo_node_attribute_mix_update(bNodeTree *UNUSED(ntree), bNode *node)
-{
-  NodeAttributeMix *node_storage = (NodeAttributeMix *)node->storage;
-  update_attribute_input_socket_availabilities(
-      *node, "Factor", (GeometryNodeAttributeInputMode)node_storage->input_type_factor);
-  update_attribute_input_socket_availabilities(
-      *node, "A", (GeometryNodeAttributeInputMode)node_storage->input_type_a);
-  update_attribute_input_socket_availabilities(
-      *node, "B", (GeometryNodeAttributeInputMode)node_storage->input_type_b);
-}
-
 static void do_mix_operation_float(const int blend_mode,
-                                   const VArray<float> &factors,
-                                   const VArray<float> &inputs_a,
-                                   const VArray<float> &inputs_b,
-                                   VMutableArray<float> &results)
+                                   const FloatReadAttribute &factors,
+                                   const FloatReadAttribute &inputs_a,
+                                   const FloatReadAttribute &inputs_b,
+                                   FloatWriteAttribute results)
 {
   const int size = results.size();
-  threading::parallel_for(IndexRange(size), 512, [&](IndexRange range) {
-    for (const int i : range) {
-      const float factor = factors[i];
-      float3 a{inputs_a[i]};
-      const float3 b{inputs_b[i]};
-      ramp_blend(blend_mode, a, factor, b);
-      const float result = a.x;
-      results.set(i, result);
-    }
-  });
+  for (const int i : IndexRange(size)) {
+    const float factor = factors[i];
+    float3 a{inputs_a[i]};
+    const float3 b{inputs_b[i]};
+    ramp_blend(blend_mode, a, factor, b);
+    const float result = a.x;
+    results.set(i, result);
+  }
 }
 
 static void do_mix_operation_float3(const int blend_mode,
-                                    const VArray<float> &factors,
-                                    const VArray<float3> &inputs_a,
-                                    const VArray<float3> &inputs_b,
-                                    VMutableArray<float3> &results)
+                                    const FloatReadAttribute &factors,
+                                    const Float3ReadAttribute &inputs_a,
+                                    const Float3ReadAttribute &inputs_b,
+                                    Float3WriteAttribute results)
 {
   const int size = results.size();
-  threading::parallel_for(IndexRange(size), 512, [&](IndexRange range) {
-    for (const int i : range) {
-      const float factor = factors[i];
-      float3 a = inputs_a[i];
-      const float3 b = inputs_b[i];
-      ramp_blend(blend_mode, a, factor, b);
-      results.set(i, a);
-    }
-  });
+  for (const int i : IndexRange(size)) {
+    const float factor = factors[i];
+    float3 a = inputs_a[i];
+    const float3 b = inputs_b[i];
+    ramp_blend(blend_mode, a, factor, b);
+    results.set(i, a);
+  }
 }
 
 static void do_mix_operation_color4f(const int blend_mode,
-                                     const VArray<float> &factors,
-                                     const VArray<ColorGeometry4f> &inputs_a,
-                                     const VArray<ColorGeometry4f> &inputs_b,
-                                     VMutableArray<ColorGeometry4f> &results)
+                                     const FloatReadAttribute &factors,
+                                     const Color4fReadAttribute &inputs_a,
+                                     const Color4fReadAttribute &inputs_b,
+                                     Color4fWriteAttribute results)
 {
   const int size = results.size();
-  threading::parallel_for(IndexRange(size), 512, [&](IndexRange range) {
-    for (const int i : range) {
-      const float factor = factors[i];
-      ColorGeometry4f a = inputs_a[i];
-      const ColorGeometry4f b = inputs_b[i];
-      ramp_blend(blend_mode, a, factor, b);
-      results.set(i, a);
-    }
-  });
+  for (const int i : IndexRange(size)) {
+    const float factor = factors[i];
+    Color4f a = inputs_a[i];
+    const Color4f b = inputs_b[i];
+    ramp_blend(blend_mode, a, factor, b);
+    results.set(i, a);
+  }
 }
 
 static void do_mix_operation(const CustomDataType result_type,
                              int blend_mode,
-                             const VArray<float> &attribute_factor,
-                             const GVArray &attribute_a,
-                             const GVArray &attribute_b,
-                             GVMutableArray &attribute_result)
+                             const FloatReadAttribute &attribute_factor,
+                             const ReadAttribute &attribute_a,
+                             const ReadAttribute &attribute_b,
+                             WriteAttribute &attribute_result)
 {
   if (result_type == CD_PROP_FLOAT) {
-    do_mix_operation_float(blend_mode,
-                           attribute_factor,
-                           attribute_a.typed<float>(),
-                           attribute_b.typed<float>(),
-                           attribute_result.typed<float>());
+    do_mix_operation_float(
+        blend_mode, attribute_factor, attribute_a, attribute_b, attribute_result);
   }
   else if (result_type == CD_PROP_FLOAT3) {
-    do_mix_operation_float3(blend_mode,
-                            attribute_factor,
-                            attribute_a.typed<float3>(),
-                            attribute_b.typed<float3>(),
-                            attribute_result.typed<float3>());
+    do_mix_operation_float3(
+        blend_mode, attribute_factor, attribute_a, attribute_b, attribute_result);
   }
   else if (result_type == CD_PROP_COLOR) {
-    do_mix_operation_color4f(blend_mode,
-                             attribute_factor,
-                             attribute_a.typed<ColorGeometry4f>(),
-                             attribute_b.typed<ColorGeometry4f>(),
-                             attribute_result.typed<ColorGeometry4f>());
+    do_mix_operation_color4f(
+        blend_mode, attribute_factor, attribute_a, attribute_b, attribute_result);
   }
 }
 
@@ -171,9 +132,9 @@ static AttributeDomain get_result_domain(const GeometryComponent &component,
                                          StringRef result_name)
 {
   /* Use the domain of the result attribute if it already exists. */
-  std::optional<AttributeMetaData> result_info = component.attribute_get_meta_data(result_name);
-  if (result_info) {
-    return result_info->domain;
+  ReadAttributePtr result_attribute = component.attribute_try_get_for_read(result_name);
+  if (result_attribute) {
+    return result_attribute->domain();
   }
 
   /* Otherwise use the highest priority domain from existing input attributes, or the default. */
@@ -197,17 +158,17 @@ static void attribute_mix_calc(GeometryComponent &component, const GeoNodeExecPa
 
   const AttributeDomain result_domain = get_result_domain(component, params, result_name);
 
-  OutputAttribute attribute_result = component.attribute_try_get_for_output_only(
+  OutputAttributePtr attribute_result = component.attribute_try_get_for_output(
       result_name, result_domain, result_type);
   if (!attribute_result) {
     return;
   }
 
-  GVArray_Typed<float> attribute_factor = params.get_input_attribute<float>(
+  FloatReadAttribute attribute_factor = params.get_input_attribute<float>(
       "Factor", component, result_domain, 0.5f);
-  GVArrayPtr attribute_a = params.get_input_attribute(
+  ReadAttributePtr attribute_a = params.get_input_attribute(
       "A", component, result_domain, result_type, nullptr);
-  GVArrayPtr attribute_b = params.get_input_attribute(
+  ReadAttributePtr attribute_b = params.get_input_attribute(
       "B", component, result_domain, result_type, nullptr);
 
   do_mix_operation(result_type,
@@ -231,11 +192,30 @@ static void geo_node_attribute_mix_exec(GeoNodeExecParams params)
   if (geometry_set.has<PointCloudComponent>()) {
     attribute_mix_calc(geometry_set.get_component_for_write<PointCloudComponent>(), params);
   }
-  if (geometry_set.has<CurveComponent>()) {
-    attribute_mix_calc(geometry_set.get_component_for_write<CurveComponent>(), params);
-  }
 
   params.set_output("Geometry", geometry_set);
+}
+
+static void geo_node_attribute_mix_init(bNodeTree *UNUSED(ntree), bNode *node)
+{
+  NodeAttributeMix *data = (NodeAttributeMix *)MEM_callocN(sizeof(NodeAttributeMix),
+                                                           "attribute mix node");
+  data->blend_type = MA_RAMP_BLEND;
+  data->input_type_factor = GEO_NODE_ATTRIBUTE_INPUT_FLOAT;
+  data->input_type_a = GEO_NODE_ATTRIBUTE_INPUT_ATTRIBUTE;
+  data->input_type_b = GEO_NODE_ATTRIBUTE_INPUT_ATTRIBUTE;
+  node->storage = data;
+}
+
+static void geo_node_attribute_mix_update(bNodeTree *UNUSED(ntree), bNode *node)
+{
+  NodeAttributeMix *node_storage = (NodeAttributeMix *)node->storage;
+  update_attribute_input_socket_availabilities(
+      *node, "Factor", (GeometryNodeAttributeInputMode)node_storage->input_type_factor);
+  update_attribute_input_socket_availabilities(
+      *node, "A", (GeometryNodeAttributeInputMode)node_storage->input_type_a);
+  update_attribute_input_socket_availabilities(
+      *node, "B", (GeometryNodeAttributeInputMode)node_storage->input_type_b);
 }
 
 }  // namespace blender::nodes

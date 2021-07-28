@@ -1072,9 +1072,10 @@ static void rna_UserDef_studiolight_solid_lights_begin(CollectionPropertyIterato
   rna_iterator_array_begin(iter, sl->light, sizeof(*sl->light), ARRAY_SIZE(sl->light), 0, NULL);
 }
 
-static int rna_UserDef_studiolight_solid_lights_length(PointerRNA *UNUSED(ptr))
+static int rna_UserDef_studiolight_solid_lights_length(PointerRNA *ptr)
 {
-  return ARRAY_SIZE(((StudioLight *)NULL)->light);
+  StudioLight *sl = (StudioLight *)ptr->data;
+  return ARRAY_SIZE(sl->light);
 }
 
 /* StudioLight.light_ambient */
@@ -6159,7 +6160,7 @@ static void rna_def_userdef_filepaths(BlenderRNA *brna)
       prop,
       "Python Scripts Directory",
       "Alternate script path, matching the default layout with subdirectories: "
-      "startup, addons, modules, and presets (requires restart)");
+      "startup, add-ons and modules (requires restart)");
   /* TODO, editing should reset sys.path! */
 
   prop = RNA_def_property(srna, "i18n_branches_directory", PROP_STRING, PROP_DIRPATH);
@@ -6274,14 +6275,6 @@ static void rna_def_userdef_experimental(BlenderRNA *brna)
   RNA_def_property_boolean_sdna(prop, NULL, "use_new_point_cloud_type", 1);
   RNA_def_property_ui_text(
       prop, "New Point Cloud Type", "Enable the new point cloud type in the ui");
-
-  prop = RNA_def_property(srna, "use_full_frame_compositor", PROP_BOOLEAN, PROP_NONE);
-  RNA_def_property_boolean_sdna(prop, NULL, "use_full_frame_compositor", 1);
-  RNA_def_property_ui_text(prop,
-                           "Full Frame Compositor",
-                           "Enable compositor full frame execution mode option (no tiling, "
-                           "reduces execution time and memory usage)");
-  RNA_def_property_update(prop, 0, "rna_userdef_update");
 
   prop = RNA_def_property(srna, "use_new_hair_type", PROP_BOOLEAN, PROP_NONE);
   RNA_def_property_boolean_sdna(prop, NULL, "use_new_hair_type", 1);

@@ -158,7 +158,7 @@ static void sequencer_generic_props__internal(wmOperatorType *ot, int flag)
     ot->prop = RNA_def_boolean(ot->srna,
                                "set_view_transform",
                                true,
-                               "Set View Transform",
+                               "Set view transform",
                                "Set appropriate view transform based on media colorspace");
   }
 }
@@ -754,16 +754,18 @@ static int sequencer_add_movie_strip_invoke(bContext *C,
   return OPERATOR_RUNNING_MODAL;
 }
 
-static void sequencer_add_draw(bContext *UNUSED(C), wmOperator *op)
+static void sequencer_add_draw(bContext *C, wmOperator *op)
 {
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
   SequencerAddData *sad = op->customdata;
   ImageFormatData *imf = &sad->im_format;
-  PointerRNA imf_ptr;
+  PointerRNA imf_ptr, ptr;
 
   /* Main draw call. */
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
   uiDefAutoButsRNA(
-      layout, op->ptr, sequencer_add_draw_check_fn, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
+      layout, &ptr, sequencer_add_draw_check_fn, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
 
   /* Image template. */
   RNA_pointer_create(NULL, &RNA_ImageFormatSettings, imf, &imf_ptr);

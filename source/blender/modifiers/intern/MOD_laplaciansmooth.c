@@ -635,6 +635,7 @@ ModifierTypeInfo modifierType_LaplacianSmooth = {
     /* modifyMesh */ NULL,
     /* modifyHair */ NULL,
     /* modifyGeometrySet */ NULL,
+    /* modifyVolume */ NULL,
 
     /* initData */ init_data,
     /* requiredDataMask */ required_data_mask,

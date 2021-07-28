@@ -72,18 +72,15 @@ class OSLShaderManager : public ShaderManager {
 
   static void free_memory();
 
-  void reset(Scene *scene) override;
+  void reset(Scene *scene);
 
-  bool use_osl() override
+  bool use_osl()
   {
     return true;
   }
 
-  void device_update_specific(Device *device,
-                              DeviceScene *dscene,
-                              Scene *scene,
-                              Progress &progress) override;
-  void device_free(Device *device, DeviceScene *dscene, Scene *scene) override;
+  void device_update(Device *device, DeviceScene *dscene, Scene *scene, Progress &progress);
+  void device_free(Device *device, DeviceScene *dscene, Scene *scene);
 
   /* osl compile and query */
   static bool osl_compile(const string &inputfile, const string &outputfile);

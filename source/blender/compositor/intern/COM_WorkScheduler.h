@@ -87,8 +87,6 @@ struct WorkScheduler {
    */
   static bool has_gpu_devices();
 
-  static int get_num_cpu_threads();
-
   static int current_thread_id();
 
 #ifdef WITH_CXX_GUARDEDALLOC

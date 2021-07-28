@@ -69,19 +69,6 @@ using blender::MutableSpan;
 using blender::Span;
 using blender::Vector;
 
-/* For delete geometry node. */
-void copy_masked_vertices_to_new_mesh(const Mesh &src_mesh, Mesh &dst_mesh, Span<int> vertex_map);
-void copy_masked_edges_to_new_mesh(const Mesh &src_mesh,
-                                   Mesh &dst_mesh,
-                                   Span<int> vertex_map,
-                                   Span<int> edge_map);
-void copy_masked_polys_to_new_mesh(const Mesh &src_mesh,
-                                   Mesh &dst_mesh,
-                                   Span<int> vertex_map,
-                                   Span<int> edge_map,
-                                   Span<int> masked_poly_indices,
-                                   Span<int> new_loop_starts);
-
 static void initData(ModifierData *md)
 {
   MaskModifierData *mmd = (MaskModifierData *)md;
@@ -250,7 +237,9 @@ static void computed_masked_polygons(const Mesh *mesh,
   *r_num_masked_loops = num_masked_loops;
 }
 
-void copy_masked_vertices_to_new_mesh(const Mesh &src_mesh, Mesh &dst_mesh, Span<int> vertex_map)
+static void copy_masked_vertices_to_new_mesh(const Mesh &src_mesh,
+                                             Mesh &dst_mesh,
+                                             Span<int> vertex_map)
 {
   BLI_assert(src_mesh.totvert == vertex_map.size());
   for (const int i_src : vertex_map.index_range()) {
@@ -267,10 +256,10 @@ void copy_masked_vertices_to_new_mesh(const Mesh &src_mesh, Mesh &dst_mesh, Span
   }
 }
 
-void copy_masked_edges_to_new_mesh(const Mesh &src_mesh,
-                                   Mesh &dst_mesh,
-                                   Span<int> vertex_map,
-                                   Span<int> edge_map)
+static void copy_masked_edges_to_new_mesh(const Mesh &src_mesh,
+                                          Mesh &dst_mesh,
+                                          Span<int> vertex_map,
+                                          Span<int> edge_map)
 {
   BLI_assert(src_mesh.totvert == vertex_map.size());
   BLI_assert(src_mesh.totedge == edge_map.size());
@@ -290,12 +279,12 @@ void copy_masked_edges_to_new_mesh(const Mesh &src_mesh,
   }
 }
 
-void copy_masked_polys_to_new_mesh(const Mesh &src_mesh,
-                                   Mesh &dst_mesh,
-                                   Span<int> vertex_map,
-                                   Span<int> edge_map,
-                                   Span<int> masked_poly_indices,
-                                   Span<int> new_loop_starts)
+static void copy_masked_polys_to_new_mesh(const Mesh &src_mesh,
+                                          Mesh &dst_mesh,
+                                          Span<int> vertex_map,
+                                          Span<int> edge_map,
+                                          Span<int> masked_poly_indices,
+                                          Span<int> new_loop_starts)
 {
   for (const int i_dst : masked_poly_indices.index_range()) {
     const int i_src = masked_poly_indices[i_dst];
@@ -474,6 +463,7 @@ ModifierTypeInfo modifierType_Mask = {
     /* modifyMesh */ modifyMesh,
     /* modifyHair */ nullptr,
     /* modifyGeometrySet */ nullptr,
+    /* modifyVolume */ nullptr,
 
     /* initData */ initData,
     /* requiredDataMask */ requiredDataMask,

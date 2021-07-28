@@ -367,6 +367,8 @@ static void draw_seq_waveform_overlay(View2D *v2d,
 
 static void drawmeta_contents(Scene *scene, Sequence *seqm, float x1, float y1, float x2, float y2)
 {
+  /* Don't use SEQ_ALL_BEGIN/SEQ_ALL_END here,
+   * because it changes seq->depth, which is needed for transform. */
   Sequence *seq;
   uchar col[4];
 
@@ -868,9 +870,9 @@ static void draw_seq_background(Scene *scene,
   /* Draw the main strip body. */
   if (is_single_image) {
     immRectf(pos,
-             SEQ_transform_get_left_handle_frame(seq),
+             SEQ_transform_get_left_handle_frame(seq, false),
              y1,
-             SEQ_transform_get_right_handle_frame(seq),
+             SEQ_transform_get_right_handle_frame(seq, false),
              y2);
   }
   else {
@@ -2363,31 +2365,6 @@ static void draw_cache_view(const bContext *C)
 }
 
 /* Draw sequencer timeline. */
-static void draw_overlap_frame_indicator(const struct Scene *scene, const View2D *v2d)
-{
-  int overlap_frame = (scene->ed->over_flag & SEQ_EDIT_OVERLAY_ABS) ?
-                          scene->ed->over_cfra :
-                          scene->r.cfra + scene->ed->over_ofs;
-
-  uint pos = GPU_vertformat_attr_add(immVertexFormat(), "pos", GPU_COMP_F32, 2, GPU_FETCH_FLOAT);
-  immBindBuiltinProgram(GPU_SHADER_2D_LINE_DASHED_UNIFORM_COLOR);
-  float viewport_size[4];
-  GPU_viewport_size_get_f(viewport_size);
-  immUniform2f("viewport_size", viewport_size[2], viewport_size[3]);
-  /* Shader may have color set from past usage - reset it. */
-  immUniform1i("colors_len", 0);
-  immUniform1f("dash_width", 20.0f * U.pixelsize);
-  immUniform1f("dash_factor", 0.5f);
-  immUniformThemeColor(TH_CFRAME);
-
-  immBegin(GPU_PRIM_LINES, 2);
-  immVertex2f(pos, overlap_frame, v2d->cur.ymin);
-  immVertex2f(pos, overlap_frame, v2d->cur.ymax);
-  immEnd();
-
-  immUnbindProgram();
-}
-
 void draw_timeline_seq(const bContext *C, ARegion *region)
 {
   Scene *scene = CTX_data_scene(C);
@@ -2447,6 +2424,31 @@ void draw_timeline_seq(const bContext *C, ARegion *region)
     cfra_flag |= DRAWCFRA_UNIT_SECONDS;
   }
 
+  /* Draw overlap frame frame indicator. */
+  if (scene->ed && scene->ed->over_flag & SEQ_EDIT_OVERLAY_SHOW) {
+    int overlap_frame = (scene->ed->over_flag & SEQ_EDIT_OVERLAY_ABS) ?
+                            scene->ed->over_cfra :
+                            scene->r.cfra + scene->ed->over_ofs;
+
+    uint pos = GPU_vertformat_attr_add(immVertexFormat(), "pos", GPU_COMP_F32, 2, GPU_FETCH_FLOAT);
+    immBindBuiltinProgram(GPU_SHADER_2D_LINE_DASHED_UNIFORM_COLOR);
+    float viewport_size[4];
+    GPU_viewport_size_get_f(viewport_size);
+    immUniform2f("viewport_size", viewport_size[2], viewport_size[3]);
+    /* Shader may have color set from past usage - reset it. */
+    immUniform1i("colors_len", 0);
+    immUniform1f("dash_width", 20.0f * U.pixelsize);
+    immUniform1f("dash_factor", 0.5f);
+    immUniformThemeColor(TH_CFRAME);
+
+    immBegin(GPU_PRIM_LINES, 2);
+    immVertex2f(pos, overlap_frame, v2d->cur.ymin);
+    immVertex2f(pos, overlap_frame, v2d->cur.ymax);
+    immEnd();
+
+    immUnbindProgram();
+  }
+
   UI_view2d_view_orthoSpecial(region, v2d, 1);
   int marker_draw_flag = DRAW_MARKERS_MARGIN;
   if (sseq->flag & SEQ_SHOW_MARKERS) {
@@ -2454,6 +2456,11 @@ void draw_timeline_seq(const bContext *C, ARegion *region)
   }
 
   UI_view2d_view_ortho(v2d);
+
+  if (ed) {
+    draw_cache_view(C);
+  }
+
   ANIM_draw_previewrange(C, v2d, 1);
 
   /* Draw registered callbacks. */
@@ -2478,13 +2485,6 @@ void draw_timeline_seq_display(const bContext *C, ARegion *region)
   const Scene *scene = CTX_data_scene(C);
   const SpaceSeq *sseq = CTX_wm_space_seq(C);
   View2D *v2d = &region->v2d;
-
-  if (scene->ed && scene->ed->over_flag & SEQ_EDIT_OVERLAY_SHOW) {
-    UI_view2d_view_ortho(v2d);
-    draw_cache_view(C);
-    draw_overlap_frame_indicator(scene, v2d);
-    UI_view2d_view_restore(C);
-  }
 
   ED_time_scrub_draw_current_frame(region, scene, !(sseq->flag & SEQ_DRAWFRAMES), true);
   UI_view2d_scrollers_draw(v2d, NULL);

@@ -1145,7 +1145,6 @@ static void scene_blend_read_data(BlendDataReader *reader, ID *id)
     BLO_read_data_address(reader, &ed->act_seq);
     ed->cache = NULL;
     ed->prefetch_job = NULL;
-    ed->runtime.sequence_lookup = NULL;
 
     /* recursive link sequences, lb will be correctly initialized */
     link_recurs_seq(reader, &ed->seqbase);
@@ -1986,7 +1985,8 @@ Scene *BKE_scene_duplicate(Main *bmain, Scene *sce, eSceneCopyMethod type)
     const bool is_subprocess = false;
 
     if (!is_subprocess) {
-      BKE_main_id_newptr_and_tag_clear(bmain);
+      BKE_main_id_tag_all(bmain, LIB_TAG_NEW, false);
+      BKE_main_id_clear_newpoins(bmain);
       /* In case root duplicated ID is linked, assume we want to get a local copy of it and
        * duplicate all expected linked data. */
       if (ID_IS_LINKED(sce)) {
@@ -2027,7 +2027,8 @@ Scene *BKE_scene_duplicate(Main *bmain, Scene *sce, eSceneCopyMethod type)
 #endif
 
       /* Cleanup. */
-      BKE_main_id_newptr_and_tag_clear(bmain);
+      BKE_main_id_tag_all(bmain, LIB_TAG_NEW, false);
+      BKE_main_id_clear_newpoins(bmain);
 
       BKE_main_collection_sync(bmain);
     }
@@ -3788,7 +3789,9 @@ void BKE_scene_eval_sequencer_sequences(Depsgraph *depsgraph, Scene *scene)
   SEQ_ALL_BEGIN (scene->ed, seq) {
     if (seq->scene_sound == NULL) {
       if (seq->sound != NULL) {
-        seq->scene_sound = BKE_sound_add_scene_sound_defaults(scene, seq);
+        if (seq->scene_sound == NULL) {
+          seq->scene_sound = BKE_sound_add_scene_sound_defaults(scene, seq);
+        }
       }
       else if (seq->type == SEQ_TYPE_SCENE) {
         if (seq->scene != NULL) {

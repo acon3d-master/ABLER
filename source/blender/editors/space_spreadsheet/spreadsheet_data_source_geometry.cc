@@ -57,45 +57,44 @@ std::unique_ptr<ColumnValues> GeometryDataSource::get_column_values(
 {
   std::lock_guard lock{mutex_};
 
-  bke::ReadAttributeLookup attribute = component_->attribute_try_get_for_read(column_id.name);
-  if (!attribute) {
+  bke::ReadAttributePtr attribute_ptr = component_->attribute_try_get_for_read(column_id.name);
+  if (!attribute_ptr) {
     return {};
   }
-  const fn::GVArray *varray = scope_.add(std::move(attribute.varray), __func__);
-  if (attribute.domain != domain_) {
+  const bke::ReadAttribute *attribute = scope_.add(std::move(attribute_ptr), __func__);
+  if (attribute->domain() != domain_) {
     return {};
   }
-  int domain_size = varray->size();
-  const CustomDataType type = bke::cpp_type_to_custom_data_type(varray->type());
-  switch (type) {
+  int domain_size = attribute->size();
+  switch (attribute->custom_data_type()) {
     case CD_PROP_FLOAT:
       return column_values_from_function(
-          column_id.name, domain_size, [varray](int index, CellValue &r_cell_value) {
+          column_id.name, domain_size, [attribute](int index, CellValue &r_cell_value) {
             float value;
-            varray->get(index, &value);
+            attribute->get(index, &value);
             r_cell_value.value_float = value;
           });
     case CD_PROP_INT32:
       return column_values_from_function(
-          column_id.name, domain_size, [varray](int index, CellValue &r_cell_value) {
+          column_id.name, domain_size, [attribute](int index, CellValue &r_cell_value) {
             int value;
-            varray->get(index, &value);
+            attribute->get(index, &value);
             r_cell_value.value_int = value;
           });
     case CD_PROP_BOOL:
       return column_values_from_function(
-          column_id.name, domain_size, [varray](int index, CellValue &r_cell_value) {
+          column_id.name, domain_size, [attribute](int index, CellValue &r_cell_value) {
             bool value;
-            varray->get(index, &value);
+            attribute->get(index, &value);
             r_cell_value.value_bool = value;
           });
     case CD_PROP_FLOAT2: {
       return column_values_from_function(
           column_id.name,
           domain_size,
-          [varray](int index, CellValue &r_cell_value) {
+          [attribute](int index, CellValue &r_cell_value) {
             float2 value;
-            varray->get(index, &value);
+            attribute->get(index, &value);
             r_cell_value.value_float2 = value;
           },
           default_float2_column_width);
@@ -104,9 +103,9 @@ std::unique_ptr<ColumnValues> GeometryDataSource::get_column_values(
       return column_values_from_function(
           column_id.name,
           domain_size,
-          [varray](int index, CellValue &r_cell_value) {
+          [attribute](int index, CellValue &r_cell_value) {
             float3 value;
-            varray->get(index, &value);
+            attribute->get(index, &value);
             r_cell_value.value_float3 = value;
           },
           default_float3_column_width);
@@ -115,9 +114,9 @@ std::unique_ptr<ColumnValues> GeometryDataSource::get_column_values(
       return column_values_from_function(
           column_id.name,
           domain_size,
-          [varray](int index, CellValue &r_cell_value) {
-            ColorGeometry4f value;
-            varray->get(index, &value);
+          [attribute](int index, CellValue &r_cell_value) {
+            Color4f value;
+            attribute->get(index, &value);
             r_cell_value.value_color = value;
           },
           default_color_column_width);
@@ -261,7 +260,7 @@ void InstancesDataSource::foreach_default_column_ids(
   SpreadsheetColumnID column_id;
   column_id.name = (char *)"Name";
   fn(column_id);
-  for (const char *name : {"Position", "Rotation", "Scale", "ID"}) {
+  for (const char *name : {"Position", "Rotation", "Scale"}) {
     column_id.name = (char *)name;
     fn(column_id);
   }
@@ -276,31 +275,25 @@ std::unique_ptr<ColumnValues> InstancesDataSource::get_column_values(
 
   const int size = this->tot_rows();
   if (STREQ(column_id.name, "Name")) {
-    Span<int> reference_handles = component_->instance_reference_handles();
-    Span<InstanceReference> references = component_->references();
+    Span<InstancedData> instance_data = component_->instanced_data();
     std::unique_ptr<ColumnValues> values = column_values_from_function(
-        "Name", size, [reference_handles, references](int index, CellValue &r_cell_value) {
-          const InstanceReference &reference = references[reference_handles[index]];
-          switch (reference.type()) {
-            case InstanceReference::Type::Object: {
-              Object &object = reference.object();
-              r_cell_value.value_object = ObjectCellValue{&object};
-              break;
+        "Name", size, [instance_data](int index, CellValue &r_cell_value) {
+          const InstancedData &data = instance_data[index];
+          if (data.type == INSTANCE_DATA_TYPE_OBJECT) {
+            if (data.data.object != nullptr) {
+              r_cell_value.value_object = ObjectCellValue{data.data.object};
             }
-            case InstanceReference::Type::Collection: {
-              Collection &collection = reference.collection();
-              r_cell_value.value_collection = CollectionCellValue{&collection};
-              break;
-            }
-            case InstanceReference::Type::None: {
-              break;
+          }
+          else if (data.type == INSTANCE_DATA_TYPE_COLLECTION) {
+            if (data.data.collection != nullptr) {
+              r_cell_value.value_collection = CollectionCellValue{data.data.collection};
             }
           }
         });
     values->default_width = 8.0f;
     return values;
   }
-  Span<float4x4> transforms = component_->instance_transforms();
+  Span<float4x4> transforms = component_->transforms();
   if (STREQ(column_id.name, "Position")) {
     return column_values_from_function(
         column_id.name,
@@ -327,15 +320,6 @@ std::unique_ptr<ColumnValues> InstancesDataSource::get_column_values(
           r_cell_value.value_float3 = transforms[index].scale();
         },
         default_float3_column_width);
-  }
-  Span<int> ids = component_->instance_ids();
-  if (STREQ(column_id.name, "ID")) {
-    /* Make the column a bit wider by default, since the IDs tend to be large numbers. */
-    return column_values_from_function(
-        column_id.name,
-        size,
-        [ids](int index, CellValue &r_cell_value) { r_cell_value.value_int = ids[index]; },
-        5.5f);
   }
   return {};
 }

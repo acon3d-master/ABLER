@@ -164,7 +164,7 @@ static void lib_id_clear_library_data_ex(Main *bmain, ID *id)
   id->tag &= ~(LIB_TAG_INDIRECT | LIB_TAG_EXTERN);
   id->flag &= ~LIB_INDIRECT_WEAK_LINK;
   if (id_in_mainlist) {
-    if (BKE_id_new_name_validate(which_libbase(bmain, GS(id->name)), id, NULL, false)) {
+    if (BKE_id_new_name_validate(which_libbase(bmain, GS(id->name)), id, NULL)) {
       bmain->is_memfile_undo_written = false;
     }
   }
@@ -525,13 +525,7 @@ static int id_copy_libmanagement_cb(LibraryIDLinkCallbackData *cb_data)
 
   /* Increase used IDs refcount if needed and required. */
   if ((data->flag & LIB_ID_CREATE_NO_USER_REFCOUNT) == 0 && (cb_flag & IDWALK_CB_USER)) {
-    if ((data->flag & LIB_ID_CREATE_NO_MAIN) != 0) {
-      BLI_assert(cb_data->id_self->tag & LIB_TAG_NO_MAIN);
-      id_us_plus_no_lib(id);
-    }
-    else {
-      id_us_plus(id);
-    }
+    id_us_plus(id);
   }
 
   return IDWALK_RET_NOP;
@@ -584,7 +578,7 @@ ID *BKE_id_copy_ex(Main *bmain, const ID *id, ID **r_newid, const int flag)
     }
   }
 
-  /* Early output if source is NULL. */
+  /* Early output is source is NULL. */
   if (id == NULL) {
     return NULL;
   }
@@ -833,9 +827,7 @@ void BKE_libblock_management_main_add(Main *bmain, void *idv)
   ListBase *lb = which_libbase(bmain, GS(id->name));
   BKE_main_lock(bmain);
   BLI_addtail(lb, id);
-  /* We need to allow adding extra datablocks into libraries too, e.g. to support generating new
-   * overrides for recursive resync. */
-  BKE_id_new_name_validate(lb, id, NULL, true);
+  BKE_id_new_name_validate(lb, id, NULL);
   /* alphabetic insertion: is in new_id */
   id->tag &= ~(LIB_TAG_NO_MAIN | LIB_TAG_NO_USER_REFCOUNT);
   bmain->is_memfile_undo_written = false;
@@ -991,7 +983,7 @@ void BKE_main_id_repair_duplicate_names_listbase(ListBase *lb)
   }
   for (i = 0; i < lb_len; i++) {
     if (!BLI_gset_add(gset, id_array[i]->name + 2)) {
-      BKE_id_new_name_validate(lb, id_array[i], NULL, false);
+      BKE_id_new_name_validate(lb, id_array[i], NULL);
     }
   }
   BLI_gset_free(gset, NULL);
@@ -1094,7 +1086,7 @@ void *BKE_libblock_alloc(Main *bmain, short type, const char *name, const int fl
 
       BKE_main_lock(bmain);
       BLI_addtail(lb, id);
-      BKE_id_new_name_validate(lb, id, name, false);
+      BKE_id_new_name_validate(lb, id, name);
       bmain->is_memfile_undo_written = false;
       /* alphabetic insertion: is in new_id */
       BKE_main_unlock(bmain);
@@ -1223,6 +1215,14 @@ void BKE_libblock_copy_ex(Main *bmain, const ID *id, ID **r_newid, const int ori
   BLI_assert((flag & LIB_ID_CREATE_NO_MAIN) != 0 || bmain != NULL);
   BLI_assert((flag & LIB_ID_CREATE_NO_MAIN) != 0 || (flag & LIB_ID_CREATE_NO_ALLOCATE) == 0);
   BLI_assert((flag & LIB_ID_CREATE_NO_MAIN) != 0 || (flag & LIB_ID_CREATE_LOCAL) == 0);
+  if (!is_private_id_data) {
+    /* When we are handling private ID data, we might still want to manage usercounts, even
+     * though that ID data-block is actually outside of Main... */
+    BLI_assert((flag & LIB_ID_CREATE_NO_MAIN) == 0 ||
+               (flag & LIB_ID_CREATE_NO_USER_REFCOUNT) != 0);
+  }
+  /* Never implicitly copy shapekeys when generating temp data outside of Main database. */
+  BLI_assert((flag & LIB_ID_CREATE_NO_MAIN) == 0 || (flag & LIB_ID_COPY_SHAPEKEY) == 0);
 
   /* 'Private ID' data handling. */
   if ((bmain != NULL) && is_private_id_data) {
@@ -1355,12 +1355,12 @@ void id_sort_by_name(ListBase *lb, ID *id, ID *id_sorting_hint)
   BLI_remlink(lb, id);
 
   /* Check if we can actually insert id before or after id_sorting_hint, if given. */
-  if (!ELEM(id_sorting_hint, NULL, id) && id_sorting_hint->lib == id->lib) {
+  if (!ELEM(id_sorting_hint, NULL, id)) {
     BLI_assert(BLI_findindex(lb, id_sorting_hint) >= 0);
 
     ID *id_sorting_hint_next = id_sorting_hint->next;
     if (BLI_strcasecmp(id_sorting_hint->name, id->name) < 0 &&
-        (id_sorting_hint_next == NULL || id_sorting_hint_next->lib != id->lib ||
+        (id_sorting_hint_next == NULL ||
          BLI_strcasecmp(id_sorting_hint_next->name, id->name) > 0)) {
       BLI_insertlinkafter(lb, id_sorting_hint, id);
       return;
@@ -1368,7 +1368,7 @@ void id_sort_by_name(ListBase *lb, ID *id, ID *id_sorting_hint)
 
     ID *id_sorting_hint_prev = id_sorting_hint->prev;
     if (BLI_strcasecmp(id_sorting_hint->name, id->name) > 0 &&
-        (id_sorting_hint_prev == NULL || id_sorting_hint_prev->lib != id->lib ||
+        (id_sorting_hint_prev == NULL ||
          BLI_strcasecmp(id_sorting_hint_prev->name, id->name) < 0)) {
       BLI_insertlinkbefore(lb, id_sorting_hint, id);
       return;
@@ -1383,33 +1383,16 @@ void id_sort_by_name(ListBase *lb, ID *id, ID *id_sorting_hint)
   /* Note: We start from the end, because in typical 'heavy' case (insertion of lots of IDs at
    * once using the same base name), newly inserted items will generally be towards the end
    * (higher extension numbers). */
-  bool is_in_library = false;
-  item_array_index = ID_SORT_STEP_SIZE - 1;
-  for (idtest = lb->last; idtest != NULL; idtest = idtest->prev) {
-    if (is_in_library) {
-      if (idtest->lib != id->lib) {
-        /* We got out of expected library 'range' in the list, so we are done here and can move on
-         * to the next step. */
-        break;
-      }
-    }
-    else if (idtest->lib == id->lib) {
-      /* We are entering the expected library 'range' of IDs in the list. */
-      is_in_library = true;
-    }
-
-    if (!is_in_library) {
-      continue;
-    }
-
+  for (idtest = lb->last, item_array_index = ID_SORT_STEP_SIZE - 1; idtest != NULL;
+       idtest = idtest->prev, item_array_index--) {
     item_array[item_array_index] = idtest;
     if (item_array_index == 0) {
-      if (BLI_strcasecmp(idtest->name, id->name) <= 0) {
+      if ((idtest->lib == NULL && id->lib != NULL) ||
+          BLI_strcasecmp(idtest->name, id->name) <= 0) {
         break;
       }
       item_array_index = ID_SORT_STEP_SIZE;
     }
-    item_array_index--;
   }
 
   /* Step two: we go forward in the selected chunk of items and check all of them, as we know
@@ -1421,7 +1404,7 @@ void id_sort_by_name(ListBase *lb, ID *id, ID *id_sorting_hint)
    * So we can increment that index in any case. */
   for (item_array_index++; item_array_index < ID_SORT_STEP_SIZE; item_array_index++) {
     idtest = item_array[item_array_index];
-    if (BLI_strcasecmp(idtest->name, id->name) > 0) {
+    if ((idtest->lib != NULL && id->lib == NULL) || BLI_strcasecmp(idtest->name, id->name) > 0) {
       BLI_insertlinkbefore(lb, idtest, id);
       break;
     }
@@ -1429,18 +1412,12 @@ void id_sort_by_name(ListBase *lb, ID *id, ID *id_sorting_hint)
   if (item_array_index == ID_SORT_STEP_SIZE) {
     if (idtest == NULL) {
       /* If idtest is NULL here, it means that in the first loop, the last comparison was
-       * performed exactly on the first item of the list, and that it also failed. And that the
-       * second loop was not walked at all.
-       *
-       * In other words, if `id` is local, all the items in the list are greater than the inserted
-       * one, so we can put it at the start of the list. Or, if `id` is linked, it is the first one
-       * of its library, and we can put it at the very end of the list. */
-      if (ID_IS_LINKED(id)) {
-        BLI_addtail(lb, id);
-      }
-      else {
-        BLI_addhead(lb, id);
-      }
+       * performed exactly on the first item of the list, and that it also failed. In other
+       * words, all items in the list are greater than inserted one, so we can put it at the
+       * start of the list. */
+      /* Note that BLI_insertlinkafter() would have same behavior in that case, but better be
+       * explicit here. */
+      BLI_addhead(lb, id);
     }
     else {
       BLI_insertlinkafter(lb, idtest, id);
@@ -1559,7 +1536,7 @@ static bool check_for_dupid(ListBase *lb, ID *id, char *name, ID **r_id_sorting_
          * and that current one is not. */
         bool is_valid = false;
         for (id_test = lb->first; id_test; id_test = id_test->next) {
-          if (id != id_test && id_test->lib == id->lib) {
+          if (id != id_test && !ID_IS_LINKED(id_test)) {
             if (id_test->name[2] == final_name[0] && STREQ(final_name, id_test->name + 2)) {
               /* We expect final_name to not be already used, so this is a failure. */
               is_valid = false;
@@ -1615,7 +1592,7 @@ static bool check_for_dupid(ListBase *lb, ID *id, char *name, ID **r_id_sorting_
     for (id_test = lb->first; id_test; id_test = id_test->next) {
       char base_name_test[MAX_ID_NAME - 2];
       int number_test;
-      if ((id != id_test) && (id_test->lib == id->lib) && (name[0] == id_test->name[2]) &&
+      if ((id != id_test) && !ID_IS_LINKED(id_test) && (name[0] == id_test->name[2]) &&
           (ELEM(id_test->name[base_name_len + 2], '.', '\0')) &&
           STREQLEN(name, id_test->name + 2, base_name_len) &&
           (BLI_split_name_num(base_name_test, &number_test, id_test->name + 2, '.') ==
@@ -1704,21 +1681,16 @@ static bool check_for_dupid(ListBase *lb, ID *id, char *name, ID **r_id_sorting_
  *
  * Only for local IDs (linked ones already have a unique ID in their library).
  *
- * \param do_linked_data if true, also ensure a unique name in case the given \a id is linked
- * (otherwise, just ensure that it is properly sorted).
- *
  * \return true if a new name had to be created.
  */
-bool BKE_id_new_name_validate(ListBase *lb, ID *id, const char *tname, const bool do_linked_data)
+bool BKE_id_new_name_validate(ListBase *lb, ID *id, const char *tname)
 {
-  bool result = false;
+  bool result;
   char name[MAX_ID_NAME - 2];
 
-  /* If library, don't rename (unless explicitly required), but do ensure proper sorting. */
-  if (!do_linked_data && ID_IS_LINKED(id)) {
-    id_sort_by_name(lb, id, NULL);
-
-    return result;
+  /* if library, don't rename */
+  if (ID_IS_LINKED(id)) {
+    return false;
   }
 
   /* if no name given, use name of current ID
@@ -1759,7 +1731,7 @@ bool BKE_id_new_name_validate(ListBase *lb, ID *id, const char *tname, const boo
 }
 
 /* next to indirect usage in read/writefile also in editobject.c scene.c */
-void BKE_main_id_newptr_and_tag_clear(Main *bmain)
+void BKE_main_id_clear_newpoins(Main *bmain)
 {
   ID *id;
 
@@ -2173,7 +2145,7 @@ void BKE_library_make_local(Main *bmain,
   TIMEIT_VALUE_PRINT(make_local);
 #endif
 
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_clear_newpoins(bmain);
   BLI_memarena_free(linklist_mem);
 
 #ifdef DEBUG_TIME
@@ -2198,9 +2170,9 @@ void BLI_libblock_ensure_unique_name(Main *bmain, const char *name)
 
   /* search for id */
   idtest = BLI_findstring(lb, name + 2, offsetof(ID, name) + 2);
-  if (idtest != NULL && !ID_IS_LINKED(idtest)) {
+  if (idtest != NULL) {
     /* BKE_id_new_name_validate also takes care of sorting. */
-    BKE_id_new_name_validate(lb, idtest, NULL, false);
+    BKE_id_new_name_validate(lb, idtest, NULL);
     bmain->is_memfile_undo_written = false;
   }
 }
@@ -2210,9 +2182,8 @@ void BLI_libblock_ensure_unique_name(Main *bmain, const char *name)
  */
 void BKE_libblock_rename(Main *bmain, ID *id, const char *name)
 {
-  BLI_assert(!ID_IS_LINKED(id));
   ListBase *lb = which_libbase(bmain, GS(id->name));
-  if (BKE_id_new_name_validate(lb, id, name, false)) {
+  if (BKE_id_new_name_validate(lb, id, name)) {
     bmain->is_memfile_undo_written = false;
   }
 }

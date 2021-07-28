@@ -97,8 +97,7 @@ typedef struct BoidRuleFollowLeader {
 } BoidRuleFollowLeader;
 typedef struct BoidRuleAverageSpeed {
   BoidRule rule;
-  float wander, level, speed;
-  char _pad0[4];
+  float wander, level, speed, rt;
 } BoidRuleAverageSpeed;
 typedef struct BoidRuleFight {
   BoidRule rule;
@@ -179,7 +178,7 @@ typedef struct BoidState {
 //} BoidSignal;
 // typedef struct BoidSignalDefine {
 //  struct BoidSignalDefine *next, *prev;
-//  int id, _pad[4];
+//  int id, rt;
 //  char name[32];
 //} BoidSignalDefine;
 

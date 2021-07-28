@@ -1332,8 +1332,11 @@ bool BKE_object_support_modifier_type_check(const Object *ob, int modifier_type)
   if (ob->type == OB_HAIR) {
     return (mti->modifyHair != NULL) || (mti->flags & eModifierTypeFlag_AcceptsVertexCosOnly);
   }
-  if (ELEM(ob->type, OB_POINTCLOUD, OB_VOLUME)) {
+  if (ob->type == OB_POINTCLOUD) {
     return (mti->modifyGeometrySet != NULL);
+  }
+  if (ob->type == OB_VOLUME) {
+    return (mti->modifyVolume != NULL);
   }
   if (ELEM(ob->type, OB_MESH, OB_CURVE, OB_SURF, OB_FONT, OB_LATTICE)) {
     if (ob->type == OB_LATTICE && (mti->flags & eModifierTypeFlag_AcceptsVertexCosOnly) == 0) {
@@ -2369,7 +2372,7 @@ ParticleSystem *BKE_object_copy_particlesystem(ParticleSystem *psys, const int f
   BLI_listbase_clear(&psysn->pathcachebufs);
   BLI_listbase_clear(&psysn->childcachebufs);
 
-  if (flag & LIB_ID_COPY_SET_COPIED_ON_WRITE) {
+  if (flag & LIB_ID_CREATE_NO_MAIN) {
     /* XXX Disabled, fails when evaluating depsgraph after copying ID with no main for preview
      * creation. */
     // BLI_assert((psys->flag & PSYS_SHARED_CACHES) == 0);
@@ -2622,8 +2625,8 @@ void BKE_object_transform_copy(Object *ob_tar, const Object *ob_src)
  *
  * \note This function does not do any remapping to new IDs, caller must do it
  * (\a #BKE_libblock_relink_to_newid()).
- * \note Caller MUST free \a newid pointers itself (#BKE_main_id_newptr_and_tag_clear()) and call
- * updates of DEG too (#DAG_relations_tag_update()).
+ * \note Caller MUST free \a newid pointers itself (#BKE_main_id_clear_newpoins()) and call updates
+ * of DEG too (#DAG_relations_tag_update()).
  */
 Object *BKE_object_duplicate(Main *bmain,
                              Object *ob,
@@ -2633,7 +2636,8 @@ Object *BKE_object_duplicate(Main *bmain,
   const bool is_subprocess = (duplicate_options & LIB_ID_DUPLICATE_IS_SUBPROCESS) != 0;
 
   if (!is_subprocess) {
-    BKE_main_id_newptr_and_tag_clear(bmain);
+    BKE_main_id_tag_all(bmain, LIB_TAG_NEW, false);
+    BKE_main_id_clear_newpoins(bmain);
     /* In case root duplicated ID is linked, assume we want to get a local copy of it and duplicate
      * all expected linked data. */
     if (ID_IS_LINKED(ob)) {
@@ -2772,7 +2776,8 @@ Object *BKE_object_duplicate(Main *bmain,
 #endif
 
     /* Cleanup. */
-    BKE_main_id_newptr_and_tag_clear(bmain);
+    BKE_main_id_tag_all(bmain, LIB_TAG_NEW, false);
+    BKE_main_id_clear_newpoins(bmain);
   }
 
   if (obn->type == OB_ARMATURE) {
@@ -4345,7 +4350,7 @@ void BKE_object_handle_update_ex(Depsgraph *depsgraph,
   }
   /* Speed optimization for animation lookups. */
   if (ob->pose != NULL) {
-    BKE_pose_channels_hash_ensure(ob->pose);
+    BKE_pose_channels_hash_make(ob->pose);
     if (ob->pose->flag & POSE_CONSTRAINTS_NEED_UPDATE_FLAGS) {
       BKE_pose_update_constraint_flags(ob->pose);
     }
@@ -5113,20 +5118,6 @@ void BKE_object_runtime_reset_on_copy(Object *object, const int UNUSED(flag))
   runtime->object_as_temp_mesh = NULL;
   runtime->object_as_temp_curve = NULL;
   runtime->geometry_set_eval = NULL;
-}
-
-/**
- * The function frees memory used by the runtime data, but not the runtime field itself.
- *
- * All runtime data is cleared to ensure it's not used again,
- * in keeping with other `_free_data(..)` functions.
- */
-void BKE_object_runtime_free_data(Object *object)
-{
-  /* Currently this is all that's needed. */
-  BKE_object_free_derived_caches(object);
-
-  BKE_object_runtime_reset(object);
 }
 
 /**

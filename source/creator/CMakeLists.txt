@@ -116,12 +116,7 @@ if(WITH_XR_OPENXR)
 endif()
 
 if(WITH_GMP)
-  blender_include_dirs(${GMP_INCLUDE_DIRS})
   add_definitions(-DWITH_GMP)
-endif()
-
-if(WITH_OPENCOLORIO)
-  add_definitions(-DWITH_OCIO)
 endif()
 
 # Setup the exe sources and buildinfo
@@ -135,11 +130,14 @@ set(SRC
 
 # MSVC 2010 gives linking errors with the manifest
 if(WIN32 AND NOT UNIX)
+  string(SUBSTRING ${BLENDER_VERSION} 0 1 bver1)
+  string(SUBSTRING ${BLENDER_VERSION} 2 1 bver2)
+  string(SUBSTRING ${BLENDER_VERSION} 3 1 bver3)
   add_definitions(
     -DBLEN_VER_RC_STR="${BLENDER_VERSION}"
-    -DBLEN_VER_RC_1=${BLENDER_VERSION_MAJOR}
-    -DBLEN_VER_RC_2=${BLENDER_VERSION_MINOR}
-    -DBLEN_VER_RC_3=${BLENDER_VERSION_PATCH}
+    -DBLEN_VER_RC_1=${bver1}
+    -DBLEN_VER_RC_2=${bver2}
+    -DBLEN_VER_RC_3=${bver3}
     -DBLEN_VER_RC_4=0
   )
 
@@ -190,7 +188,7 @@ if(WITH_BUILDINFO)
 
   # --------------------------------------------------------------------------
   # write header for values that change each build
-  # note, generated file is in build dir's source/creator
+  # note, generaed file is in build dir's source/creator
   #       except when used as an include path.
 
   add_definitions(-DWITH_BUILDINFO_HEADER)
@@ -290,15 +288,6 @@ if(WITH_PYTHON_MODULE)
 
 else()
   add_executable(blender ${EXETYPE} ${SRC})
-  if(WIN32)
-      add_executable(blender-launcher WIN32
-        blender_launcher_win32.c
-        ${CMAKE_SOURCE_DIR}/release/windows/icons/winblender.rc
-        ${CMAKE_BINARY_DIR}/blender.exe.manifest
-      )
-      target_compile_definitions (blender-launcher PRIVATE -D_UNICODE -DUNICODE)
-      target_link_libraries(blender-launcher Pathcch.lib)
-  endif()
 endif()
 
 if(WITH_BUILDINFO)
@@ -884,13 +873,13 @@ elseif(WIN32)
   if(WITH_TBB)
     install(
       FILES
-        ${LIBDIR}/tbb/bin/tbb.dll
+        ${LIBDIR}/tbb/lib/tbb.dll
       DESTINATION "."
       CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
     )
     install(
       FILES
-        ${LIBDIR}/tbb/bin/tbb_debug.dll
+        ${LIBDIR}/tbb/lib/debug/tbb_debug.dll
       DESTINATION "."
       CONFIGURATIONS Debug
     )
@@ -898,19 +887,18 @@ elseif(WIN32)
   if(WITH_TBB_MALLOC_PROXY)
     install(
       FILES
-        ${LIBDIR}/tbb/bin/tbbmalloc.dll
-        ${LIBDIR}/tbb/bin/tbbmalloc_proxy.dll
+        ${LIBDIR}/tbb/lib/tbbmalloc.dll
+        ${LIBDIR}/tbb/lib/tbbmalloc_proxy.dll
       DESTINATION "."
       CONFIGURATIONS Release;RelWithDebInfo;MinSizeRel
     )
     install(
       FILES
-        ${LIBDIR}/tbb/bin/tbbmalloc_debug.dll
-        ${LIBDIR}/tbb/bin/tbbmalloc_proxy_debug.dll
+        ${LIBDIR}/tbb/lib/debug/tbbmalloc.dll
+        ${LIBDIR}/tbb/lib/debug/tbbmalloc_proxy.dll
       DESTINATION "."
       CONFIGURATIONS Debug
     )
-    list(APPEND LIB ${TBB_MALLOC_LIBRARIES})
   endif()
 
   if(WITH_CODEC_SNDFILE)
@@ -1227,7 +1215,7 @@ endif()
 
 if(WIN32 AND NOT WITH_PYTHON_MODULE)
   install(
-    TARGETS blender blender-launcher
+    TARGETS blender
     COMPONENT Blender
     DESTINATION "."
   )

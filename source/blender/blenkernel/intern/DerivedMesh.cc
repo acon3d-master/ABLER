@@ -962,7 +962,7 @@ static Mesh *modifier_modify_mesh_and_geometry_set(ModifierData *md,
     /* Return an empty mesh instead of null.  */
     if (mesh_output == nullptr) {
       mesh_output = BKE_mesh_new_nomain(0, 0, 0, 0, 0);
-      BKE_mesh_copy_parameters_for_eval(mesh_output, input_mesh);
+      BKE_mesh_copy_settings(mesh_output, input_mesh);
     }
   }
 
@@ -1861,11 +1861,9 @@ static void editbmesh_calc_modifiers(struct Depsgraph *depsgraph,
     BKE_id_free(nullptr, mesh_orco);
   }
 
-  /* Ensure normals calculation below is correct (normal settings have transferred properly).
-   * However, nodes modifiers might create meshes from scratch or transfer meshes from other
-   * objects with different settings, and in general it doesn't make sense to guarantee that
-   * the settings are the same as the original mesh. If necessary, this could become a modifier
-   * type flag. */
+  /* Ensure normals calculation below is correct. */
+  BLI_assert((mesh_input->flag & ME_AUTOSMOOTH) == (mesh_final->flag & ME_AUTOSMOOTH));
+  BLI_assert(mesh_input->smoothresh == mesh_final->smoothresh);
   BLI_assert(mesh_input->smoothresh == mesh_cage->smoothresh);
 
   /* Compute normals. */

@@ -1311,6 +1311,7 @@ static int image_open_exec(bContext *C, wmOperator *op)
   Scene *scene = CTX_data_scene(C);
   Object *obedit = CTX_data_edit_object(C);
   ImageUser *iuser = NULL;
+  ImageOpenData *iod = op->customdata;
   Image *ima = NULL;
   int frame_seq_len = 0;
   int frame_ofs = 1;
@@ -1344,7 +1345,7 @@ static int image_open_exec(bContext *C, wmOperator *op)
   }
 
   /* hook into UI */
-  ImageOpenData *iod = op->customdata;
+  iod = op->customdata;
 
   if (iod->pprop.prop) {
     /* when creating new ID blocks, use is already 1, but RNA
@@ -1478,16 +1479,18 @@ static bool image_open_draw_check_prop(PointerRNA *UNUSED(ptr),
   return !(STR_ELEM(prop_id, "filepath", "directory", "filename"));
 }
 
-static void image_open_draw(bContext *UNUSED(C), wmOperator *op)
+static void image_open_draw(bContext *C, wmOperator *op)
 {
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
   ImageOpenData *iod = op->customdata;
   ImageFormatData *imf = &iod->im_format;
-  PointerRNA imf_ptr;
+  PointerRNA imf_ptr, ptr;
 
   /* main draw call */
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
   uiDefAutoButsRNA(
-      layout, op->ptr, image_open_draw_check_prop, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
+      layout, &ptr, image_open_draw_check_prop, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
 
   /* image template */
   RNA_pointer_create(NULL, &RNA_ImageFormatSettings, imf, &imf_ptr);
@@ -1998,11 +2001,12 @@ static bool image_save_as_draw_check_prop(PointerRNA *ptr,
            ((STREQ(prop_id, "relative_path")) && RNA_boolean_get(ptr, "copy")));
 }
 
-static void image_save_as_draw(bContext *UNUSED(C), wmOperator *op)
+static void image_save_as_draw(bContext *C, wmOperator *op)
 {
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
   ImageSaveData *isd = op->customdata;
-  PointerRNA imf_ptr;
+  PointerRNA imf_ptr, ptr;
   const bool is_multiview = RNA_boolean_get(op->ptr, "show_multiview");
 
   /* image template */
@@ -2010,8 +2014,9 @@ static void image_save_as_draw(bContext *UNUSED(C), wmOperator *op)
   uiTemplateImageSettings(layout, &imf_ptr, false);
 
   /* main draw call */
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
   uiDefAutoButsRNA(
-      layout, op->ptr, image_save_as_draw_check_prop, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
+      layout, &ptr, image_save_as_draw_check_prop, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
 
   /* multiview template */
   if (is_multiview) {
@@ -2609,14 +2614,18 @@ static int image_new_invoke(bContext *C, wmOperator *op, const wmEvent *UNUSED(e
   return WM_operator_props_dialog_popup(C, op, 300);
 }
 
-static void image_new_draw(bContext *UNUSED(C), wmOperator *op)
+static void image_new_draw(bContext *C, wmOperator *op)
 {
   uiLayout *col;
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
+  PointerRNA ptr;
 #if 0
   Scene *scene = CTX_data_scene(C);
   const bool is_multiview = (scene->r.scemode & R_MULTIVIEW) != 0;
 #endif
+
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
 
   /* copy of WM_operator_props_dialog_popup() layout */
 
@@ -2624,19 +2633,19 @@ static void image_new_draw(bContext *UNUSED(C), wmOperator *op)
   uiLayoutSetPropDecorate(layout, false);
 
   col = uiLayoutColumn(layout, false);
-  uiItemR(col, op->ptr, "name", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "width", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "height", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "color", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "alpha", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "generated_type", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "float", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "tiled", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "name", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "width", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "height", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "color", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "alpha", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "generated_type", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "float", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "tiled", 0, NULL, ICON_NONE);
 
 #if 0
   if (is_multiview) {
     uiItemL(col[0], "", ICON_NONE);
-    uiItemR(col[1], op->ptr, "use_stereo_3d", 0, NULL, ICON_NONE);
+    uiItemR(col[1], &ptr, "use_stereo_3d", 0, NULL, ICON_NONE);
   }
 #endif
 }
@@ -3982,22 +3991,26 @@ static int tile_add_invoke(bContext *C, wmOperator *op, const wmEvent *UNUSED(ev
   return WM_operator_props_dialog_popup(C, op, 300);
 }
 
-static void tile_add_draw(bContext *UNUSED(C), wmOperator *op)
+static void tile_add_draw(bContext *C, wmOperator *op)
 {
   uiLayout *col;
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
+  PointerRNA ptr;
+
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
 
   uiLayoutSetPropSep(layout, true);
   uiLayoutSetPropDecorate(layout, false);
 
   col = uiLayoutColumn(layout, false);
-  uiItemR(col, op->ptr, "number", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "count", 0, NULL, ICON_NONE);
-  uiItemR(col, op->ptr, "label", 0, NULL, ICON_NONE);
-  uiItemR(layout, op->ptr, "fill", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "number", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "count", 0, NULL, ICON_NONE);
+  uiItemR(col, &ptr, "label", 0, NULL, ICON_NONE);
+  uiItemR(layout, &ptr, "fill", 0, NULL, ICON_NONE);
 
-  if (RNA_boolean_get(op->ptr, "fill")) {
-    draw_fill_tile(op->ptr, layout);
+  if (RNA_boolean_get(&ptr, "fill")) {
+    draw_fill_tile(&ptr, layout);
   }
 }
 
@@ -4115,9 +4128,13 @@ static int tile_fill_invoke(bContext *C, wmOperator *op, const wmEvent *UNUSED(e
   return WM_operator_props_dialog_popup(C, op, 300);
 }
 
-static void tile_fill_draw(bContext *UNUSED(C), wmOperator *op)
+static void tile_fill_draw(bContext *C, wmOperator *op)
 {
-  draw_fill_tile(op->ptr, op->layout);
+  wmWindowManager *wm = CTX_wm_manager(C);
+  PointerRNA ptr;
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
+
+  draw_fill_tile(&ptr, op->layout);
 }
 
 void IMAGE_OT_tile_fill(wmOperatorType *ot)

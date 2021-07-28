@@ -28,7 +28,6 @@
 #ifdef WITH_TBB
 /* Need to include at least one header to get the version define. */
 #  include <tbb/blocked_range.h>
-#  include <tbb/task_arena.h>
 #  if TBB_INTERFACE_VERSION_MAJOR >= 10
 #    include <tbb/global_control.h>
 #    define WITH_TBB_GLOBAL_CONTROL
@@ -76,13 +75,4 @@ void BLI_task_scheduler_exit()
 int BLI_task_scheduler_num_threads()
 {
   return task_scheduler_num_threads;
-}
-
-void BLI_task_isolate(void (*func)(void *userdata), void *userdata)
-{
-#ifdef WITH_TBB
-  tbb::this_task_arena::isolate([&] { func(userdata); });
-#else
-  func(userdata);
-#endif
 }

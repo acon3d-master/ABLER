@@ -400,7 +400,6 @@ typedef struct IntPropertyRNA {
   PropIntArraySetFuncEx setarray_ex;
   PropIntRangeFuncEx range_ex;
 
-  PropertyScaleType ui_scale_type;
   int softmin, softmax;
   int hardmin, hardmax;
   int step;
@@ -424,7 +423,6 @@ typedef struct FloatPropertyRNA {
   PropFloatArraySetFuncEx setarray_ex;
   PropFloatRangeFuncEx range_ex;
 
-  PropertyScaleType ui_scale_type;
   float softmin, softmax;
   float hardmin, hardmax;
   float step;

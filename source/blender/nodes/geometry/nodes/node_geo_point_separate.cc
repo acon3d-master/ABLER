@@ -52,33 +52,33 @@ static void copy_data_based_on_mask(Span<T> data,
   }
 }
 
-void copy_point_attributes_based_on_mask(const GeometryComponent &in_component,
-                                         GeometryComponent &result_component,
-                                         Span<bool> masks,
-                                         const bool invert)
+static void copy_attributes_based_on_mask(const GeometryComponent &in_component,
+                                          GeometryComponent &result_component,
+                                          Span<bool> masks,
+                                          const bool invert)
 {
   for (const std::string &name : in_component.attribute_names()) {
-    ReadAttributeLookup attribute = in_component.attribute_try_get_for_read(name);
-    const CustomDataType data_type = bke::cpp_type_to_custom_data_type(attribute.varray->type());
+    ReadAttributePtr attribute = in_component.attribute_try_get_for_read(name);
+    const CustomDataType data_type = attribute->custom_data_type();
 
     /* Only copy point attributes. Theoretically this could interpolate attributes on other
      * domains to the point domain, but that would conflict with attributes that are built-in
      * on other domains, which causes creating the attributes to fail. */
-    if (attribute.domain != ATTR_DOMAIN_POINT) {
+    if (attribute->domain() != ATTR_DOMAIN_POINT) {
       continue;
     }
 
-    OutputAttribute result_attribute = result_component.attribute_try_get_for_output_only(
+    OutputAttributePtr result_attribute = result_component.attribute_try_get_for_output(
         name, ATTR_DOMAIN_POINT, data_type);
 
     attribute_math::convert_to_static_type(data_type, [&](auto dummy) {
       using T = decltype(dummy);
-      GVArray_Span<T> span{*attribute.varray};
-      MutableSpan<T> out_span = result_attribute.as_span<T>();
+      Span<T> span = attribute->get_span<T>();
+      MutableSpan<T> out_span = result_attribute->get_span_for_write_only<T>();
       copy_data_based_on_mask(span, masks, invert, out_span);
     });
 
-    result_attribute.save();
+    result_attribute.apply_span_and_save();
   }
 }
 
@@ -107,9 +107,9 @@ static void separate_points_from_component(const GeometryComponent &in_component
     return;
   }
 
-  const GVArray_Typed<bool> mask_attribute = in_component.attribute_get_for_read<bool>(
+  const BooleanReadAttribute mask_attribute = in_component.attribute_get_for_read<bool>(
       mask_name, ATTR_DOMAIN_POINT, false);
-  VArray_Span<bool> masks{mask_attribute};
+  Span<bool> masks = mask_attribute.get_span();
 
   const int total = masks.count(!invert);
   if (total == 0) {
@@ -118,7 +118,7 @@ static void separate_points_from_component(const GeometryComponent &in_component
 
   create_component_points(out_component, total);
 
-  copy_point_attributes_based_on_mask(in_component, out_component, masks, invert);
+  copy_attributes_based_on_mask(in_component, out_component, masks, invert);
 }
 
 static GeometrySet separate_geometry_set(const GeometrySet &set_in,
@@ -127,10 +127,6 @@ static GeometrySet separate_geometry_set(const GeometrySet &set_in,
 {
   GeometrySet set_out;
   for (const GeometryComponent *component : set_in.get_components_for_read()) {
-    if (component->type() == GEO_COMPONENT_TYPE_CURVE) {
-      /* Don't support the curve component for now, even though it has a point domain. */
-      continue;
-    }
     GeometryComponent &out_component = set_out.get_component_for_write(component->type());
     separate_points_from_component(*component, out_component, mask_name, invert);
   }
@@ -139,27 +135,15 @@ static GeometrySet separate_geometry_set(const GeometrySet &set_in,
 
 static void geo_node_point_separate_exec(GeoNodeExecParams params)
 {
-  bool wait_for_inputs = false;
-  wait_for_inputs |= params.lazy_require_input("Geometry");
-  wait_for_inputs |= params.lazy_require_input("Mask");
-  if (wait_for_inputs) {
-    return;
-  }
-  const std::string mask_attribute_name = params.get_input<std::string>("Mask");
-  GeometrySet geometry_set = params.get_input<GeometrySet>("Geometry");
+  const std::string mask_attribute_name = params.extract_input<std::string>("Mask");
+  GeometrySet geometry_set = params.extract_input<GeometrySet>("Geometry");
 
   /* TODO: This is not necessary-- the input geometry set can be read only,
    * but it must be rewritten to handle instance groups. */
   geometry_set = geometry_set_realize_instances(geometry_set);
 
-  if (params.lazy_output_is_required("Geometry 1")) {
-    params.set_output("Geometry 1",
-                      separate_geometry_set(geometry_set, mask_attribute_name, true));
-  }
-  if (params.lazy_output_is_required("Geometry 2")) {
-    params.set_output("Geometry 2",
-                      separate_geometry_set(geometry_set, mask_attribute_name, false));
-  }
+  params.set_output("Geometry 1", separate_geometry_set(geometry_set, mask_attribute_name, true));
+  params.set_output("Geometry 2", separate_geometry_set(geometry_set, mask_attribute_name, false));
 }
 
 }  // namespace blender::nodes
@@ -171,6 +155,5 @@ void register_node_type_geo_point_separate()
   geo_node_type_base(&ntype, GEO_NODE_POINT_SEPARATE, "Point Separate", NODE_CLASS_GEOMETRY, 0);
   node_type_socket_templates(&ntype, geo_node_point_instance_in, geo_node_point_instance_out);
   ntype.geometry_node_execute = blender::nodes::geo_node_point_separate_exec;
-  ntype.geometry_node_execute_supports_laziness = true;
   nodeRegisterType(&ntype);
 }

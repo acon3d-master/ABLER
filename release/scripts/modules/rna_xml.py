@@ -245,10 +245,9 @@ def rna2xml(
         fw("%s</%s>\n" % (root_ident, root_node))
 
 
-def xml2rna(
-        root_xml, *,
-        root_rna=None,  # must be set
-):
+def xml2rna(root_xml,
+            root_rna=None,  # must be set
+            ):
 
     def rna2xml_node(xml_node, value):
         # print("evaluating:", xml_node.nodeName)
@@ -395,7 +394,7 @@ def xml_file_run(context, filepath, rna_map):
             xml2rna(xml_node, root_rna=value)
 
 
-def xml_file_write(context, filepath, rna_map, *, skip_typemap=None):
+def xml_file_write(context, filepath, rna_map, skip_typemap=None):
 
     file = open(filepath, "w", encoding="utf-8")
     fw = file.write

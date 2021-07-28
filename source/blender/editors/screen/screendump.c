@@ -199,9 +199,10 @@ static bool screenshot_draw_check_prop(PointerRNA *UNUSED(ptr),
   return !(STREQ(prop_id, "filepath"));
 }
 
-static void screenshot_draw(bContext *UNUSED(C), wmOperator *op)
+static void screenshot_draw(bContext *C, wmOperator *op)
 {
   uiLayout *layout = op->layout;
+  wmWindowManager *wm = CTX_wm_manager(C);
   ScreenshotData *scd = op->customdata;
 
   uiLayoutSetPropSep(layout, true);
@@ -213,8 +214,9 @@ static void screenshot_draw(bContext *UNUSED(C), wmOperator *op)
   uiTemplateImageSettings(layout, &ptr, false);
 
   /* main draw call */
+  RNA_pointer_create(&wm->id, op->type->srna, op->properties, &ptr);
   uiDefAutoButsRNA(
-      layout, op->ptr, screenshot_draw_check_prop, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
+      layout, &ptr, screenshot_draw_check_prop, NULL, NULL, UI_BUT_LABEL_ALIGN_NONE, false);
 }
 
 static bool screenshot_poll(bContext *C)

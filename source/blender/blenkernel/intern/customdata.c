@@ -1226,6 +1226,8 @@ static void layerInterp_mvert_skin(const void **sources,
                                    int count,
                                    void *dest)
 {
+  MVertSkin *vs_dst = dest;
+
   float radius[3];
   zero_v3(radius);
 
@@ -1237,7 +1239,7 @@ static void layerInterp_mvert_skin(const void **sources,
   }
 
   /* Delay writing to the destination in case dest is in sources. */
-  MVertSkin *vs_dst = dest;
+  vs_dst = dest;
   copy_v3_v3(vs_dst->radius, radius);
   vs_dst->flag &= ~MVERT_SKIN_ROOT;
 }
@@ -2811,6 +2813,14 @@ void *CustomData_duplicate_referenced_layer_named(CustomData *data,
   int layer_index = CustomData_get_named_layer_index(data, type, name);
 
   return customData_duplicate_referenced_layer_index(data, layer_index, totelem);
+}
+
+void CustomData_duplicate_referenced_layers(CustomData *data, int totelem)
+{
+  for (int i = 0; i < data->totlayer; i++) {
+    CustomDataLayer *layer = &data->layers[i];
+    layer->data = customData_duplicate_referenced_layer_index(data, i, totelem);
+  }
 }
 
 bool CustomData_is_referenced_layer(struct CustomData *data, int type)

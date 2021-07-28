@@ -314,7 +314,7 @@ static void gpencil_primitive_set_initdata(bContext *C, tGPDprimitive *tgpi)
 
   /* if layer doesn't exist, create a new one */
   if (gpl == NULL) {
-    gpl = BKE_gpencil_layer_addnew(tgpi->gpd, DATA_("Primitives"), true, false);
+    gpl = BKE_gpencil_layer_addnew(tgpi->gpd, DATA_("Primitives"), true);
   }
   tgpi->gpl = gpl;
 
@@ -1536,22 +1536,24 @@ static void gpencil_primitive_strength(tGPDprimitive *tgpi, bool reset)
   Brush *brush = tgpi->brush;
   BrushGpencilSettings *brush_settings = brush->gpencil_settings;
 
-  if (reset) {
-    brush_settings->draw_strength = tgpi->brush_strength;
-    tgpi->brush_strength = 0.0f;
-  }
-  else {
-    if (tgpi->brush_strength == 0.0f) {
-      tgpi->brush_strength = brush_settings->draw_strength;
+  if (brush) {
+    if (reset) {
+      brush_settings->draw_strength = tgpi->brush_strength;
+      tgpi->brush_strength = 0.0f;
     }
-    float move[2];
-    sub_v2_v2v2(move, tgpi->mval, tgpi->mvalo);
-    float adjust = (move[1] > 0.0f) ? 0.01f : -0.01f;
-    brush_settings->draw_strength += adjust * fabsf(len_manhattan_v2(move));
-  }
+    else {
+      if (tgpi->brush_strength == 0.0f) {
+        tgpi->brush_strength = brush_settings->draw_strength;
+      }
+      float move[2];
+      sub_v2_v2v2(move, tgpi->mval, tgpi->mvalo);
+      float adjust = (move[1] > 0.0f) ? 0.01f : -0.01f;
+      brush_settings->draw_strength += adjust * fabsf(len_manhattan_v2(move));
+    }
 
-  /* limit low limit because below 0.2f the stroke is invisible */
-  CLAMP(brush_settings->draw_strength, 0.2f, 1.0f);
+    /* limit low limit because below 0.2f the stroke is invisible */
+    CLAMP(brush_settings->draw_strength, 0.2f, 1.0f);
+  }
 }
 
 /* brush size */

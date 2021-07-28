@@ -1130,13 +1130,11 @@ static void vgroups_datatransfer_interp(const CustomDataTransferLayerMap *laymap
   MDeformWeight *dw_dst = BKE_defvert_find_index(data_dst, idx_dst);
   float weight_src = 0.0f, weight_dst = 0.0f;
 
-  bool has_dw_sources = false;
   if (sources) {
     for (i = count; i--;) {
       for (j = data_src[i]->totweight; j--;) {
         if ((dw_src = &data_src[i]->dw[j])->def_nr == idx_src) {
           weight_src += dw_src->weight * weights[i];
-          has_dw_sources = true;
           break;
         }
       }
@@ -1154,14 +1152,7 @@ static void vgroups_datatransfer_interp(const CustomDataTransferLayerMap *laymap
 
   CLAMP(weight_src, 0.0f, 1.0f);
 
-  /* Do not create a destination MDeformWeight data if we had no sources at all. */
-  if (!has_dw_sources) {
-    BLI_assert(weight_src == 0.0f);
-    if (dw_dst) {
-      dw_dst->weight = weight_src;
-    }
-  }
-  else if (!dw_dst) {
+  if (!dw_dst) {
     BKE_defvert_add_index_notest(data_dst, idx_dst, weight_src);
   }
   else {

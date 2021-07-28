@@ -22,7 +22,7 @@
 #                       These are defined by the FindIlmBase module.
 # OPENEXR_FOUND       - True if OpenEXR was found.
 
-# Other standard issue macros
+# Other standarnd issue macros
 include(SelectLibraryConfigurations)
 include(FindPackageHandleStandardArgs)
 include(FindPackageMessage)

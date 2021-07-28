@@ -153,7 +153,8 @@ static int vertex_parent_set_exec(bContext *C, wmOperator *op)
 
     em = me->edit_mesh;
 
-    BKE_editmesh_looptri_and_normals_calc(em);
+    EDBM_mesh_normals_update(em);
+    BKE_editmesh_looptri_calc(em);
 
     /* Make sure the evaluated mesh is updated.
      *
@@ -800,7 +801,7 @@ bool ED_object_parent_set(ReportList *reports,
        *   so we check this by assuming that the parent is selected too.
        */
       /* XXX currently this should only happen for meshes, curves, surfaces,
-       * and lattices - this stuff isn't available for meta-balls yet. */
+       * and lattices - this stuff isn't available for metas yet */
       if (ELEM(ob->type, OB_MESH, OB_CURVE, OB_SURF, OB_FONT, OB_LATTICE)) {
         ModifierData *md;
 
@@ -1943,7 +1944,7 @@ void ED_object_single_user(Main *bmain, Scene *scene, Object *ob)
   ob->flag |= OB_DONE;
 
   single_object_users(bmain, scene, NULL, OB_DONE, false);
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_clear_newpoins(bmain);
 }
 
 static void single_obdata_users(
@@ -2453,7 +2454,7 @@ static int make_override_library_exec(bContext *C, wmOperator *op)
   BKE_main_id_tag_all(bmain, LIB_TAG_DOIT, false);
 
   const bool success = BKE_lib_override_library_create(
-      bmain, scene, view_layer, id_root, &obact->id, NULL);
+      bmain, scene, view_layer, id_root, &obact->id);
 
   /* Remove the instance empty from this scene, the items now have an overridden collection
    * instead. */
@@ -2569,14 +2570,14 @@ static int convert_proxy_to_override_exec(bContext *C, wmOperator *op)
 
   /* Remove the instance empty from this scene, the items now have an overridden collection
    * instead. */
-  if (is_override_instancing_object) {
+  if (success && is_override_instancing_object) {
     ED_object_base_free_and_unlink(bmain, scene, ob_proxy_group);
   }
 
   DEG_id_tag_update(&CTX_data_scene(C)->id, ID_RECALC_BASE_FLAGS | ID_RECALC_COPY_ON_WRITE);
   WM_event_add_notifier(C, NC_WINDOW, NULL);
 
-  return OPERATOR_FINISHED;
+  return success ? OPERATOR_FINISHED : OPERATOR_CANCELLED;
 }
 
 void OBJECT_OT_convert_proxy_to_override(wmOperatorType *ot)
@@ -2643,7 +2644,7 @@ static int make_single_user_exec(bContext *C, wmOperator *op)
     single_object_action_users(bmain, scene, view_layer, v3d, flag);
   }
 
-  BKE_main_id_newptr_and_tag_clear(bmain);
+  BKE_main_id_clear_newpoins(bmain);
 
   WM_event_add_notifier(C, NC_WINDOW, NULL);
 

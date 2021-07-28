@@ -19,9 +19,9 @@
 # <pep8-80 compliant>
 
 
-def url_prefill_from_blender(*, addon_info=None):
+def url_prefill_from_blender(addon_info=None):
     import bpy
-    import gpu
+    import bgl
     import struct
     import platform
     import urllib.parse
@@ -38,9 +38,9 @@ def url_prefill_from_blender(*, addon_info=None):
     )
     fh.write(
         "Graphics card: %s %s %s\n" % (
-            gpu.platform.renderer_get(),
-            gpu.platform.vendor_get(),
-            gpu.platform.version_get(),
+            bgl.glGetString(bgl.GL_RENDERER),
+            bgl.glGetString(bgl.GL_VENDOR),
+            bgl.glGetString(bgl.GL_VERSION),
         )
     )
     fh.write(
