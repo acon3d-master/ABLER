@@ -398,27 +398,33 @@ def applyAconToonStyle():
                 node_texImage = node
             
             elif node.type == "BSDF_PRINCIPLED":
-                baseColor = node.inputs[0].default_value
+                default_value = node.inputs[0].default_value
+                baseColor = (default_value[0], default_value[1], default_value[2], default_value[3])
                 nega_alpha = 1 - node.inputs[19].default_value
         
         if is_arleady_toonStyle:
             continue
-        else:
-            for node in nodes:
-                if not node == node_texImage:
-                    mat.node_tree.nodes.remove(node)
         
         out_node = nodes.new(type='ShaderNodeOutputMaterial')
         
         node_combinedToon = nodes.new(type='ShaderNodeGroup')
         node_combinedToon.name = 'ACON_nodeGroup_combinedToon'
         node_combinedToon.node_tree = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-        node_combinedToon.inputs[0].default_value = baseColor
         node_combinedToon.inputs[7].default_value = nega_alpha
         mat.node_tree.links.new(node_combinedToon.outputs[0], out_node.inputs[0])
 
         if node_texImage:
             mat.node_tree.links.new(node_texImage.outputs[0], node_combinedToon.inputs[0])
+        else:
+            node_combinedToon.inputs[0].default_value = baseColor
+        
+        for node in nodes:
+            is_node_texImage = node == node_texImage
+            is_out_node = node == out_node
+            is_node_combinedToon = node == node_combinedToon
+
+            if not is_node_texImage and not is_out_node and not is_node_combinedToon:
+                mat.node_tree.nodes.remove(node)
         
         mat.ACON_prop_mat.type = "Diffuse"
         
