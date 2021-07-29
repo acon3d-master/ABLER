@@ -189,22 +189,19 @@ class Acon3dCameraPanel(bpy.types.Panel):
 
         scene = context.scene
         collection = bpy.data.collections.get('ACON_col_cameras')
-        if collection is not None:
+        
+        if collection is not None and len(collection.children):
             row = layout.row()
-
             row.prop(scene.camera_enum, "view")
 
-            if scene.camera_enum.view != "":
-
-                row = layout.row()
-                row.scale_y = 1.0
-                row.operator("acon3d.update_custom_camera")
-                row.operator("acon3d.delete_camera")
-                
-                cam = bpy.context.scene.camera.data
-
-                row = layout.row()
-                row.prop(cam, "lens")
+            row = layout.row()
+            row.operator("acon3d.update_custom_camera")
+            row.operator("acon3d.delete_camera")
+        
+        if bpy.context.scene.camera is not None:
+            cam = bpy.context.scene.camera.data
+            row = layout.row()
+            row.prop(cam, "lens")
 
 
 def scene_mychosenobject_poll(self, object):
