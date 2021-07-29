@@ -38,7 +38,7 @@ class Acon3dEdgePanel(bpy.types.Panel):
     
     def draw_header(self, context):
         layout = self.layout
-        layout.label(icon="SHADING_WIRE")
+        layout.label(icon="MESH_UVSPHERE")
 
     def draw(self, context):
         return
