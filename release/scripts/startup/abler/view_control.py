@@ -190,7 +190,7 @@ class Acon3dCameraPanel(bpy.types.Panel):
         scene = context.scene
         collection = bpy.data.collections.get('ACON_col_cameras')
         
-        if collection is not None and len(collection.children):
+        if collection is not None and len(collection.objects):
             row = layout.row()
             row.prop(scene.camera_enum, "view")
 
