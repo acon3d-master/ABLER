@@ -92,9 +92,9 @@ class MaterialTypeEnumProperty(bpy.types.PropertyGroup):
         description="Material Type",
         items = [
             ("Diffuse", "Diffuse", ""),
-            ("Reflection", "Reflection", ""),
-            ("Glow", "Glow", ""),
-            ("Transparent", "Transparent", "")
+            ("Mirror", "Reflection", ""),
+            ("Glow", "Emission", ""),
+            ("Clear", "Transparent", "")
         ],
         update = changeMaterialType
     )
@@ -119,13 +119,13 @@ class MATERIAL_UL_List(bpy.types.UIList):
             if ma.ACON_prop_mat.type == "Diffuse":
                 layout.label(text="", translate=False)
             
-            if ma.ACON_prop_mat.type == "Reflection":
+            if ma.ACON_prop_mat.type == "Mirror":
                 layout.prop(toonNode.inputs[6], "default_value", text="")
 
             if ma.ACON_prop_mat.type == "Glow":
                 layout.prop(toonNode.inputs[5], "default_value", text="")
 
-            if ma.ACON_prop_mat.type == "Transparent":
+            if ma.ACON_prop_mat.type == "Clear":
                 layout.prop(toonNode.inputs[7], "default_value", text="")
 
 
