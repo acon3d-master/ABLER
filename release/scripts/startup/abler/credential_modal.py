@@ -90,7 +90,7 @@ def moveMouse():
     window = bpy.context.window
     width = window.width
     height = window.height
-    window.cursor_warp(width / 2, (height / 2) - 100)
+    window.cursor_warp(width / 2, (height / 2) - 150)
 
 
 class AconLoginOperator(bpy.types.Operator):

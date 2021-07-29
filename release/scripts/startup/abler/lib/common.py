@@ -23,6 +23,7 @@ def makeSureCameraExists():
         camera_object.rotation_euler[0] = 1.109319
         camera_object.rotation_euler[1] = 0
         camera_object.rotation_euler[2] = 0.814928
+        bpy.context.scene.collection.objects.link(camera_object)
         bpy.context.scene.camera = camera_object
 
 

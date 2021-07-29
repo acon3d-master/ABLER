@@ -139,6 +139,8 @@ def createOutlineNodeGroup():
     node_group.inputs[3].min_value = 0
     node_group.inputs[3].max_value = 20
     node_group.inputs[4].default_value = 1
+    
+    return node_group
 
 
 def createToonFaceNodeGroup():
@@ -232,15 +234,15 @@ def createToonFaceNodeGroup():
     node_group.inputs[5].default_value = 0.5
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
+    
+    return node_group
 
 
-def createCombinedToonNodeGroup():
+def createAconMatNodeGroups():
     
-    if 'ACON_nodeGroup_outline' not in bpy.data.node_groups.keys():
-        createOutlineNodeGroup()
+    node_group_data_outline = createOutlineNodeGroup()
     
-    if 'ACON_nodeGroup_toonFace' not in bpy.data.node_groups.keys():
-        createToonFaceNodeGroup()
+    node_group_data_toonFace = createToonFaceNodeGroup()
     
     node_group = bpy.data.node_groups.new('ACON_nodeGroup_combinedToon', 'ShaderNodeTree')
     
@@ -300,7 +302,7 @@ def createCombinedToonNodeGroup():
     
     node_group_toonFace = nodes.new(type='ShaderNodeGroup')
     node_group_toonFace.name = 'ACON_nodeGroup_toonFace'
-    node_group_toonFace.node_tree = bpy.data.node_groups['ACON_nodeGroup_toonFace']
+    node_group_toonFace.node_tree = node_group_data_toonFace
     if bpy.context.scene.ToggleToonFace:
         node_group_toonFace.inputs[4].default_value = 1
     else:
@@ -309,7 +311,7 @@ def createCombinedToonNodeGroup():
     
     node_group_outline = nodes.new(type='ShaderNodeGroup')
     node_group_outline.name = 'ACON_nodeGroup_outline'
-    node_group_outline.node_tree = bpy.data.node_groups['ACON_nodeGroup_outline']
+    node_group_outline.node_tree = node_group_data_outline
     node_group.links.new(node_group_outline.outputs[0], node_multiply_2.inputs[2])
 
     node_transparent = nodes.new('ShaderNodeBsdfTransparent')
@@ -368,10 +370,25 @@ def createCombinedToonNodeGroup():
         node_group.inputs[4].default_value = 0
 
 
+def removeAconMatNodeGroups():
+
+    ACON_node_group_names = [
+        'ACON_nodeGroup_outline',
+        'ACON_nodeGroup_toonFace',
+        'ACON_nodeGroup_combinedToon'
+    ]
+    
+    for node_group in bpy.data.node_groups:
+        for ACON_node_group_name in ACON_node_group_names:
+            if ACON_node_group_name in node_group.name:
+                bpy.data.node_groups.remove(node_group)
+                break
+
+
 def applyAconToonStyle():
 
-    if 'ACON_nodeGroup_combinedToon' not in bpy.data.node_groups.keys():
-        createCombinedToonNodeGroup()
+    removeAconMatNodeGroups()
+    createAconMatNodeGroups()
 
     for obj in bpy.data.objects:
 
@@ -425,8 +442,6 @@ def applyAconToonStyle():
 
             if not is_node_texImage and not is_out_node and not is_node_combinedToon:
                 mat.node_tree.nodes.remove(node)
-        
-        mat.ACON_prop_mat.type = "Diffuse"
         
         if "ACON_mat" in mat.name:
         
