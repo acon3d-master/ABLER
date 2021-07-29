@@ -119,7 +119,11 @@ class Acon3dRenderPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}    
+    COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
+    
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(icon="RENDER_STILL")
 
     def draw(self, context):
         layout = self.layout

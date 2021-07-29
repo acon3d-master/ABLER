@@ -191,6 +191,10 @@ class Acon3dFacePanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
+    
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(icon="NODE_MATERIAL")
 
     def draw(self, context):
         layout = self.layout

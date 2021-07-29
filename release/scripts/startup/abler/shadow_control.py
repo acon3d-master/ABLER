@@ -21,9 +21,13 @@ class Acon3dShadowPanel(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
     COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}    
+    
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(icon="LIGHT")
 
     def draw(self, context):
-        layout = self.layout
+        return
 
 class Acon3dShadowControlPanel(bpy.types.Panel):
     bl_label = "Shadow"

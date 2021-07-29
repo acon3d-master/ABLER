@@ -22,6 +22,10 @@ class Acon3dLayerPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
+    
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(icon="OUTLINER")
 
     def _draw_collection(
         self,

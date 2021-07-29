@@ -21,6 +21,10 @@ class Acon3dImageAdjustmentPanel(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
     COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
+    
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(icon="IMAGE_DATA")
 
     def draw(self, context):
         layout = self.layout

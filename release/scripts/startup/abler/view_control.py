@@ -148,6 +148,10 @@ class Acon3dViewPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
+    
+    def draw_header(self, context):
+        layout = self.layout
+        layout.label(icon="CAMERA_DATA")
 
     def draw(self, context):
         return
