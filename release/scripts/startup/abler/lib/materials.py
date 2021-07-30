@@ -409,6 +409,7 @@ def applyAconToonStyle():
         for node in nodes:
 
             if node.name == "ACON_nodeGroup_combinedToon":
+                node.node_tree = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
                 is_arleady_toonStyle = True
             
             elif node.type == "TEX_IMAGE":
