@@ -3,32 +3,6 @@ from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
 
 
-class AconProperty(bpy.types.PropertyGroup):
-    @classmethod
-    def register(cls):
-        bpy.types.Scene.ACON_prop = bpy.props.PointerProperty(type=AconProperty)
-
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Scene.ACON_prop
-
-    username : bpy.props.StringProperty(
-        name="Username",
-        description="Username"
-    )
-
-    password : bpy.props.StringProperty(
-        name="Password",
-        description="Password",
-        subtype="PASSWORD"
-    )
-
-    login_status : bpy.props.StringProperty(
-        name="Login Status",
-        description="Login Status",
-    )
-
-
 class AconModalOperator(bpy.types.Operator):
     bl_idname = "acon3d.modal_operator"
     bl_label = "Login Modal Operator"
@@ -155,7 +129,6 @@ def open_credential_modal(dummy):
 
 
 classes = (
-    AconProperty,
     AconModalOperator,
     AconLoginOperator,
     AconAnchorOperator,

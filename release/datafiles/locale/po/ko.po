@@ -93032,3 +93032,7 @@ msgstr "그림자 렌더"
 msgid "Object Material"
 msgstr "오브젝트 재질"
 
+
+msgid "Length (angular)"
+msgstr "길이 (그림자 각도)"
+

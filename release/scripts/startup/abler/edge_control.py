@@ -11,21 +11,6 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from .lib import materials
-
-
-def toggleToonEdge(self, context):
-    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-    edgeFactor = None
-
-    for node in node_group.nodes:
-        if node.name == 'ACON_node_toonEdgeFactor':
-            edgeFactor = node.inputs[0]
-
-    if bpy.context.scene.ToggleToonEdge:
-        edgeFactor.default_value = 1
-    else:
-        edgeFactor.default_value = 0
 
 
 class Acon3dEdgePanel(bpy.types.Panel):
@@ -55,13 +40,14 @@ class EdgeSubPanel(bpy.types.Panel):
 
     def draw_header(self, context):
         layout = self.layout
-        layout.prop(bpy.context.scene, "ToggleToonEdge", text="")
+        layout.prop(context.scene.ACON_prop, "toggle_toon_edge", text="")
 
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
         
-        if bpy.context.scene.ToggleToonEdge:
+        if context.scene.ACON_prop.toggle_toon_edge:
         
             node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
             outlineInputs = None
@@ -86,12 +72,6 @@ classes = (
 
 def register():
     from bpy.utils import register_class
-
-    bpy.types.Scene.ToggleToonEdge = bpy.props.BoolProperty(
-        name="Toon Style",
-        default=True,
-        update=toggleToonEdge
-    )
 
     for cls in classes:
         register_class(cls)

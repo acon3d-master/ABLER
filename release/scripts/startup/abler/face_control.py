@@ -11,93 +11,6 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from .lib import materials
-
-
-def toggleToonFace(self, context):
-    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-    toonFaceFactorValue = 0
-    if bpy.context.scene.ToggleToonFace:
-        toonFaceFactorValue = 1
-
-    for node in node_group.nodes:
-        if node.name == 'ACON_nodeGroup_toonFace':
-            node.inputs[4].default_value = toonFaceFactorValue
-
-
-def toggleTexture(self, context):
-    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-    textureFactorValue = 1
-    if bpy.context.scene.ToggleTexture:
-        textureFactorValue = 0
-
-    for node in node_group.nodes:
-        if node.name == 'ACON_node_textureMixFactor':
-            node.inputs[0].default_value = textureFactorValue
-
-
-def toggleShading(self, context):
-    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-    shadingFactorValue = 1
-    if bpy.context.scene.ToggleShading:
-        shadingFactorValue = 0
-
-    for node in node_group.nodes:
-        if node.name == 'ACON_node_shadeMixFactor':
-            node.inputs[0].default_value = shadingFactorValue
-
-
-def changeToonDepth(self, context):
-    node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-    toonFaceInputs = None
-
-    for node in node_group.nodes:
-        if node.name == 'ACON_nodeGroup_toonFace':
-            toonFaceInputs = node.inputs
-
-    if bpy.context.scene.toon_depth.depth == "2 depth":
-        toonFaceInputs[1].default_value = 0
-    else:
-        toonFaceInputs[1].default_value = 1
-
-
-def changeMaterialType(self, context):
-
-    try:
-        material_slots = context.active_object.material_slots
-        
-        for mat_slot in material_slots:
-            mat = mat_slot.material
-
-            if not "ACON_nodeGroup_combinedToon" in mat.node_tree.nodes:
-                continue
-
-            materials.setMaterialParametersByType(mat)
-    
-    except:
-        print("ACON Material Type change handler could not complete.")
-
-
-class MaterialTypeEnumProperty(bpy.types.PropertyGroup):
-    @classmethod
-    def register(cls):
-        bpy.types.Material.ACON_prop = bpy.props.PointerProperty(type=MaterialTypeEnumProperty)
-
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Material.ACON_prop
-
-    type : bpy.props.EnumProperty(
-        name="Type",
-        description="Material Type",
-        items = [
-            ("Diffuse", "Diffuse", ""),
-            ("Mirror", "Reflection", ""),
-            ("Glow", "Emission", ""),
-            ("Clear", "Transparent", "")
-        ],
-        update = changeMaterialType
-    )
 
 
 class MATERIAL_UL_List(bpy.types.UIList):
@@ -153,35 +66,20 @@ class MaterialPanel(bpy.types.Panel):
         obj = context.object
 
         row = layout.row()
-        row.template_list(
-            "MATERIAL_UL_List",
-            "",
-            obj,
-            "material_slots",
-            obj,
-            "active_material_index",
-            rows=2,
-        )
-        
-        row = layout.row()
-        row.template_ID(obj, "active_material", new="acon3d.clone_material", unlink="")
 
-
-class FaceDepthEnumProperty(bpy.types.PropertyGroup):
-    @classmethod
-    def register(cls):
-        bpy.types.Scene.toon_depth = bpy.props.PointerProperty(type=FaceDepthEnumProperty)
-
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Scene.toon_depth
-
-    depth : bpy.props.EnumProperty(
-        name="Toon Color Depth",
-        description="depth",
-        items = [("2 depth", "2 depth", ""), ("3 depth", "3 depth", "")],
-        update = changeToonDepth
-    )
+        if obj:
+            row.template_list(
+                "MATERIAL_UL_List",
+                "",
+                obj,
+                "material_slots",
+                obj,
+                "active_material_index",
+                rows=2,
+            )
+            
+            row = layout.row()
+            row.template_ID(obj, "active_material", new="acon3d.clone_material", unlink="")
 
 
 class Acon3dFacePanel(bpy.types.Panel):
@@ -199,8 +97,8 @@ class Acon3dFacePanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
-        row.prop(bpy.context.scene, "ToggleTexture")
-        row.prop(bpy.context.scene, "ToggleShading")
+        row.prop(context.scene.ACON_prop, "toggle_texture")
+        row.prop(context.scene.ACON_prop, "toggle_shading")
         return
 
 
@@ -215,13 +113,14 @@ class FaceSubPanel(bpy.types.Panel):
     
     def draw_header(self, context):
         layout = self.layout
-        layout.prop(bpy.context.scene, "ToggleToonFace", text="")
+        layout.prop(context.scene.ACON_prop, "toggle_toon_face", text="")
 
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
         
-        if bpy.context.scene.ToggleToonFace:
+        if context.scene.ACON_prop.toggle_toon_face:
 
             node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
             toonFaceInputs = None
@@ -232,9 +131,9 @@ class FaceSubPanel(bpy.types.Panel):
                     toonFaceInputs = node.inputs
             
             col = layout.column()
-            col.prop(bpy.context.scene.toon_depth, "depth")
+            col.prop(context.scene.ACON_prop, "toon_shading_depth")
             if toonFaceInputs is not None:
-                if bpy.context.scene.toon_depth.depth == "2 depth":
+                if context.scene.ACON_prop.toon_shading_depth == "2":
                     col.prop(toonFaceInputs[2], "default_value", text="Brightness", slider=True)
                 else:
                     col.prop(toonFaceInputs[2], "default_value", text="Brightness 1", slider=True)
@@ -276,11 +175,9 @@ class Acon3dBloomPanel(bpy.types.Panel):
 
 classes = (
     CloneMaterialOperator,
-    FaceDepthEnumProperty,
     Acon3dFacePanel,
     FaceSubPanel,
     Acon3dBloomPanel,
-    MaterialTypeEnumProperty,
     MATERIAL_UL_List,
     MaterialPanel,
 )
@@ -288,24 +185,6 @@ classes = (
 
 def register():
     from bpy.utils import register_class
-
-    bpy.types.Scene.ToggleToonFace = bpy.props.BoolProperty(
-        name="Toon Style",
-        default=True,
-        update=toggleToonFace
-    )
-
-    bpy.types.Scene.ToggleTexture = bpy.props.BoolProperty(
-        name="Texture",
-        default=True,
-        update=toggleTexture
-    )
-    
-    bpy.types.Scene.ToggleShading = bpy.props.BoolProperty(
-        name="Shading",
-        default=True,
-        update=toggleShading
-    )
 
     for cls in classes:
         register_class(cls)

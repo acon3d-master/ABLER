@@ -15,23 +15,6 @@ import bpy
 from .lib import common
 
 
-def goToCustomCamera(self, context):
-    common.makeSureCameraExists()
-    viewCamera = bpy.context.scene.camera
-    targetCamera = bpy.data.objects[bpy.context.scene.camera_enum.view]
-    viewCamera.location[0] = targetCamera.location[0]
-    viewCamera.location[1] = targetCamera.location[1]
-    viewCamera.location[2] = targetCamera.location[2]
-    viewCamera.rotation_mode = targetCamera.rotation_mode
-    viewCamera.rotation_euler[0] = targetCamera.rotation_euler[0]
-    viewCamera.rotation_euler[1] = targetCamera.rotation_euler[1]
-    viewCamera.rotation_euler[2] = targetCamera.rotation_euler[2]
-    viewCamera.scale[0] = targetCamera.scale[0]
-    viewCamera.scale[1] = targetCamera.scale[1]
-    viewCamera.scale[2] = targetCamera.scale[2]
-    common.turnOnCameraView()
-
-
 def genCameraName(name, i=1):
     found = None
     combinedName = name + str(i)
@@ -75,7 +58,7 @@ class CreateCameraOperator(bpy.types.Operator):
         collection.objects.link(camera_object)
 
         # select created camera in custom view ui
-        context.scene.camera_enum.view = camera_object.name
+        context.scene.ACON_prop.view = camera_object.name
         return {'FINISHED'}
 
 
@@ -86,8 +69,8 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
 
     def execute(self, context):
         common.makeSureCameraExists()
-        viewCamera = bpy.context.scene.camera
-        targetCamera = bpy.data.objects[bpy.context.scene.camera_enum.view]
+        viewCamera = context.scene.camera
+        targetCamera = bpy.data.objects[context.scene.ACON_prop.view]
         targetCamera.location[0] = viewCamera.location[0]
         targetCamera.location[1] = viewCamera.location[1]
         targetCamera.location[2] = viewCamera.location[2]
@@ -107,37 +90,11 @@ class DeleteCameraOperator(bpy.types.Operator):
     bl_label = "Delete"
 
     def execute(self, context):
-        currentCameraName = bpy.context.scene.camera_enum.view
+        currentCameraName = context.scene.ACON_prop.view
         camera = bpy.data.objects[currentCameraName]
         bpy.data.objects.remove(camera)
         
         return {'FINISHED'}
-
-
-def add_items_from_collection_callback(self, context):
-    items = []
-    collection = bpy.data.collections.get('ACON_col_cameras')
-    for item in collection.objects:
-        items.append((item.name, item.name, ""))
-    return items
-
-
-class CameraEnumProperty(bpy.types.PropertyGroup):
-    @classmethod
-    def register(cls):
-        bpy.types.Scene.camera_enum = bpy.props.PointerProperty(type=CameraEnumProperty)
-
-    @classmethod
-    def unregister(cls):
-        del bpy.types.Scene.camera_enum
-
-    view : bpy.props.EnumProperty(
-        name = "View",
-        description = "view",
-        # items argument required to initialize, just filled with empty values
-        items = add_items_from_collection_callback,
-        update = goToCustomCamera
-    )
 
 
 class Acon3dViewPanel(bpy.types.Panel):
@@ -182,6 +139,7 @@ class Acon3dCameraPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
 
         row = layout.row()
         row.scale_y = 1.0
@@ -192,7 +150,7 @@ class Acon3dCameraPanel(bpy.types.Panel):
         
         if collection is not None and len(collection.objects):
             row = layout.row()
-            row.prop(scene.camera_enum, "view")
+            row.prop(scene.ACON_prop, "view")
 
             row = layout.row()
             row.operator("acon3d.update_custom_camera")
@@ -231,6 +189,7 @@ class Acon3dDOFPanel(bpy.types.Panel):
         if bpy.context.scene.camera is not None:
             layout = self.layout
             layout.use_property_split = True
+            layout.use_property_decorate = False  # No animation.
 
             cam = bpy.context.scene.camera.data
             dof = cam.dof
@@ -330,7 +289,6 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
 
 
 classes = (
-    CameraEnumProperty,
     Acon3dViewPanel,
     Acon3dNavigatePanel,
     Acon3dCameraPanel,

@@ -55,16 +55,16 @@ class Acon3dShadowControlPanel(bpy.types.Panel):
             is_ACON_sun = is_ACON_sun and sun_data
 
         layout = self.layout
+        layout.use_property_decorate = False  # No animation.
         layout.active = is_ACON_sun
         if layout.active:
             layout.use_property_split = True
             ob = bpy.data.objects["ACON_sun"]
             if ob.rotation_mode == "XYZ":
-                col = layout.column()
-                row = col.row(align=True)
-                row.prop(ob, "rotation_euler", text="Rotation")
-                row.use_property_decorate = False
-                row.prop(ob, "lock_rotation", text="", emboss=False, icon='DECORATE_UNLOCKED')
+                row = layout.row(align=True)
+                row.prop(context.scene.ACON_prop, "sun_rotation_x", text="Length (angular)")
+                row = layout.row(align=True)
+                row.prop(context.scene.ACON_prop, "sun_rotation_z", text="Rotate")
 
 classes = (
     Acon3dShadowPanel,

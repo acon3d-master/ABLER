@@ -1,6 +1,7 @@
 import bpy
 
 from . import common
+from .. import custom_properties
 
 
 def createOutlineNodeGroup():
@@ -285,28 +286,19 @@ def createAconMatNodeGroups():
     node_multiply_2 = nodes.new('ShaderNodeMixRGB')
     node_multiply_2.name = 'ACON_node_toonEdgeFactor'
     node_multiply_2.blend_type = 'MULTIPLY'
-    if bpy.context.scene.ToggleToonEdge:
-        node_multiply_2.inputs[0].default_value = 1
-    else:
-        node_multiply_2.inputs[0].default_value = 0
+    node_multiply_2.inputs[0].default_value = 1
     node_group.links.new(node_multiply_2.outputs[0], node_mixShader_2.inputs[2])
     
     node_mixColor_2 = nodes.new('ShaderNodeMixRGB')
     node_mixColor_2.name = 'ACON_node_shadeMixFactor'
     node_mixColor_2.blend_type = 'MIX'
-    if bpy.context.scene.ToggleShading:
-        node_mixColor_2.inputs[0].default_value = 0
-    else:
-        node_mixColor_2.inputs[0].default_value = 1
+    node_mixColor_2.inputs[0].default_value = 0
     node_group.links.new(node_mixColor_2.outputs[0], node_multiply_2.inputs[1])
     
     node_group_toonFace = nodes.new(type='ShaderNodeGroup')
     node_group_toonFace.name = 'ACON_nodeGroup_toonFace'
     node_group_toonFace.node_tree = node_group_data_toonFace
-    if bpy.context.scene.ToggleToonFace:
-        node_group_toonFace.inputs[4].default_value = 1
-    else:
-        node_group_toonFace.inputs[4].default_value = 0
+    node_group_toonFace.inputs[4].default_value = 1
     node_group.links.new(node_group_toonFace.outputs[0], node_mixColor_2.inputs[1])
     
     node_group_outline = nodes.new(type='ShaderNodeGroup')
@@ -325,10 +317,6 @@ def createAconMatNodeGroups():
     node_group.links.new(node_mixColor.outputs[0], node_group_toonFace.inputs[0])
     node_group.links.new(node_mixColor.outputs[0], node_emission.inputs[0])
     node_group.links.new(node_mixColor.outputs[0], node_glossy.inputs[0])
-    if bpy.context.scene.ToggleTexture:
-        node_mixColor.inputs[0].default_value = 0
-    else:
-        node_mixColor.inputs[0].default_value = 1
     node_mixColor.inputs[0].default_value = 0
     node_mixColor.inputs[2].default_value = (1, 1, 1, 1)
 
@@ -364,10 +352,13 @@ def createAconMatNodeGroups():
     node_group.inputs[7].min_value = 0
     node_group.inputs[7].max_value = 1
 
-    if bpy.context.scene.ToggleToonFace:
-        node_group.inputs[4].default_value = 1
-    else:
-        node_group.inputs[4].default_value = 0
+    context = bpy.context
+
+    custom_properties.toggleToonEdge(None, context)
+    custom_properties.toggleToonFace(None, context)
+    custom_properties.toggleTexture(None, context)
+    custom_properties.toggleShading(None, context)
+    custom_properties.changeToonDepth(None, context)
     
     return node_group
 
