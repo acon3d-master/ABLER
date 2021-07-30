@@ -449,10 +449,10 @@ def applyAconToonStyle():
         if "ACON_mat" in mat.name:
         
             if "mirror" in mat.name:
-                mat.ACON_prop_mat.type = "Mirror"
+                mat.ACON_prop.type = "Mirror"
                 
             if "light" in mat.name:
-                mat.ACON_prop_mat.type = "Glow"
+                mat.ACON_prop.type = "Glow"
             
                 strength = 1
                 
@@ -466,7 +466,7 @@ def applyAconToonStyle():
                 node_combinedToon.inputs[5].default_value = strength
                 
             if "clear" in mat.name:
-                mat.ACON_prop_mat.type = "Clear"
+                mat.ACON_prop.type = "Clear"
         
         setMaterialParametersByType(mat)
         
@@ -475,7 +475,7 @@ def applyAconToonStyle():
 
 def setMaterialParametersByType(mat):
 
-    type = mat.ACON_prop_mat.type
+    type = mat.ACON_prop.type
     toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
     
     if type == "Diffuse":

@@ -88,6 +88,13 @@ class Acon3dImportPanel(bpy.types.Panel):
         row.scale_y = 1.0
         row.operator("wm.open_mainfile")
         row.operator("acon3d.import_blend")
+        
+        row = layout.row()
+
+        prefs = context.preferences
+        view = prefs.view
+
+        row.prop(view, "language")
 
 
 classes = (

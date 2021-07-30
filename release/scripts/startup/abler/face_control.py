@@ -81,11 +81,11 @@ def changeMaterialType(self, context):
 class MaterialTypeEnumProperty(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
-        bpy.types.Material.ACON_prop_mat = bpy.props.PointerProperty(type=MaterialTypeEnumProperty)
+        bpy.types.Material.ACON_prop = bpy.props.PointerProperty(type=MaterialTypeEnumProperty)
 
     @classmethod
     def unregister(cls):
-        del bpy.types.Material.ACON_prop_mat
+        del bpy.types.Material.ACON_prop
 
     type : bpy.props.EnumProperty(
         name="Type",
@@ -112,20 +112,20 @@ class MATERIAL_UL_List(bpy.types.UIList):
         if ma:
 
             layout.prop(ma, "name", text="", emboss=False, icon_value=icon)
-            layout.prop(ma.ACON_prop_mat, "type", text="")
+            layout.prop(ma.ACON_prop, "type", text="")
 
             toonNode = ma.node_tree.nodes["ACON_nodeGroup_combinedToon"]
             
-            if ma.ACON_prop_mat.type == "Diffuse":
+            if ma.ACON_prop.type == "Diffuse":
                 layout.label(text="", translate=False)
             
-            if ma.ACON_prop_mat.type == "Mirror":
+            if ma.ACON_prop.type == "Mirror":
                 layout.prop(toonNode.inputs[6], "default_value", text="")
 
-            if ma.ACON_prop_mat.type == "Glow":
+            if ma.ACON_prop.type == "Glow":
                 layout.prop(toonNode.inputs[5], "default_value", text="")
 
-            if ma.ACON_prop_mat.type == "Clear":
+            if ma.ACON_prop.type == "Clear":
                 layout.prop(toonNode.inputs[7], "default_value", text="")
 
 
@@ -142,7 +142,7 @@ class CloneMaterialOperator(bpy.types.Operator):
 class MaterialPanel(bpy.types.Panel):
     bl_parent_id = "ACON_PT_Face_Main"
     bl_idname = "ACON_PT_Material"
-    bl_label = "Material"
+    bl_label = "Object Material"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
@@ -200,7 +200,6 @@ class Acon3dFacePanel(bpy.types.Panel):
         layout = self.layout
         row = layout.row()
         row.prop(bpy.context.scene, "ToggleTexture")
-        row = layout.row()
         row.prop(bpy.context.scene, "ToggleShading")
         return
 

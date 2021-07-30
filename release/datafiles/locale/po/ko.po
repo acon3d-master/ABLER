@@ -93027,3 +93027,8 @@ msgstr "선 렌더"
 
 msgid "Shadow Render"
 msgstr "그림자 렌더"
+
+
+msgid "Object Material"
+msgstr "오브젝트 재질"
+

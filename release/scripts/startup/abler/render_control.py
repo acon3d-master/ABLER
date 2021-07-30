@@ -128,12 +128,18 @@ class Acon3dRenderPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
+
         is_camera = False
         for obj in bpy.data.objects:
             if obj.type == 'CAMERA':
                 is_camera = True
                 break
 
+        scene = context.scene
+        col = layout.column(align=True)
+        col.prop(scene.render, "resolution_x", text="Resolution X")
+        col.prop(scene.render, "resolution_y", text="Y")
         row = layout.row()
         row.operator("render.opengl", text="Quick Render")
         if is_camera:

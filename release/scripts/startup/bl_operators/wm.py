@@ -2733,6 +2733,13 @@ class WM_MT_splash(Menu):
             column.operator("acon3d.login", text="  Submit", depress=True)
 
         layout.separator()
+
+        prefs = context.preferences
+        view = prefs.view
+
+        layout.prop(view, "language")
+        
+        layout.separator()
         layout.separator()
 
         layout.emboss = 'PULLDOWN_MENU'
