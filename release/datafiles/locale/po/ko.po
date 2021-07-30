@@ -62726,7 +62726,7 @@ msgstr "색상 매니지먼트"
 
 
 msgid "Bloom"
-msgstr "빛 번짐 효과"
+msgstr "빛번짐 효과"
 
 
 msgid "Indirect Lighting"
@@ -92941,10 +92941,6 @@ msgid "File Control"
 msgstr "파일"
 
 
-msgid "Import"
-msgstr "가져오기"
-
-
 msgid "Edges Control"
 msgstr "모서리 선 설정"
 
@@ -92971,10 +92967,6 @@ msgstr "면 설정"
 
 msgid "Toon Color Depth"
 msgstr "색 표현 수"
-
-
-msgid "Bloom"
-msgstr "빛번짐 효과"
 
 
 msgid "Image Adjustment"
@@ -93015,10 +93007,6 @@ msgstr "플라이 모드 (shift + `)"
 
 msgid "Create New Camera"
 msgstr "신규 카메라 생성"
-
-
-msgid "Update"
-msgstr "업데이트"
 
 
 msgid "F-stop"
