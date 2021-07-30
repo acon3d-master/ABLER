@@ -368,6 +368,8 @@ def createAconMatNodeGroups():
         node_group.inputs[4].default_value = 1
     else:
         node_group.inputs[4].default_value = 0
+    
+    return node_group
 
 
 def removeAconMatNodeGroups():
@@ -388,7 +390,7 @@ def removeAconMatNodeGroups():
 def applyAconToonStyle():
 
     removeAconMatNodeGroups()
-    createAconMatNodeGroups()
+    node_group_data_combined = createAconMatNodeGroups()
 
     for obj in bpy.data.objects:
 
@@ -409,7 +411,7 @@ def applyAconToonStyle():
         for node in nodes:
 
             if node.name == "ACON_nodeGroup_combinedToon":
-                node.node_tree = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+                node.node_tree = node_group_data_combined
                 is_arleady_toonStyle = True
             
             elif node.type == "TEX_IMAGE":
@@ -427,7 +429,7 @@ def applyAconToonStyle():
         
         node_combinedToon = nodes.new(type='ShaderNodeGroup')
         node_combinedToon.name = 'ACON_nodeGroup_combinedToon'
-        node_combinedToon.node_tree = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+        node_combinedToon.node_tree = node_group_data_combined
         node_combinedToon.inputs[7].default_value = nega_alpha
         mat.node_tree.links.new(node_combinedToon.outputs[0], out_node.inputs[0])
 
