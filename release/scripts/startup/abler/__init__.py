@@ -14,8 +14,8 @@ bl_info = {
 # Main imports
 import bpy
 
-from . import credential_modal
 from . import custom_properties
+from . import credential_modal
 from . import file_control
 from . import edge_control
 from . import face_control
@@ -30,8 +30,8 @@ from . import render_control
 # =========================================================================
 
 def register():
-    credential_modal.register()
     custom_properties.register()
+    credential_modal.register()
     file_control.register()
     edge_control.register()
     face_control.register()
@@ -51,8 +51,8 @@ def unregister():
     face_control.unregister()
     edge_control.unregister()
     file_control.unregister()
-    custom_properties.register()
     credential_modal.unregister()
+    custom_properties.register()
 
 if __name__ == "__main__":
     register()
