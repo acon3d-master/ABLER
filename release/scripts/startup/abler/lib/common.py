@@ -11,8 +11,14 @@ def switchToRendredView():
 
 
 def makeSureCameraExists():
-    # create camera if scene camera does not exist
-    if not bpy.context.scene.camera:
+    # early out if scene camera exists
+    if bpy.context.scene.camera: return
+
+    # get camera to set to context
+    camera_object = bpy.data.objects.get("View_Camera")
+
+    # create camera if View_Camera does not exist
+    if not camera_object or not camera_object.type == "CAMERA":
         camera_data = bpy.data.cameras.new("View_Camera")
         camera_object = bpy.data.objects.new("View_Camera", camera_data)
         camera_object.location[0] = 7.35889
@@ -23,7 +29,9 @@ def makeSureCameraExists():
         camera_object.rotation_euler[1] = 0
         camera_object.rotation_euler[2] = 0.814928
         bpy.context.scene.collection.objects.link(camera_object)
-        bpy.context.scene.camera = camera_object
+
+    # set context camera
+    bpy.context.scene.camera = camera_object
 
 
 # turn on camera view (set viewport to the current selected camera's view)
