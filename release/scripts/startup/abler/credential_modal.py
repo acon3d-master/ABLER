@@ -11,7 +11,9 @@ class AconModalOperator(bpy.types.Operator):
         return {'FINISHED'}
 
     def modal(self, context, event):
-        if context.scene.ACON_prop.login_status == 'SUCCESS':
+        userInfo = bpy.data.meshes.get("ACON_userInfo")
+
+        if userInfo and userInfo.ACON_prop.login_status == 'SUCCESS':
             return {'FINISHED'}
 
         if event.type == 'LEFTMOUSE':
@@ -31,7 +33,8 @@ def requestLogin():
         path_cookiesFolder = os.path.join(path, 'cookies')
         path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
 
-        prop = bpy.context.scene.ACON_prop
+        userInfo = bpy.data.meshes.get("ACON_userInfo")
+        prop = userInfo.ACON_prop
 
         response = requests.post(
             'https://api-v2.acon3d.com/auth/acon3d/signin',
@@ -72,7 +75,8 @@ class AconLoginOperator(bpy.types.Operator):
     bl_label = "Simple Modal Operator"
 
     def execute(self, context):
-        bpy.context.scene.ACON_prop.login_status = 'LOADING'
+        userInfo = bpy.data.meshes.get("ACON_userInfo")
+        userInfo.ACON_prop.login_status = 'LOADING'
         bpy.app.timers.register(requestLogin, first_interval=0.1)
         return {'FINISHED'}
 
@@ -96,8 +100,9 @@ class AconAnchorOperator(bpy.types.Operator):
 def open_credential_modal(dummy):
     prefs = bpy.context.preferences
     prefs.view.show_splash = False
-    prop = bpy.context.scene.ACON_prop
-    prop.login_status = 'IDLE'
+
+    userInfo = bpy.data.meshes.new("ACON_userInfo")
+    userInfo.ACON_prop.login_status = 'IDLE'
 
     try:
         path = os.getcwd()
@@ -121,7 +126,7 @@ def open_credential_modal(dummy):
         responseData = response.json()
         token = responseData['accessToken']
 
-        if token: prop.login_status = 'SUCCESS'
+        if token: userInfo.ACON_prop.login_status = 'SUCCESS'
 
     except: print("Failed to load cookies")
     

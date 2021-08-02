@@ -110,22 +110,6 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     def unregister(cls):
         del bpy.types.Scene.ACON_prop
 
-    username : bpy.props.StringProperty(
-        name="Username",
-        description="Username"
-    )
-
-    password : bpy.props.StringProperty(
-        name="Password",
-        description="Password",
-        subtype="PASSWORD"
-    )
-
-    login_status : bpy.props.StringProperty(
-        name="Login Status",
-        description="Login Status",
-    )
-
     toggle_toon_edge : bpy.props.BoolProperty(
         name="Toon Style",
         default=True,
@@ -225,9 +209,36 @@ class AconMaterialProperty(bpy.types.PropertyGroup):
     )
 
 
+class AconMeshProperty(bpy.types.PropertyGroup):
+    @classmethod
+    def register(cls):
+        bpy.types.Mesh.ACON_prop = bpy.props.PointerProperty(type=AconMeshProperty)
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Mesh.ACON_prop
+
+    username : bpy.props.StringProperty(
+        name="Username",
+        description="Username"
+    )
+
+    password : bpy.props.StringProperty(
+        name="Password",
+        description="Password",
+        subtype="PASSWORD"
+    )
+
+    login_status : bpy.props.StringProperty(
+        name="Login Status",
+        description="Login Status",
+    )
+
+
 classes = (
     AconSceneProperty,
     AconMaterialProperty,
+    AconMeshProperty,
 )
 
 

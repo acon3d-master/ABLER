@@ -2702,35 +2702,38 @@ class WM_MT_splash(Menu):
 
         row = layout.row()
 
-        if context.scene.ACON_prop.login_status == 'SUCCESS':
-            row.label(text="Welcome!")
-            row = layout.row()
-            row.label(text="Click out to start Abler.")
-        
-        elif context.scene.ACON_prop.login_status == 'LOADING':
-            row.label(text="Hold on...")
-
-        else:
+        userInfo = bpy.data.meshes.get("ACON_userInfo")
+        if userInfo:
+    
+            if userInfo.ACON_prop.login_status == 'SUCCESS':
+                row.label(text="Welcome!")
+                row = layout.row()
+                row.label(text="Click out to start Abler.")
             
-            if context.scene.ACON_prop.login_status == 'FAIL':
-                row.label(text="Login failed. Please try again.")
-            else: 
-                row.label(text="Please Login")
+            elif userInfo.ACON_prop.login_status == 'LOADING':
+                row.label(text="Hold on...")
 
-            layout.separator()
+            else:
+                
+                if userInfo.ACON_prop.login_status == 'FAIL':
+                    row.label(text="Login failed. Please try again.")
+                else: 
+                    row.label(text="Please Login")
 
-            row_outside = layout.row()
+                layout.separator()
 
-            column = row_outside.column()
-            row = column.row()
-            row.prop(context.scene.ACON_prop, "username")
-            row = column.row()
-            row.prop(context.scene.ACON_prop, "password")
+                row_outside = layout.row()
 
-            column = row_outside.column()
-            column.scale_x = 0.5
-            column.scale_y = 2
-            column.operator("acon3d.login", text="  Submit", depress=True)
+                column = row_outside.column()
+                row = column.row()
+                row.prop(userInfo.ACON_prop, "username")
+                row = column.row()
+                row.prop(userInfo.ACON_prop, "password")
+
+                column = row_outside.column()
+                column.scale_x = 0.5
+                column.scale_y = 2
+                column.operator("acon3d.login", text="  Submit", depress=True)
 
         layout.separator()
 
