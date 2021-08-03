@@ -92973,24 +92973,16 @@ msgid "Image Adjustment"
 msgstr "이미지 보정"
 
 
-msgid "Color Filter"
-msgstr "색상 필터"
+msgid "Brightness / Contrast"
+msgstr "밝기 / 대비"
 
 
-msgid "Filmic"
-msgstr "필름 효과"
+msgid "Color Balance"
+msgstr "색상 균형"
 
 
-msgid "Filmic Log"
-msgstr "필름 효과(로그)"
-
-
-msgid "Raw"
-msgstr "효과 없음"
-
-
-msgid "False Color"
-msgstr "의색(False Color)"
+msgid "Hue / Saturation"
+msgstr "색조 / 채도"
 
 
 msgid "Shadow / Light Control"
@@ -93033,9 +93025,53 @@ msgid "Object Material"
 msgstr "오브젝트 재질"
 
 
-msgid "Length (angular)"
-msgstr "길이 (그림
+msgid "Altitude"
+msgstr "고도"
 
 
-msgid "Fly (shift + `)"
-msgstr "비행 모드"
+msgid "Azimuth"
+msgstr "방위각"
+
+
+msgid "Please Login"
+msgstr "에이콘3D 아이디로 로그인"
+
+
+msgid "Username"
+msgstr "아이디"
+
+
+msgid "Submit"
+msgstr "입력"
+
+
+msgid "See ACON3D models!"
+msgstr "에이콘3D 보러가기"
+
+
+msgid "Don't have an ACON3D account?"
+msgstr "아이디가 아직 없으신가요?"
+
+
+msgid "Blender Release Notes"
+msgstr "블렌더 릴리즈 노트"
+
+
+msgid "Blender Development Fund"
+msgstr "블렌더 후원하기"
+
+
+msgid "Hold on..."
+msgstr "연결중..."
+
+
+msgid "Login failed. Please try again."
+msgstr "로그인에 실패하였습니다. 아이디 혹은 비밀번호를 확인해주세요."
+
+
+msgid "Welcome!"
+msgstr "환영합니다!"
+
+
+msgid "Click out to start Abler."
+msgstr "로그인창 바깥을 클릭하여 에이블러를 시작해주세요!"
