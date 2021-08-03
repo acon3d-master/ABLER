@@ -11,7 +11,7 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from .lib import materials
+from .lib.materials import materials_handler
 
 
 class Acon3dRenderLineOperator(bpy.types.Operator):
@@ -35,9 +35,10 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-                toonNode.inputs[1].default_value = 0
-                toonNode.inputs[3].default_value = 1
+                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+                if toonNode:
+                    toonNode.inputs[1].default_value = 0
+                    toonNode.inputs[3].default_value = 1
 
             bpy.app.handlers.render_pre.remove(setTempMaterialSettings)
 
@@ -48,7 +49,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             scene.render.use_lock_interface = use_lock_interface
             
             for mat in bpy.data.materials:
-                materials.setMaterialParametersByType(mat)
+                materials_handler.setMaterialParametersByType(mat)
             
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
@@ -70,7 +71,9 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
         use_lock_interface = scene.render.use_lock_interface
-        node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+
+        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+        if not node_group: return
 
         def setTempMaterialSettings(dummy):
             prop.toggle_texture = False
@@ -85,9 +88,10 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-                toonNode.inputs[1].default_value = 0
-                toonNode.inputs[3].default_value = 1
+                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+                if toonNode:
+                    toonNode.inputs[1].default_value = 0
+                    toonNode.inputs[3].default_value = 1
 
             bpy.app.handlers.render_pre.remove(setTempMaterialSettings)
 
@@ -102,7 +106,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
                     node.inputs[5].default_value = 0.5
             
             for mat in bpy.data.materials:
-                materials.setMaterialParametersByType(mat)
+                materials_handler.setMaterialParametersByType(mat)
             
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 

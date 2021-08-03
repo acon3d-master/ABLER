@@ -12,7 +12,7 @@ bl_info = {
 }
 import bpy
 
-from .lib import common
+from .lib import cameras
 
 
 def genCameraName(name, i=1):
@@ -38,7 +38,7 @@ class CreateCameraOperator(bpy.types.Operator):
     bl_label = "Create New Camera"
 
     def execute(self, context):
-        common.makeSureCameraExists()
+        cameras.makeSureCameraExists()
         
         cameraName = genCameraName("ACON_Camera_")
 
@@ -68,7 +68,7 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
     bl_label = "Update"
 
     def execute(self, context):
-        common.makeSureCameraExists()
+        cameras.makeSureCameraExists()
         viewCamera = context.scene.camera
         targetCamera = bpy.data.objects[context.scene.ACON_prop.view]
         targetCamera.location[0] = viewCamera.location[0]

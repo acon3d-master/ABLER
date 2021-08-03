@@ -12,6 +12,7 @@ bl_info = {
 }
 import bpy
 
+
 class Acon3dShadowPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
     bl_idname = "ACON3D_PT_shadow"
@@ -28,6 +29,7 @@ class Acon3dShadowPanel(bpy.types.Panel):
 
     def draw(self, context):
         return
+
 
 class Acon3dShadowControlPanel(bpy.types.Panel):
     bl_label = "Shadow"
@@ -66,6 +68,7 @@ class Acon3dShadowControlPanel(bpy.types.Panel):
                 row.prop(context.scene.ACON_prop, "sun_rotation_x", text="Length (angular)")
                 row = layout.row(align=True)
                 row.prop(context.scene.ACON_prop, "sun_rotation_z", text="Rotate")
+
 
 classes = (
     Acon3dShadowPanel,

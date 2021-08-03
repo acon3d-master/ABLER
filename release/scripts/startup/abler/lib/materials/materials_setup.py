@@ -1,7 +1,7 @@
 import bpy
 
-from . import common
-from .. import custom_properties
+from . import materials_handler
+from .. import cameras
 
 
 def createOutlineNodeGroup():
@@ -369,14 +369,14 @@ def createAconMatNodeGroups():
 
     context = bpy.context
 
-    custom_properties.toggleToonEdge(None, context)
-    custom_properties.toggleToonFace(None, context)
-    custom_properties.toggleTexture(None, context)
-    custom_properties.toggleShading(None, context)
-    custom_properties.changeToonDepth(None, context)
-    custom_properties.changeImageAdjustBrightness(None, context)
-    custom_properties.changeImageAdjustContrast(None, context)
-    custom_properties.changeImageAdjustColor(None, context)
+    materials_handler.toggleToonEdge(None, context)
+    materials_handler.toggleToonFace(None, context)
+    materials_handler.toggleTexture(None, context)
+    materials_handler.toggleShading(None, context)
+    materials_handler.changeToonDepth(None, context)
+    materials_handler.changeImageAdjustBrightness(None, context)
+    materials_handler.changeImageAdjustContrast(None, context)
+    materials_handler.changeImageAdjustColor(None, context)
     
     return node_group
 
@@ -477,39 +477,6 @@ def applyAconToonStyle():
             if "clear" in mat.name:
                 mat.ACON_prop.type = "Clear"
         
-        setMaterialParametersByType(mat)
+        materials_handler.setMaterialParametersByType(mat)
         
-    common.switchToRendredView()
-
-
-def setMaterialParametersByType(mat):
-
-    type = mat.ACON_prop.type
-    toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-    
-    if type == "Diffuse":
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
-        toonNode.inputs[1].default_value = 0
-        toonNode.inputs[3].default_value = 1
-    
-    if type == "Mirror":
-        bpy.context.scene.eevee.use_ssr = True
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
-        toonNode.inputs[1].default_value = 0
-        toonNode.inputs[2].default_value = 1
-        toonNode.inputs[3].default_value = 0
-        
-    if type == "Glow":
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
-        toonNode.inputs[1].default_value = 0
-        toonNode.inputs[2].default_value = 0
-        toonNode.inputs[3].default_value = 0
-        
-    if type == "Clear":
-        mat.blend_method = "BLEND"
-        mat.shadow_method = "NONE"
-        toonNode.inputs[1].default_value = 1
-        toonNode.inputs[3].default_value = 1
+    cameras.switchToRendredView()

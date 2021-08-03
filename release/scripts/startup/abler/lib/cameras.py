@@ -1,13 +1,32 @@
 import bpy
 
 
-def switchToRendredView():
-    bpy.context.scene.render.engine = "BLENDER_EEVEE"
-    for area in bpy.context.screen.areas: 
-        if area.type == 'VIEW_3D':
-            for space in area.spaces: 
-                if space.type == 'VIEW_3D':
-                    space.shading.type = 'RENDERED'
+def add_view_items_from_collection(self, context):
+    items = []
+    collection = bpy.data.collections.get('ACON_col_cameras')
+
+    if collection:
+        for item in collection.objects:
+            items.append((item.name, item.name, ""))
+
+    return items
+
+
+def goToCustomCamera(self, context):
+    makeSureCameraExists()
+    viewCamera = context.scene.camera
+    targetCamera = bpy.data.objects[context.scene.ACON_prop.view]
+    viewCamera.location[0] = targetCamera.location[0]
+    viewCamera.location[1] = targetCamera.location[1]
+    viewCamera.location[2] = targetCamera.location[2]
+    viewCamera.rotation_mode = targetCamera.rotation_mode
+    viewCamera.rotation_euler[0] = targetCamera.rotation_euler[0]
+    viewCamera.rotation_euler[1] = targetCamera.rotation_euler[1]
+    viewCamera.rotation_euler[2] = targetCamera.rotation_euler[2]
+    viewCamera.scale[0] = targetCamera.scale[0]
+    viewCamera.scale[1] = targetCamera.scale[1]
+    viewCamera.scale[2] = targetCamera.scale[2]
+    turnOnCameraView()
 
 
 def makeSureCameraExists():
@@ -58,10 +77,10 @@ def turnOffCameraView():
             break
 
 
-def setupSharpShadow():
-    bpy.context.scene.eevee.shadow_cube_size = "4096"
-    bpy.context.scene.eevee.shadow_cascade_size = "4096"
-    bpy.context.scene.eevee.use_soft_shadows = True
-
-    if "ACON_sun" in bpy.data.objects:
-        bpy.data.objects["ACON_sun"].data.angle = 0
+def switchToRendredView():
+    bpy.context.scene.render.engine = "BLENDER_EEVEE"
+    for area in bpy.context.screen.areas: 
+        if area.type == 'VIEW_3D':
+            for space in area.spaces: 
+                if space.type == 'VIEW_3D':
+                    space.shading.type = 'RENDERED'

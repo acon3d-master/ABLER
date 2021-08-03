@@ -12,6 +12,7 @@ bl_info = {
 }
 import bpy
 
+
 class Acon3dImageAdjustmentPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
     bl_idname = "ACON3D_PT_image_adjustment"
