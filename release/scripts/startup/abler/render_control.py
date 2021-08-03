@@ -17,6 +17,7 @@ from .lib import materials
 class Acon3dRenderLineOperator(bpy.types.Operator):
     bl_idname = "acon3d.render_line"
     bl_label = "Line Render"
+    bl_translation_context = "*"
 
     def execute(self, context):
         scene = context.scene
@@ -61,6 +62,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
 class Acon3dRenderShadowOperator(bpy.types.Operator):
     bl_idname = "acon3d.render_shadow"
     bl_label = "Shadow Render"
+    bl_translation_context = "*"
 
     def execute(self, context):
         scene = context.scene
@@ -141,9 +143,9 @@ class Acon3dRenderPanel(bpy.types.Panel):
         col.prop(scene.render, "resolution_x", text="Resolution X")
         col.prop(scene.render, "resolution_y", text="Y")
         row = layout.row()
-        row.operator("render.opengl", text="Quick Render")
+        row.operator("render.opengl", text="Quick Render", text_ctxt="*")
         if is_camera:
-            row.operator("render.render", text="Full Render")
+            row.operator("render.render", text="Full Render", text_ctxt="*")
         
         row = layout.row()
         row.operator("acon3d.render_line", text="Line Render")

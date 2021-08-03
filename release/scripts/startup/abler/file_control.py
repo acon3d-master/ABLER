@@ -30,6 +30,7 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
     """Import objects from a .blend file"""
     bl_idname = "acon3d.import_blend"
     bl_label = "Import"
+    bl_translation_context = "*"
 
     filter_glob: bpy.props.StringProperty(
         default='*.blend', options={'HIDDEN'}
@@ -87,7 +88,7 @@ class Acon3dImportPanel(bpy.types.Panel):
         row = layout.row()
         row.scale_y = 1.0
         row.operator("wm.open_mainfile")
-        row.operator("acon3d.import_blend")
+        row.operator("acon3d.import_blend", text="Import")
         
         row = layout.row()
 

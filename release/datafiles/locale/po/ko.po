@@ -93034,5 +93034,8 @@ msgstr "오브젝트 재질"
 
 
 msgid "Length (angular)"
-msgstr "길이 (그림자 각도)"
+msgstr "길이 (그림
 
+
+msgid "Fly (shift + `)"
+msgstr "비행 모드"

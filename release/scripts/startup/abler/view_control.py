@@ -36,6 +36,7 @@ class CreateCameraOperator(bpy.types.Operator):
     """Create new camera with current view"""
     bl_idname = "acon3d.create_camera"
     bl_label = "Create New Camera"
+    bl_translation_context = "*"
 
     def execute(self, context):
         common.makeSureCameraExists()
@@ -66,6 +67,7 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
     """Move view to user-created camera"""
     bl_idname = "acon3d.update_custom_camera"
     bl_label = "Update"
+    bl_translation_context = "*"
 
     def execute(self, context):
         common.makeSureCameraExists()
@@ -88,6 +90,7 @@ class DeleteCameraOperator(bpy.types.Operator):
     """Delete selected user-created camera"""
     bl_idname = "acon3d.delete_camera"
     bl_label = "Delete"
+    bl_translation_context = "*"
 
     def execute(self, context):
         currentCameraName = context.scene.ACON_prop.view
@@ -124,7 +127,7 @@ class Acon3dNavigatePanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator('view3d.walk', text='Fly (shift + `)')
+        layout.operator('view3d.walk', text='Fly (shift + `)', text_ctxt="*")
 
 
 class Acon3dCameraPanel(bpy.types.Panel):
@@ -143,7 +146,7 @@ class Acon3dCameraPanel(bpy.types.Panel):
 
         row = layout.row()
         row.scale_y = 1.0
-        row.operator("acon3d.create_camera")
+        row.operator("acon3d.create_camera", text="Create New Camera")
 
         scene = context.scene
         collection = bpy.data.collections.get('ACON_col_cameras')
@@ -153,8 +156,8 @@ class Acon3dCameraPanel(bpy.types.Panel):
             row.prop(scene.ACON_prop, "view")
 
             row = layout.row()
-            row.operator("acon3d.update_custom_camera")
-            row.operator("acon3d.delete_camera")
+            row.operator("acon3d.update_custom_camera", text="Update")
+            row.operator("acon3d.delete_camera", text="Delete")
         
         if bpy.context.scene.camera is not None:
             cam = bpy.context.scene.camera.data
@@ -208,6 +211,7 @@ class Acon3dDOFPanel(bpy.types.Panel):
 class RemoveBackgroundOperator(bpy.types.Operator):
     bl_idname = "acon3d.background_image_remove"
     bl_label = "Remove Background Image"
+    bl_translation_context = "*"
 
     index: bpy.props.IntProperty(
         name = 'Index',
@@ -238,7 +242,7 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator('view3d.background_image_add', text="Add Image")
+        layout.operator('view3d.background_image_add', text="Add Image", text_ctxt="*")
 
         camObj = bpy.context.scene.camera
         active = camObj and camObj.data.show_background_images
@@ -264,7 +268,7 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
                 else:
                     row.label(text="Not Set")
                     
-                row.operator("acon3d.background_image_remove", text="", emboss=False, icon='X').index = i
+                row.operator("acon3d.background_image_remove", text="Remove Background Image", emboss=False, icon='X').index = i
 
                 if bg.show_expanded:
                     row = box.row()
