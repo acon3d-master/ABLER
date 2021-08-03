@@ -27,26 +27,12 @@ class Acon3dImageAdjustmentPanel(bpy.types.Panel):
         layout.label(icon="IMAGE_DATA")
 
     def draw(self, context):
-        layout = self.layout
-        layout.use_property_split = True
-        layout.use_property_decorate = False  # No animation.
+        return
 
-        scene = context.scene
-        view = scene.view_settings
 
-        flow = layout.grid_flow(row_major=True, columns=0, even_columns=False, even_rows=False, align=True)
-
-        col = flow.column()
-
-        col.separator()
-
-        col.prop(view, "view_transform", text="Color Filter")
-
-        col = flow.column()
-        col.prop(view, "exposure")
-
-class Acon3dImageAdjustmentCurvePanel(bpy.types.Panel):
-    bl_label = "Use Curves"
+class Acon3dBrightnessContrastPanel(bpy.types.Panel):
+    bl_label = "Brightness / Contrast"
+    bl_idname = "ACON3D_PT_image_sub_bright"
     bl_parent_id = "ACON3D_PT_image_adjustment"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
@@ -54,29 +40,79 @@ class Acon3dImageAdjustmentCurvePanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
     COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
 
-    def draw_header(self, context):
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
 
-        scene = context.scene
-        view = scene.view_settings
+        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+        if not node_group: return
 
-        self.layout.prop(view, "use_curve_mapping", text="")
+        node = node_group.nodes.get('ACON_node_brightContrast')
+        if not node: return
+
+        inputs = node.inputs
+
+        prop = context.scene.ACON_prop
+        
+        layout.prop(prop, "image_adjust_brightness", text="Brightness", slider=True)
+        layout.prop(prop, "image_adjust_contrast", text="Contrast", slider=True)
+
+
+class Acon3dColorBalancePanel(bpy.types.Panel):
+    bl_label = "Color Balance"
+    bl_idname = "ACON3D_PT_image_sub_color"
+    bl_parent_id = "ACON3D_PT_image_adjustment"
+    bl_category = "ACON3D"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
 
     def draw(self, context):
         layout = self.layout
-
-        scene = context.scene
-        view = scene.view_settings
-
-        layout.use_property_split = False
+        layout.use_property_split = True
         layout.use_property_decorate = False  # No animation.
 
-        layout.enabled = view.use_curve_mapping
+        prop = context.scene.ACON_prop
 
-        layout.template_curve_mapping(view, "curve_mapping", type='COLOR', levels=True)
+        layout.prop(prop, "image_adjust_color_r", text="Red", slider=True)
+        layout.prop(prop, "image_adjust_color_g", text="Green", slider=True)
+        layout.prop(prop, "image_adjust_color_b", text="Blue", slider=True)
+
+
+class Acon3dHueSaturationPanel(bpy.types.Panel):
+    bl_label = "Hue / Saturation"
+    bl_idname = "ACON3D_PT_image_sub_hue"
+    bl_parent_id = "ACON3D_PT_image_adjustment"
+    bl_category = "ACON3D"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_options = {'DEFAULT_CLOSED'}
+    COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
+
+        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+        if not node_group: return
+
+        node = node_group.nodes.get('ACON_node_hueSaturation')
+        if not node: return
+
+        inputs = node.inputs
+
+        layout.prop(inputs[0], "default_value", text="Hue", slider=True)
+        layout.prop(inputs[1], "default_value", text="Saturation", slider=True)
+
 
 classes = (
     Acon3dImageAdjustmentPanel,
-    Acon3dImageAdjustmentCurvePanel,
+    Acon3dBrightnessContrastPanel,
+    Acon3dColorBalancePanel,
+    Acon3dHueSaturationPanel,
 )
 
 

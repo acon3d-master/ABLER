@@ -101,6 +101,57 @@ def changeSunRotation(self, context):
     obj.rotation_euler.z = prop.sun_rotation_z
 
 
+def changeImageAdjustBrightness(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    brightContrast = node_group.nodes.get('ACON_node_brightContrast')
+    if not brightContrast: return
+
+    inputs = brightContrast.inputs
+
+    prop = context.scene.ACON_prop
+    value = prop.image_adjust_brightness
+
+    inputs[1].default_value = value
+
+
+def changeImageAdjustContrast(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    brightContrast = node_group.nodes.get('ACON_node_brightContrast')
+    if not brightContrast: return
+
+    inputs = brightContrast.inputs
+
+    prop = context.scene.ACON_prop
+    value = prop.image_adjust_contrast
+
+    inputs[2].default_value = value
+
+
+def changeImageAdjustColor(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    brightContrast = node_group.nodes.get('ACON_node_colorBalance')
+    if not brightContrast: return
+
+    inputs = brightContrast.inputs
+
+    prop = context.scene.ACON_prop
+    r = prop.image_adjust_color_r
+    g = prop.image_adjust_color_g
+    b = prop.image_adjust_color_b
+    color = (r, g, b, 1)
+
+    inputs[2].default_value = color
+
+
 class AconSceneProperty(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
@@ -167,6 +218,48 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         subtype="ANGLE",
         unit="ROTATION",
         update=changeSunRotation
+    )
+
+    image_adjust_brightness : bpy.props.FloatProperty(
+        name="brightness",
+        default=0,
+        min=-1,
+        max=1,
+        update=changeImageAdjustBrightness
+    )
+
+    image_adjust_contrast : bpy.props.FloatProperty(
+        name="contrast",
+        default=0,
+        min=-1,
+        max=1,
+        update=changeImageAdjustContrast
+    )
+
+    image_adjust_color_r : bpy.props.FloatProperty(
+        name="image_adjust_color_r",
+        default=1,
+        min=0,
+        max=1,
+        update=changeImageAdjustColor
+    )
+
+    image_adjust_color_g : bpy.props.FloatProperty(
+        name="image_adjust_color_g",
+        default=1,
+        min=0,
+        max=1,
+        step=1,
+        update=changeImageAdjustColor
+    )
+
+    image_adjust_color_b : bpy.props.FloatProperty(
+        name="image_adjust_color_b",
+        default=1,
+        min=0,
+        max=1,
+        step=1,
+        update=changeImageAdjustColor
     )
 
 

@@ -116,6 +116,7 @@ class Acon3dViewPanel(bpy.types.Panel):
 
 class Acon3dNavigatePanel(bpy.types.Panel):
     bl_label = "Navigate"
+    bl_idname = "ACON3D_PT_navigate"
     bl_parent_id = "ACON3D_PT_view"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'

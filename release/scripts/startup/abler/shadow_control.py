@@ -31,6 +31,7 @@ class Acon3dShadowPanel(bpy.types.Panel):
 
 class Acon3dShadowControlPanel(bpy.types.Panel):
     bl_label = "Shadow"
+    bl_idname = "ACON3D_PT_shadow_sub"
     bl_parent_id = "ACON3D_PT_shadow"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'

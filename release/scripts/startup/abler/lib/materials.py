@@ -232,7 +232,7 @@ def createToonFaceNodeGroup():
     node_group.inputs[3].min_value = 0
     node_group.inputs[3].max_value = 10
     
-    node_group.inputs[5].default_value = 0.5
+    node_group.inputs[5].default_value = 1
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
     
@@ -320,6 +320,21 @@ def createAconMatNodeGroups():
     node_mixColor.inputs[0].default_value = 0
     node_mixColor.inputs[2].default_value = (1, 1, 1, 1)
 
+    node_hueSaturation = nodes.new('ShaderNodeHueSaturation')
+    node_hueSaturation.name = 'ACON_node_hueSaturation'
+    node_group.links.new(node_hueSaturation.outputs[0], node_mixColor.inputs[1])
+
+    node_colorBalance = nodes.new('ShaderNodeMixRGB')
+    node_colorBalance.name = 'ACON_node_colorBalance'
+    node_colorBalance.blend_type = 'MULTIPLY'
+    node_colorBalance.inputs[0].default_value = 1
+    node_colorBalance.inputs[2].default_value = (1, 1, 1, 1)
+    node_group.links.new(node_colorBalance.outputs[0], node_hueSaturation.inputs[4])
+
+    node_brightContrast = nodes.new('ShaderNodeBrightContrast')
+    node_brightContrast.name = 'ACON_node_brightContrast'
+    node_group.links.new(node_brightContrast.outputs[0], node_colorBalance.inputs[1])
+
     inputs = nodes.new('NodeGroupInput')
     node_group.inputs.new('NodeSocketColor', 'Color')
     node_group.inputs.new('NodeSocketFloat', 'AlphaMixFactor')
@@ -329,7 +344,7 @@ def createAconMatNodeGroups():
     node_group.inputs.new('NodeSocketFloat', 'Strength')
     node_group.inputs.new('NodeSocketFloat', 'Smoothness')
     node_group.inputs.new('NodeSocketFloat', 'Negative Alpha')
-    node_group.links.new(inputs.outputs[0], node_mixColor.inputs[1])
+    node_group.links.new(inputs.outputs[0], node_brightContrast.inputs[0])
     node_group.links.new(inputs.outputs[1], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[2], node_mixShader_3.inputs[0])
     node_group.links.new(inputs.outputs[3], node_mixShader.inputs[0])
@@ -359,6 +374,9 @@ def createAconMatNodeGroups():
     custom_properties.toggleTexture(None, context)
     custom_properties.toggleShading(None, context)
     custom_properties.changeToonDepth(None, context)
+    custom_properties.changeImageAdjustBrightness(None, context)
+    custom_properties.changeImageAdjustContrast(None, context)
+    custom_properties.changeImageAdjustColor(None, context)
     
     return node_group
 

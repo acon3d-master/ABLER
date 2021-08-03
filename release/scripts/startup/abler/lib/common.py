@@ -38,15 +38,16 @@ def makeSureCameraExists():
 def turnOnCameraView(center_camera=True):
     makeSureCameraExists()
     # turn on camera view in the selected context(view pane)
-    for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            area.spaces[0].region_3d.view_perspective = 'CAMERA'
-            area.spaces[0].lock_camera = True
-            if center_camera:
-                override = {}
-                override['area'] = area
-                bpy.ops.view3d.view_center_camera(override)
-            break
+    for screen in bpy.data.screens:
+        for area in screen.areas:
+            if area.type == 'VIEW_3D':
+                area.spaces[0].region_3d.view_perspective = 'CAMERA'
+                area.spaces[0].lock_camera = True
+                if center_camera:
+                    override = {}
+                    override['area'] = area
+                    bpy.ops.view3d.view_center_camera(override)
+                break
 
 
 def turnOffCameraView():
