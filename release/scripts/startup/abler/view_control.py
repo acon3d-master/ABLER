@@ -114,21 +114,9 @@ class Acon3dViewPanel(bpy.types.Panel):
         layout.label(icon="CAMERA_DATA")
 
     def draw(self, context):
-        return
-
-
-class Acon3dNavigatePanel(bpy.types.Panel):
-    bl_label = "Navigate"
-    bl_idname = "ACON3D_PT_navigate"
-    bl_parent_id = "ACON3D_PT_view"
-    bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-
-    def draw(self, context):
         layout = self.layout
         layout.operator('view3d.walk', text='Fly (shift + `)', text_ctxt="*")
+        return
 
 
 class Acon3dCameraPanel(bpy.types.Panel):
@@ -235,8 +223,8 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
-        if bpy.context.scene.camera is not None:
-            cam = bpy.context.scene.camera.data
+        if context.scene.camera is not None:
+            cam = context.scene.camera.data
             self.layout.prop(cam, "show_background_images", text="")
         else:
             self.layout.active = False
@@ -245,15 +233,15 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
         layout = self.layout
         layout.operator('view3d.background_image_add', text="Add Image", text_ctxt="*")
 
-        camObj = bpy.context.scene.camera
+        camObj = context.scene.camera
         active = camObj and camObj.data.show_background_images
 
         layout.active = active
         layout.use_property_split = True
         layout.use_property_decorate = False
         
-        if bpy.context.scene.camera is not None:
-            cam = bpy.context.scene.camera.data
+        if context.scene.camera is not None:
+            cam = context.scene.camera.data
             
             for i, bg in enumerate(cam.background_images):
                 box = layout.box()
@@ -269,7 +257,7 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
                 else:
                     row.label(text="Not Set")
                     
-                row.operator("acon3d.background_image_remove", text="Remove Background Image", emboss=False, icon='X').index = i
+                row.operator("acon3d.background_image_remove", text="", emboss=False, icon='X').index = i
 
                 if bg.show_expanded:
                     row = box.row()
@@ -295,7 +283,6 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
 
 classes = (
     Acon3dViewPanel,
-    Acon3dNavigatePanel,
     Acon3dCameraPanel,
     CreateCameraOperator,
     UpdateCustomCameraOperator,

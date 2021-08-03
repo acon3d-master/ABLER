@@ -1,4 +1,5 @@
 import bpy
+from math import radians
 from .lib import cameras, shadow
 from .lib.materials import materials_handler
 
@@ -16,6 +17,33 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="Toon Style",
         default=True,
         update=materials_handler.toggleToonEdge
+    )
+
+    edge_min_line_width : bpy.props.FloatProperty(
+        name="min_line_width",
+        default=1,
+        min=0,
+        max=5,
+        step=1,
+        update=materials_handler.changeLineProps
+    )
+
+    edge_max_line_width : bpy.props.FloatProperty(
+        name="max_line_width",
+        default=1,
+        min=0,
+        max=5,
+        step=1,
+        update=materials_handler.changeLineProps
+    )
+
+    edge_line_detail : bpy.props.FloatProperty(
+        name="max_line_width",
+        default=2,
+        min=0,
+        max=20,
+        step=10,
+        update=materials_handler.changeLineProps
     )
 
     toggle_toon_face : bpy.props.BoolProperty(
@@ -43,6 +71,24 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=materials_handler.changeToonDepth
     )
 
+    toon_shading_brightness_1 : bpy.props.FloatProperty(
+        name="toon_shading_brightness_1",
+        default=3,
+        min=0,
+        max=10,
+        step=1,
+        update=materials_handler.changeToonShadingBrightness
+    )
+
+    toon_shading_brightness_2 : bpy.props.FloatProperty(
+        name="toon_shading_brightness_2",
+        default=5,
+        min=0,
+        max=10,
+        step=1,
+        update=materials_handler.changeToonShadingBrightness
+    )
+
     view : bpy.props.EnumProperty(
         name="View",
         description="view",
@@ -54,6 +100,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="sun_rotation_x",
         subtype="ANGLE",
         unit="ROTATION",
+        default=radians(60),
         update=shadow.changeSunRotation
     )
 
@@ -61,6 +108,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="sun_rotation_y",
         subtype="ANGLE",
         unit="ROTATION",
+        default=0,
         update=shadow.changeSunRotation
     )
 
@@ -68,6 +116,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="sun_rotation_z",
         subtype="ANGLE",
         unit="ROTATION",
+        default=radians(60),
         update=shadow.changeSunRotation
     )
 
@@ -76,6 +125,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         default=0,
         min=-1,
         max=1,
+        step=1,
         update=materials_handler.changeImageAdjustBrightness
     )
 
@@ -84,6 +134,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         default=0,
         min=-1,
         max=1,
+        step=1,
         update=materials_handler.changeImageAdjustContrast
     )
 
@@ -112,6 +163,24 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         max=2,
         step=1,
         update=materials_handler.changeImageAdjustColor
+    )
+
+    image_adjust_hue : bpy.props.FloatProperty(
+        name="hue",
+        default=0.5,
+        min=0,
+        max=1,
+        step=1,
+        update=materials_handler.changeImageAdjustHue
+    )
+
+    image_adjust_saturation : bpy.props.FloatProperty(
+        name="saturation",
+        default=1,
+        min=0,
+        max=2,
+        step=1,
+        update=materials_handler.changeImageAdjustSaturation
     )
 
 

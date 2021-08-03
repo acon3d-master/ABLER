@@ -377,6 +377,8 @@ def createAconMatNodeGroups():
     materials_handler.changeImageAdjustBrightness(None, context)
     materials_handler.changeImageAdjustContrast(None, context)
     materials_handler.changeImageAdjustColor(None, context)
+    materials_handler.changeImageAdjustHue(None, context)
+    materials_handler.changeImageAdjustSaturation(None, context)
     
     return node_group
 

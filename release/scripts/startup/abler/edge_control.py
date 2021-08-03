@@ -46,21 +46,14 @@ class EdgeSubPanel(bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False  # No animation.
-        
-        if context.scene.ACON_prop.toggle_toon_edge:
-        
-            node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-            outlineInputs = None
 
-            for node in node_group.nodes:
-                
-                if node.name == 'ACON_nodeGroup_outline':
-                    outlineInputs = node.inputs
+        prop = context.scene.ACON_prop
+        
+        if prop.toggle_toon_edge:
             
-            col = layout.column()
-            col.prop(outlineInputs[0], "default_value", text="Min Line Width", slider=True)
-            col.prop(outlineInputs[1], "default_value", text="Max Line Width", slider=True)
-            col.prop(outlineInputs[3], "default_value", text="Line Detail", slider=True)
+            layout.prop(prop, "edge_min_line_width", text="Min Line Width", slider=True)
+            layout.prop(prop, "edge_max_line_width", text="Max Line Width", slider=True)
+            layout.prop(prop, "edge_line_detail", text="Line Detail", slider=True)
 
 
 

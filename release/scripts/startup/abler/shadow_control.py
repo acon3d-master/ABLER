@@ -65,9 +65,9 @@ class Acon3dShadowControlPanel(bpy.types.Panel):
             ob = bpy.data.objects["ACON_sun"]
             if ob.rotation_mode == "XYZ":
                 row = layout.row(align=True)
-                row.prop(context.scene.ACON_prop, "sun_rotation_x", text="Length (angular)")
+                row.prop(context.scene.ACON_prop, "sun_rotation_x", text="Altitude")
                 row = layout.row(align=True)
-                row.prop(context.scene.ACON_prop, "sun_rotation_z", text="Rotate")
+                row.prop(context.scene.ACON_prop, "sun_rotation_z", text="Azimuth")
 
 
 classes = (

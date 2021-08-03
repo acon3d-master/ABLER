@@ -122,22 +122,16 @@ class FaceSubPanel(bpy.types.Panel):
         
         if context.scene.ACON_prop.toggle_toon_face:
 
-            node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
-            toonFaceInputs = None
-
-            for node in node_group.nodes:
-                
-                if node.name == 'ACON_nodeGroup_toonFace':
-                    toonFaceInputs = node.inputs
+            prop = context.scene.ACON_prop
             
             col = layout.column()
-            col.prop(context.scene.ACON_prop, "toon_shading_depth")
-            if toonFaceInputs is not None:
-                if context.scene.ACON_prop.toon_shading_depth == "2":
-                    col.prop(toonFaceInputs[2], "default_value", text="Brightness", slider=True)
-                else:
-                    col.prop(toonFaceInputs[2], "default_value", text="Brightness 1", slider=True)
-                    col.prop(toonFaceInputs[3], "default_value", text="Brightness 2", slider=True)
+            col.prop(prop, "toon_shading_depth")
+            
+            if prop.toon_shading_depth == "2":
+                col.prop(prop, "toon_shading_brightness_1", text="Brightness", slider=True)
+            else:
+                col.prop(prop, "toon_shading_brightness_1", text="Brightness 1", slider=True)
+                col.prop(prop, "toon_shading_brightness_2", text="Brightness 2", slider=True)
 
 
 class Acon3dBloomPanel(bpy.types.Panel):

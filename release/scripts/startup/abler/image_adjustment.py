@@ -46,14 +46,6 @@ class Acon3dBrightnessContrastPanel(bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False  # No animation.
 
-        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-        if not node_group: return
-
-        node = node_group.nodes.get('ACON_node_brightContrast')
-        if not node: return
-
-        inputs = node.inputs
-
         prop = context.scene.ACON_prop
         
         layout.prop(prop, "image_adjust_brightness", text="Brightness", slider=True)
@@ -96,17 +88,11 @@ class Acon3dHueSaturationPanel(bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False  # No animation.
-
-        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-        if not node_group: return
-
-        node = node_group.nodes.get('ACON_node_hueSaturation')
-        if not node: return
-
-        inputs = node.inputs
-
-        layout.prop(inputs[0], "default_value", text="Hue", slider=True)
-        layout.prop(inputs[1], "default_value", text="Saturation", slider=True)
+        
+        prop = context.scene.ACON_prop
+        
+        layout.prop(prop, "image_adjust_hue", text="Hue", slider=True)
+        layout.prop(prop, "image_adjust_saturation", text="Saturation", slider=True)
 
 
 classes = (

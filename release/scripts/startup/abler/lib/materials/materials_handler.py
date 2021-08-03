@@ -158,3 +158,73 @@ def changeImageAdjustColor(self, context):
     color = (r, g, b, 1)
 
     inputs[2].default_value = color
+
+
+def changeImageAdjustHue(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    hueSaturation = node_group.nodes.get('ACON_node_hueSaturation')
+    if not hueSaturation: return
+
+    inputs = hueSaturation.inputs
+
+    prop = context.scene.ACON_prop
+    value = prop.image_adjust_hue
+
+    inputs[0].default_value = value
+
+
+def changeImageAdjustSaturation(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    hueSaturation = node_group.nodes.get('ACON_node_hueSaturation')
+    if not hueSaturation: return
+
+    inputs = hueSaturation.inputs
+
+    prop = context.scene.ACON_prop
+    value = prop.image_adjust_saturation
+
+    inputs[1].default_value = value
+
+
+def changeLineProps(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    node_outline = node_group.nodes.get('ACON_nodeGroup_outline')
+    if not node_outline: return
+
+    inputs = node_outline.inputs
+
+    prop = context.scene.ACON_prop
+    min_value = prop.edge_min_line_width
+    max_value = prop.edge_max_line_width
+    line_detail = prop.edge_line_detail
+
+    inputs[0].default_value = min_value
+    inputs[1].default_value = max_value
+    inputs[3].default_value = line_detail
+
+
+def changeToonShadingBrightness(self, context):
+    
+    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+    if not node_group: return
+
+    node_outline = node_group.nodes.get('ACON_nodeGroup_toonFace')
+    if not node_outline: return
+
+    inputs = node_outline.inputs
+
+    prop = context.scene.ACON_prop
+    value_1 = prop.toon_shading_brightness_1
+    value_2 = prop.toon_shading_brightness_2
+
+    inputs[2].default_value = value_1
+    inputs[3].default_value = value_2
