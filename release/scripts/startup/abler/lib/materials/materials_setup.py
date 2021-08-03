@@ -1,7 +1,7 @@
 import bpy
 
-from . import common
-from .. import custom_properties
+from . import materials_handler
+from .. import cameras
 
 
 def createOutlineNodeGroup():
@@ -232,7 +232,7 @@ def createToonFaceNodeGroup():
     node_group.inputs[3].min_value = 0
     node_group.inputs[3].max_value = 10
     
-    node_group.inputs[5].default_value = 0.5
+    node_group.inputs[5].default_value = 1
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
     
@@ -320,6 +320,21 @@ def createAconMatNodeGroups():
     node_mixColor.inputs[0].default_value = 0
     node_mixColor.inputs[2].default_value = (1, 1, 1, 1)
 
+    node_hueSaturation = nodes.new('ShaderNodeHueSaturation')
+    node_hueSaturation.name = 'ACON_node_hueSaturation'
+    node_group.links.new(node_hueSaturation.outputs[0], node_mixColor.inputs[1])
+
+    node_colorBalance = nodes.new('ShaderNodeMixRGB')
+    node_colorBalance.name = 'ACON_node_colorBalance'
+    node_colorBalance.blend_type = 'MULTIPLY'
+    node_colorBalance.inputs[0].default_value = 1
+    node_colorBalance.inputs[2].default_value = (1, 1, 1, 1)
+    node_group.links.new(node_colorBalance.outputs[0], node_hueSaturation.inputs[4])
+
+    node_brightContrast = nodes.new('ShaderNodeBrightContrast')
+    node_brightContrast.name = 'ACON_node_brightContrast'
+    node_group.links.new(node_brightContrast.outputs[0], node_colorBalance.inputs[1])
+
     inputs = nodes.new('NodeGroupInput')
     node_group.inputs.new('NodeSocketColor', 'Color')
     node_group.inputs.new('NodeSocketFloat', 'AlphaMixFactor')
@@ -329,7 +344,7 @@ def createAconMatNodeGroups():
     node_group.inputs.new('NodeSocketFloat', 'Strength')
     node_group.inputs.new('NodeSocketFloat', 'Smoothness')
     node_group.inputs.new('NodeSocketFloat', 'Negative Alpha')
-    node_group.links.new(inputs.outputs[0], node_mixColor.inputs[1])
+    node_group.links.new(inputs.outputs[0], node_brightContrast.inputs[0])
     node_group.links.new(inputs.outputs[1], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[2], node_mixShader_3.inputs[0])
     node_group.links.new(inputs.outputs[3], node_mixShader.inputs[0])
@@ -354,11 +369,14 @@ def createAconMatNodeGroups():
 
     context = bpy.context
 
-    custom_properties.toggleToonEdge(None, context)
-    custom_properties.toggleToonFace(None, context)
-    custom_properties.toggleTexture(None, context)
-    custom_properties.toggleShading(None, context)
-    custom_properties.changeToonDepth(None, context)
+    materials_handler.toggleToonEdge(None, context)
+    materials_handler.toggleToonFace(None, context)
+    materials_handler.toggleTexture(None, context)
+    materials_handler.toggleShading(None, context)
+    materials_handler.changeToonDepth(None, context)
+    materials_handler.changeImageAdjustBrightness(None, context)
+    materials_handler.changeImageAdjustContrast(None, context)
+    materials_handler.changeImageAdjustColor(None, context)
     
     return node_group
 
@@ -459,39 +477,6 @@ def applyAconToonStyle():
             if "clear" in mat.name:
                 mat.ACON_prop.type = "Clear"
         
-        setMaterialParametersByType(mat)
+        materials_handler.setMaterialParametersByType(mat)
         
-    common.switchToRendredView()
-
-
-def setMaterialParametersByType(mat):
-
-    type = mat.ACON_prop.type
-    toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-    
-    if type == "Diffuse":
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
-        toonNode.inputs[1].default_value = 0
-        toonNode.inputs[3].default_value = 1
-    
-    if type == "Mirror":
-        bpy.context.scene.eevee.use_ssr = True
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
-        toonNode.inputs[1].default_value = 0
-        toonNode.inputs[2].default_value = 1
-        toonNode.inputs[3].default_value = 0
-        
-    if type == "Glow":
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
-        toonNode.inputs[1].default_value = 0
-        toonNode.inputs[2].default_value = 0
-        toonNode.inputs[3].default_value = 0
-        
-    if type == "Clear":
-        mat.blend_method = "BLEND"
-        mat.shadow_method = "NONE"
-        toonNode.inputs[1].default_value = 1
-        toonNode.inputs[3].default_value = 1
+    cameras.switchToRendredView()

@@ -11,7 +11,7 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from .lib import materials
+from .lib.materials import materials_handler
 
 
 class Acon3dRenderLineOperator(bpy.types.Operator):
@@ -21,34 +21,36 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        toggleTexture = scene.ToggleTexture
-        toggleShading = scene.ToggleShading
-        toggleToonEdge = scene.ToggleToonEdge
+        prop = scene.ACON_prop
+        toggleTexture = prop.toggle_texture
+        toggleShading = prop.toggle_shading
+        toggleToonEdge = prop.toggle_toon_edge
         use_lock_interface = scene.render.use_lock_interface
 
         def setTempMaterialSettings(dummy):
-            scene.ToggleTexture = False
-            scene.ToggleShading = False
-            scene.ToggleToonEdge = True
+            prop.toggle_texture = False
+            prop.toggle_shading = False
+            prop.toggle_toon_edge = True
             scene.render.use_lock_interface = True
 
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-                toonNode.inputs[1].default_value = 0
-                toonNode.inputs[3].default_value = 1
+                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+                if toonNode:
+                    toonNode.inputs[1].default_value = 0
+                    toonNode.inputs[3].default_value = 1
 
             bpy.app.handlers.render_pre.remove(setTempMaterialSettings)
 
         def rollbackMaterialSettings(dummy):
-            scene.ToggleTexture = toggleTexture
-            scene.ToggleShading = toggleShading
-            scene.ToggleToonEdge = toggleToonEdge
+            prop.toggle_texture = toggleTexture
+            prop.toggle_shading = toggleShading
+            prop.toggle_toon_edge = toggleToonEdge
             scene.render.use_lock_interface = use_lock_interface
             
             for mat in bpy.data.materials:
-                materials.setMaterialParametersByType(mat)
+                materials_handler.setMaterialParametersByType(mat)
             
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
@@ -66,16 +68,19 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        toggleTexture = scene.ToggleTexture
-        toggleShading = scene.ToggleShading
-        toggleToonEdge = scene.ToggleToonEdge
+        prop = scene.ACON_prop
+        toggleTexture = prop.toggle_texture
+        toggleShading = prop.toggle_shading
+        toggleToonEdge = prop.toggle_toon_edge
         use_lock_interface = scene.render.use_lock_interface
-        node_group = bpy.data.node_groups['ACON_nodeGroup_combinedToon']
+
+        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+        if not node_group: return
 
         def setTempMaterialSettings(dummy):
-            scene.ToggleTexture = False
-            scene.ToggleShading = True
-            scene.ToggleToonEdge = False
+            prop.toggle_texture = False
+            prop.toggle_shading = True
+            prop.toggle_toon_edge = False
             scene.render.use_lock_interface = True
 
             for node in node_group.nodes:
@@ -85,16 +90,17 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-                toonNode.inputs[1].default_value = 0
-                toonNode.inputs[3].default_value = 1
+                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+                if toonNode:
+                    toonNode.inputs[1].default_value = 0
+                    toonNode.inputs[3].default_value = 1
 
             bpy.app.handlers.render_pre.remove(setTempMaterialSettings)
 
         def rollbackMaterialSettings(dummy):
-            scene.ToggleTexture = toggleTexture
-            scene.ToggleShading = toggleShading
-            scene.ToggleToonEdge = toggleToonEdge
+            prop.toggle_texture = toggleTexture
+            prop.toggle_shading = toggleShading
+            prop.toggle_toon_edge = toggleToonEdge
             scene.render.use_lock_interface = use_lock_interface
 
             for node in node_group.nodes:
@@ -102,7 +108,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
                     node.inputs[5].default_value = 0.5
             
             for mat in bpy.data.materials:
-                materials.setMaterialParametersByType(mat)
+                materials_handler.setMaterialParametersByType(mat)
             
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 

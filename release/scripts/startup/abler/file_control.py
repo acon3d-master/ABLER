@@ -14,16 +14,17 @@ import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.app.handlers import persistent
 
-from .lib import materials, common
+from .lib import cameras, shadow
+from .lib.materials import materials_setup
 
 
 @persistent
 def load_handler(dummy):
-    common.switchToRendredView()
-    common.turnOnCameraView(False)
-    common.setupSharpShadow()
+    cameras.switchToRendredView()
+    cameras.turnOnCameraView(False)
+    shadow.setupSharpShadow()
     bpy.ops.workspace.append_activate(idname="ACON3D")
-    materials.applyAconToonStyle()
+    materials_setup.applyAconToonStyle()
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):
@@ -62,9 +63,9 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
             if not found:
                 collection.children.link(coll)
         
-        materials.applyAconToonStyle()
-        common.switchToRendredView()
-        common.turnOnCameraView()
+        materials_setup.applyAconToonStyle()
+        cameras.switchToRendredView()
+        cameras.turnOnCameraView()
 
         return {'FINISHED'}
 

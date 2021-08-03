@@ -12,7 +12,7 @@ bl_info = {
 }
 import bpy
 
-from .lib import common
+from .lib import cameras
 
 
 def genCameraName(name, i=1):
@@ -39,7 +39,7 @@ class CreateCameraOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
-        common.makeSureCameraExists()
+        cameras.makeSureCameraExists()
         
         cameraName = genCameraName("ACON_Camera_")
 
@@ -70,7 +70,7 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
-        common.makeSureCameraExists()
+        cameras.makeSureCameraExists()
         viewCamera = context.scene.camera
         targetCamera = bpy.data.objects[context.scene.ACON_prop.view]
         targetCamera.location[0] = viewCamera.location[0]
@@ -119,6 +119,7 @@ class Acon3dViewPanel(bpy.types.Panel):
 
 class Acon3dNavigatePanel(bpy.types.Panel):
     bl_label = "Navigate"
+    bl_idname = "ACON3D_PT_navigate"
     bl_parent_id = "ACON3D_PT_view"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
