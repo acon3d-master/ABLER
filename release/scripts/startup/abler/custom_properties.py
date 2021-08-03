@@ -91,7 +91,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="image_adjust_color_r",
         default=1,
         min=0,
-        max=1,
+        max=2,
+        step=1,
         update=materials_handler.changeImageAdjustColor
     )
 
@@ -99,7 +100,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="image_adjust_color_g",
         default=1,
         min=0,
-        max=1,
+        max=2,
         step=1,
         update=materials_handler.changeImageAdjustColor
     )
@@ -108,7 +109,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         name="image_adjust_color_b",
         default=1,
         min=0,
-        max=1,
+        max=2,
         step=1,
         update=materials_handler.changeImageAdjustColor
     )
