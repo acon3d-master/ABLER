@@ -81,6 +81,7 @@ class CollectionLayerExcludeProperties(bpy.types.PropertyGroup):
         target_layer = bpy.data.collections[self.name]
         for objs in target_layer.objects:
             objs.hide_viewport = not(self.value)
+            objs.hide_render = not(self.value)
     name: bpy.props.StringProperty(name="Layer Name", default="")
     value: bpy.props.BoolProperty(
         name="Layer Exclude",
