@@ -72,7 +72,8 @@ def moveMouse():
 
 class AconLoginOperator(bpy.types.Operator):
     bl_idname = "acon3d.login"
-    bl_label = "Simple Modal Operator"
+    bl_label = "Login"
+    bl_translation_context = "*"
 
     def execute(self, context):
         userInfo = bpy.data.meshes.get("ACON_userInfo")
@@ -83,7 +84,8 @@ class AconLoginOperator(bpy.types.Operator):
 
 class AconAnchorOperator(bpy.types.Operator):
     bl_idname = "acon3d.anchor"
-    bl_label = "Simple Modal Operator"
+    bl_label = "Go to link"
+    bl_translation_context = "*"
 
     href : bpy.props.StringProperty(
         name="href",

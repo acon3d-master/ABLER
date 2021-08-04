@@ -2750,14 +2750,14 @@ class WM_MT_splash(Menu):
         split = layout.split()
 
         col1 = split.column()
-        anchor = col1.operator("acon3d.anchor", text="See ACON3D models!", icon='EVENT_A')
+        anchor = col1.operator("acon3d.anchor", text="See ACON3D models!", icon='EVENT_A', text_ctxt="*")
         anchor.href = 'https://acon3d.com'
-        anchor = col1.operator("acon3d.anchor", text="Don't have an ACON3D account?", icon='USER')
+        anchor = col1.operator("acon3d.anchor", text="Don't have an ACON3D account?", icon='USER', text_ctxt="*")
         anchor.href = 'https://www.acon3d.com/member/join'
 
         col2 = split.column()
-        col2.operator("wm.url_open_preset", text="Blender Release Notes", icon='URL').type = 'RELEASE_NOTES'
-        col2.operator("wm.url_open_preset", text="Blender Development Fund", icon='FUND').type = 'FUND'
+        col2.operator("wm.url_open_preset", text="Blender Release Notes", icon='URL', text_ctxt="*").type = 'RELEASE_NOTES'
+        col2.operator("wm.url_open_preset", text="Blender Development Fund", icon='FUND', text_ctxt="*").type = 'FUND'
 
         layout.separator()
         layout.separator()
