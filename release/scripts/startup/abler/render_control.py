@@ -11,7 +11,20 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
+from .lib import render
 from .lib.materials import materials_handler
+
+
+class Acon3dRenderFullOperator(bpy.types.Operator):
+    bl_idname = "acon3d.render_full"
+    bl_label = "Full Render"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        render.setupBackgroundImagesCompositor()
+        bpy.ops.render.render('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
 
 
 class Acon3dRenderLineOperator(bpy.types.Operator):
@@ -151,7 +164,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
         row = layout.row()
         row.operator("render.opengl", text="Quick Render", text_ctxt="*")
         if is_camera:
-            row.operator("render.render", text="Full Render", text_ctxt="*")
+            row.operator("acon3d.render_full", text="Full Render")
         
         row = layout.row()
         row.operator("acon3d.render_line", text="Line Render")
@@ -159,6 +172,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
 
 
 classes = (
+    Acon3dRenderFullOperator,
     Acon3dRenderLineOperator,
     Acon3dRenderShadowOperator,
     Acon3dRenderPanel,

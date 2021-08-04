@@ -14,7 +14,7 @@ import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.app.handlers import persistent
 
-from .lib import cameras, shadow
+from .lib import cameras, shadow, render
 from .lib.materials import materials_setup
 
 
@@ -23,7 +23,7 @@ def load_handler(dummy):
     cameras.switchToRendredView()
     cameras.turnOnCameraView(False)
     shadow.setupSharpShadow()
-    bpy.ops.workspace.append_activate(idname="ACON3D")
+    render.setupBackgroundImagesCompositor()
     materials_setup.applyAconToonStyle()
 
 
