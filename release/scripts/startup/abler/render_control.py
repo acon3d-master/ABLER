@@ -39,6 +39,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
         use_lock_interface = scene.render.use_lock_interface
+        render.clearCompositor()
 
         def setTempMaterialSettings(dummy):
             prop.toggle_texture = False
@@ -86,6 +87,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
         use_lock_interface = scene.render.use_lock_interface
+        render.clearCompositor()
 
         node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
         if not node_group: return
