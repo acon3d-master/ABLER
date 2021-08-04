@@ -73,8 +73,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ ! -d "${SRC_DIR}/Blender.app" ]; then
-    echo "use --source parameter to set source directory where Blender.app can be found"
+if [ ! -d "${SRC_DIR}/ABLER.app" ]; then
+    echo "use --source parameter to set source directory where ABLER.app can be found"
     exit 1
 fi
 
@@ -93,8 +93,8 @@ if [ -d "${_mount_dir}" ]; then
 fi
 
 # Copy dmg contents.
-echo -n "Copying Blender.app..."
-cp -r "${SRC_DIR}/Blender.app" "${_tmp_dir}/" || exit 1
+echo -n "Copying ALBER.app..."
+cp -r "${SRC_DIR}/ABLER.app" "${_tmp_dir}/" || exit 1
 echo
 
 # Create the disk image.
@@ -131,20 +131,20 @@ sleep 5
 if [ ! -z "${C_CERT}" ]; then
     # Codesigning requires all libs and binaries to be signed separately.
     echo -n "Codesigning Python"
-    for f in $(find "${_mount_dir}/Blender.app/Contents/Resources" -name "python*"); do
+    for f in $(find "${_mount_dir}/ABLER.app/Contents/Resources" -name "python*"); do
         if [ -x ${f} ] && [ ! -d ${f} ]; then
             codesign --remove-signature "${f}"
             codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${f}"
         fi
     done
     echo ; echo -n "Codesigning .dylib and .so libraries"
-    for f in $(find "${_mount_dir}/Blender.app" -name "*.dylib" -o -name "*.so"); do
+    for f in $(find "${_mount_dir}/ABLER.app" -name "*.dylib" -o -name "*.so"); do
         codesign --remove-signature "${f}"
         codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${f}"
     done
-    echo ; echo -n "Codesigning Blender.app"
-    codesign --remove-signature "${_mount_dir}/Blender.app"
-    codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${_mount_dir}/Blender.app"
+    echo ; echo -n "Codesigning ABLER.app"
+    codesign --remove-signature "${_mount_dir}/ABLER.app"
+    codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${_mount_dir}/ABLER.app"
     echo
 else
     echo "No codesigning cert given, skipping..."

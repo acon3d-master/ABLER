@@ -456,7 +456,7 @@ void wm_window_title(wmWindowManager *wm, wmWindow *win)
       GHOST_SetTitle(win->ghostwin, str);
     }
     else {
-      GHOST_SetTitle(win->ghostwin, "Blender");
+      GHOST_SetTitle(win->ghostwin, "ABLER");
     }
 
     /* Informs GHOST of unsaved changes, to set window modified visual indicator (macOS)

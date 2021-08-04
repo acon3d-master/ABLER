@@ -43,7 +43,7 @@ Then the bundle is created as follows:
 
 $ ./bundle.sh --source <sourcedir> --dmg <dmg> --bundle-id <bundleid> --username <apple-id> --password "@keychain:altool-password" --codesign <identity>
 
-<sourcedir>  directory where built Blender.app is
+<sourcedir>  directory where built ABLER.app is
 <dmg>	       location and name of the final disk image
 <bundleid>   id on notarization, for example org.blenderfoundation.blender.release
 <apple-id>   your appleid email
