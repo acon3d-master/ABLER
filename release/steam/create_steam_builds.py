@@ -168,7 +168,7 @@ def copy_contents_from_dmg_to_path(dmg_file: pathlib.Path, dst: pathlib.Path) ->
     # need to be able to copy the contents to where we can use them
     attachment_items = attached.splitlines()[-1].split()
     mounted_disk = attachment_items[0]
-    source_location = pathlib.Path(attachment_items[2], "Blender.app")
+    source_location = pathlib.Path(attachment_items[2], "ABLER.app")
 
     print(f"{source_location} -> {dst}")
 
@@ -374,7 +374,7 @@ if not args.skipextract or not content_location.joinpath(dmg_extract_folder).exi
     print("Extracting files from Blender MacOS archive...")
     blender_dmg = content_location.joinpath(dmg_blender)
     target_location = content_location.joinpath(
-        dmg_extract_folder, "Blender.app")
+        dmg_extract_folder, "ABLER.app")
     copy_contents_from_dmg_to_path(blender_dmg, target_location)
     print("   OK")
 else:
