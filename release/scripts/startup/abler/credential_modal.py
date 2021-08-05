@@ -36,18 +36,45 @@ def requestLogin():
         userInfo = bpy.data.meshes.get("ACON_userInfo")
         prop = userInfo.ACON_prop
 
+        cookies_godo = ""
+        response_godo = None
+
+        try:
+            response_godo = requests.post(
+                'https://www.acon3d.com/api/login.php',
+                data = {
+                    'loginId': prop.username,
+                    'loginPwd': prop.password    
+                }
+            )
+        except:
+            response_godo = None
+
+        try:
+            success_msg = response_godo.json()['message']
+            if success_msg != "success":
+                response_godo = None
+        except:
+            response_godo = None
+
+        cookies_godo = response_godo.cookies
         response = requests.post(
             'https://api-v2.acon3d.com/auth/acon3d/signin',
             data = {
                 'account': prop.username,
                 'password': prop.password
-            }
+            },
+            cookies=cookies_godo
         )
 
+        cookie_final = response.cookies
+        if response_godo is not None:
+            cookie_final = requests.cookies.merge_cookies(cookies_godo, response.cookies)
+        
         if response.status_code == 200:
             prop.login_status = 'SUCCESS'
             cookiesFile = open(path_cookiesFile, "wb")
-            pickle.dump(response.cookies, cookiesFile)
+            pickle.dump(cookie_final, cookiesFile)
             cookiesFile.close()
         else: prop.login_status = 'FAIL'
 
