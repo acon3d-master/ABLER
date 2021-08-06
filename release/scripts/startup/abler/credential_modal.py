@@ -1,6 +1,6 @@
 import bpy
 from bpy.app.handlers import persistent
-import requests, webbrowser, pickle, os
+import requests, webbrowser, pickle, os, sys
 
 
 class AconModalOperator(bpy.types.Operator):
@@ -29,7 +29,7 @@ class AconModalOperator(bpy.types.Operator):
 
 def requestLogin():
     try:
-        path = os.getcwd()
+        path = bpy.utils.resource_path("USER")
         path_cookiesFolder = os.path.join(path, 'cookies')
         path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
 
