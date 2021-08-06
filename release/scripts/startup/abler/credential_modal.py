@@ -59,6 +59,7 @@ def requestLogin():
 
         if response_godo is not None:
             cookies_godo = response_godo.cookies
+        
         response = requests.post(
             'https://api-v2.acon3d.com/auth/acon3d/signin',
             data = {
