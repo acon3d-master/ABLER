@@ -1,5 +1,5 @@
 tell application "Finder"
-          tell disk "Blender"
+          tell disk "ABLER"
                open
                set current view of container window to icon view
                set toolbar visible of container window to false

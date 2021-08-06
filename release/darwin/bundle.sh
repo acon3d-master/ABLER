@@ -13,9 +13,9 @@ done
 
 # Defaults settings.
 _script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-_volume_name="Blender"
+_volume_name="ABLER"
 _tmp_dir="$(mktemp -d)"
-_tmp_dmg="/tmp/blender-tmp.dmg"
+_tmp_dmg="/tmp/abler-tmp.dmg"
 _background_image="${_script_dir}/background.tif"
 _mount_dir="/Volumes/${_volume_name}"
 _entitlements="${_script_dir}/entitlements.plist"
@@ -86,7 +86,7 @@ fi
 # Destroy destination dmg if there is any.
 test -f "${DEST_DMG}" && rm "${DEST_DMG}"
 if [ -d "${_mount_dir}" ]; then
-    echo -n "Ejecting existing blender volume.."
+    echo -n "Ejecting existing abler volume.."
     DEV_FILE=$(mount | grep "${_mount_dir}" | awk '{ print $1 }')
     diskutil eject "${DEV_FILE}" || exit 1
     echo
