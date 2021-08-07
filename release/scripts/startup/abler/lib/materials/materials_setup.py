@@ -258,10 +258,14 @@ def createAconMatNodeGroups():
     node_mixShader_2 = nodes.new('ShaderNodeMixShader')
     node_group.links.new(node_mixShader_2.outputs[0], node_mixShader.inputs[2])
     
+    node_multiply_3 = nodes.new("ShaderNodeMath")
+    node_multiply_3.operation = "MULTIPLY"
+    node_group.links.new(node_multiply_3.outputs[0], node_mixShader_2.inputs[0])
+    
     node_subtract_1 = nodes.new("ShaderNodeMath")
     node_subtract_1.operation = "SUBTRACT"
     node_subtract_1.inputs[0].default_value = 1
-    node_group.links.new(node_subtract_1.outputs[0], node_mixShader_2.inputs[0])
+    node_group.links.new(node_subtract_1.outputs[0], node_multiply_3.inputs[1])
     
     node_multiply_1 = nodes.new("ShaderNodeMath")
     node_multiply_1.operation = "MULTIPLY"
@@ -288,6 +292,11 @@ def createAconMatNodeGroups():
     node_multiply_2.blend_type = 'MULTIPLY'
     node_multiply_2.inputs[0].default_value = 1
     node_group.links.new(node_multiply_2.outputs[0], node_mixShader_2.inputs[2])
+
+    node_mixColor_3 = nodes.new('ShaderNodeMixRGB')
+    node_mixColor_3.blend_type = 'MIX'
+    node_mixColor_3.inputs[2].default_value = (1, 1, 1, 1)
+    node_group.links.new(node_mixColor_3.outputs[0], node_multiply_2.inputs[2])
     
     node_mixColor_2 = nodes.new('ShaderNodeMixRGB')
     node_mixColor_2.name = 'ACON_node_shadeMixFactor'
@@ -304,7 +313,7 @@ def createAconMatNodeGroups():
     node_group_outline = nodes.new(type='ShaderNodeGroup')
     node_group_outline.name = 'ACON_nodeGroup_outline'
     node_group_outline.node_tree = node_group_data_outline
-    node_group.links.new(node_group_outline.outputs[0], node_multiply_2.inputs[2])
+    node_group.links.new(node_group_outline.outputs[0], node_mixColor_3.inputs[1])
 
     node_transparent = nodes.new('ShaderNodeBsdfTransparent')
     node_transparent.inputs[0].default_value = (1, 1, 1, 1)
@@ -344,13 +353,16 @@ def createAconMatNodeGroups():
     node_group.inputs.new('NodeSocketFloat', 'Strength')
     node_group.inputs.new('NodeSocketFloat', 'Smoothness')
     node_group.inputs.new('NodeSocketFloat', 'Negative Alpha')
+    node_group.inputs.new('NodeSocketFloat', 'Image Alpha')
     node_group.links.new(inputs.outputs[0], node_brightContrast.inputs[0])
     node_group.links.new(inputs.outputs[1], node_multiply_1.inputs[1])
+    node_group.links.new(inputs.outputs[1], node_mixColor_3.inputs[0])
     node_group.links.new(inputs.outputs[2], node_mixShader_3.inputs[0])
     node_group.links.new(inputs.outputs[3], node_mixShader.inputs[0])
     node_group.links.new(inputs.outputs[5], node_emission.inputs[1])
     node_group.links.new(inputs.outputs[6], node_subtract_2.inputs[1])
     node_group.links.new(inputs.outputs[7], node_multiply_1.inputs[0])
+    node_group.links.new(inputs.outputs[8], node_multiply_3.inputs[0])
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
     node_group.inputs[1].default_value = 0
@@ -366,6 +378,9 @@ def createAconMatNodeGroups():
     node_group.inputs[7].default_value = 0
     node_group.inputs[7].min_value = 0
     node_group.inputs[7].max_value = 1
+    node_group.inputs[8].default_value = 1
+    node_group.inputs[8].min_value = 0
+    node_group.inputs[8].max_value = 1
 
     context = bpy.context
 
@@ -446,6 +461,7 @@ def applyAconToonStyle():
 
         if node_texImage:
             mat.node_tree.links.new(node_texImage.outputs[0], node_combinedToon.inputs[0])
+            mat.node_tree.links.new(node_texImage.outputs[1], node_combinedToon.inputs[8])
         else:
             node_combinedToon.inputs[0].default_value = baseColor
         

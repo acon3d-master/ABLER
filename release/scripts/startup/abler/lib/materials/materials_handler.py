@@ -69,22 +69,22 @@ def setMaterialParametersByType(mat):
     if not toonNode: return
     
     if type == "Diffuse":
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
+        mat.blend_method = "CLIP"
+        mat.shadow_method = "CLIP"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[3].default_value = 1
     
     if type == "Mirror":
         bpy.context.scene.eevee.use_ssr = True
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
+        mat.blend_method = "CLIP"
+        mat.shadow_method = "CLIP"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 1
         toonNode.inputs[3].default_value = 0
         
     if type == "Glow":
-        mat.blend_method = "OPAQUE"
-        mat.shadow_method = "OPAQUE"
+        mat.blend_method = "CLIP"
+        mat.shadow_method = "CLIP"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 0
         toonNode.inputs[3].default_value = 0
