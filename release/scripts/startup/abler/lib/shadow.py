@@ -1,4 +1,4 @@
-import bpy
+import bpy, math
 
 
 def changeSunRotation(self, context):
@@ -7,8 +7,8 @@ def changeSunRotation(self, context):
 
     prop = context.scene.ACON_prop
 
-    obj.rotation_euler.x = prop.sun_rotation_x
-    obj.rotation_euler.y = prop.sun_rotation_y
+    obj.rotation_euler.x = math.radians(90) - prop.sun_rotation_x
+    obj.rotation_euler.y = 0
     obj.rotation_euler.z = prop.sun_rotation_z
 
 
