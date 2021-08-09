@@ -136,7 +136,7 @@ def open_credential_modal(dummy):
     userInfo.ACON_prop.login_status = 'IDLE'
 
     try:
-        path = os.getcwd()
+        path = bpy.utils.resource_path("USER")
         path_cookiesFolder = os.path.join(path, 'cookies')
         path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
 
