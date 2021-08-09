@@ -23,7 +23,6 @@ class AconModalOperator(bpy.types.Operator):
 
     def invoke(self, context, event):
         context.window_manager.modal_handler_add(self)
-        bpy.ops.wm.splash('INVOKE_DEFAULT')
         return {'RUNNING_MODAL'}
 
 
@@ -158,9 +157,11 @@ def open_credential_modal(dummy):
         token = responseData['accessToken']
 
         if token: userInfo.ACON_prop.login_status = 'SUCCESS'
-        else: bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
 
     except: print("Failed to load cookies")
+
+    if userInfo.ACON_prop.login_status is not 'SUCCESS':
+        bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
     
 
 
