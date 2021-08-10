@@ -103,6 +103,12 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=cameras.goToCustomCamera
     )
 
+    toggle_shadow : bpy.props.BoolProperty(
+        name="Shadow",
+        default=True,
+        update=shadow.toggleShadow
+    )
+
     sun_rotation_x : bpy.props.FloatProperty(
         name="sun_rotation_x",
         subtype="ANGLE",
