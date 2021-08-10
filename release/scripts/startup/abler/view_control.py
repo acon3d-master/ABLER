@@ -208,7 +208,8 @@ class RemoveBackgroundOperator(bpy.types.Operator):
         )
 
     def execute(self, context):
-        image = bpy.context.scene.camera.data.background_images[self.index]
+        image = context.scene.camera.data.background_images[self.index]
+        image.image = None
         bpy.context.scene.camera.data.background_images.remove(image)
         return {'FINISHED'}
 
