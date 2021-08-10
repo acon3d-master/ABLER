@@ -14,7 +14,7 @@ import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.app.handlers import persistent
 
-from .lib import cameras, shadow, render
+from .lib import cameras, shadow, render, scenes
 from .lib.materials import materials_setup
 
 
@@ -25,6 +25,7 @@ def load_handler(dummy):
     shadow.setupSharpShadow()
     render.setupBackgroundImagesCompositor()
     materials_setup.applyAconToonStyle()
+    scenes.setupPresets()
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):

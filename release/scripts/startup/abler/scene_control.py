@@ -29,7 +29,7 @@ class CreateSceneOperator(bpy.types.Operator):
         new_scene.camera = old_scene.camera.copy()
         new_scene.camera.data = old_scene.camera.data.copy()
         new_scene.collection.objects.link(new_scene.camera)
-        
+
         try: new_scene.collection.objects.unlink(old_scene.camera)
         except: print("Failed to unlink camera from old scene.")
         
@@ -67,12 +67,10 @@ class Acon3dScenesPanel(bpy.types.Panel):
         layout = self.layout
         scene = context.scene
         
-        row = layout.row()
-        row.operator("acon3d.create_scene", text="Create New Scene")
-        row = layout.row()
-        row.prop(scene.ACON_prop, "scene")
-        row = layout.row()
-        row.operator("acon3d.delete_scene", text="Delete Current Scene")
+        row = layout.row(align=True)
+        row.prop(scene.ACON_prop, "scene", text="")
+        row.operator("acon3d.create_scene", text="", icon='ADD')
+        row.operator("acon3d.delete_scene", text="", icon='REMOVE')
 
 
 classes = (
