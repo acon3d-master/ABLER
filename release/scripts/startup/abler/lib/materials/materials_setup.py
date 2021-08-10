@@ -340,9 +340,13 @@ def createAconMatNodeGroups():
     node_colorBalance.inputs[2].default_value = (1, 1, 1, 1)
     node_group.links.new(node_colorBalance.outputs[0], node_hueSaturation.inputs[4])
 
-    node_brightContrast = nodes.new('ShaderNodeBrightContrast')
-    node_brightContrast.name = 'ACON_node_brightContrast'
-    node_group.links.new(node_brightContrast.outputs[0], node_colorBalance.inputs[1])
+    node_contrast = nodes.new('ShaderNodeBrightContrast')
+    node_contrast.name = 'ACON_node_contrast'
+    node_group.links.new(node_contrast.outputs[0], node_colorBalance.inputs[1])
+
+    node_bright = nodes.new('ShaderNodeBrightContrast')
+    node_bright.name = 'ACON_node_bright'
+    node_group.links.new(node_bright.outputs[0], node_contrast.inputs[0])
 
     inputs = nodes.new('NodeGroupInput')
     node_group.inputs.new('NodeSocketColor', 'Color')
@@ -354,7 +358,7 @@ def createAconMatNodeGroups():
     node_group.inputs.new('NodeSocketFloat', 'Smoothness')
     node_group.inputs.new('NodeSocketFloat', 'Negative Alpha')
     node_group.inputs.new('NodeSocketFloat', 'Image Alpha')
-    node_group.links.new(inputs.outputs[0], node_brightContrast.inputs[0])
+    node_group.links.new(inputs.outputs[0], node_bright.inputs[0])
     node_group.links.new(inputs.outputs[1], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[1], node_mixColor_3.inputs[0])
     node_group.links.new(inputs.outputs[2], node_mixShader_3.inputs[0])
