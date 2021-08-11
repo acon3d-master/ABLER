@@ -73037,8 +73037,8 @@ msgid "About Blender"
 msgstr "Về Blender"
 
 
-msgid "Open a window with information about Blender"
-msgstr "Mở một cửa sổ cho chiếu thông tin về Blender"
+msgid "Open a window with information about ABLER"
+msgstr "Mở một cửa sổ cho chiếu thông tin về ABLER"
 
 
 msgctxt "Operator"

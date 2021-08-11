@@ -33267,8 +33267,8 @@ msgid "About Blender"
 msgstr "O Blenderu"
 
 
-msgid "Open a window with information about Blender"
-msgstr "Otevřít okno s informacemi o Blenderu"
+msgid "Open a window with information about ABLER"
+msgstr "Otevřít okno s informacemi o ABLER"
 
 
 msgctxt "Operator"
