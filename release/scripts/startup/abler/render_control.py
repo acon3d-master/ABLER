@@ -41,6 +41,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
         toggleTexture = prop.toggle_texture
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
+        useBloom = scene.eevee.use_bloom
         use_lock_interface = scene.render.use_lock_interface
         render.clearCompositor()
 
@@ -48,6 +49,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             prop.toggle_texture = False
             prop.toggle_shading = False
             prop.toggle_toon_edge = True
+            scene.eevee.use_bloom = False
             scene.render.use_lock_interface = True
 
             for mat in bpy.data.materials:
@@ -64,6 +66,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             prop.toggle_texture = toggleTexture
             prop.toggle_shading = toggleShading
             prop.toggle_toon_edge = toggleToonEdge
+            scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
             
             for mat in bpy.data.materials:
@@ -92,6 +95,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         toggleTexture = prop.toggle_texture
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
+        useBloom = scene.eevee.use_bloom
         use_lock_interface = scene.render.use_lock_interface
         render.clearCompositor()
 
@@ -102,6 +106,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_texture = False
             prop.toggle_shading = True
             prop.toggle_toon_edge = False
+            scene.eevee.use_bloom = False
             scene.render.use_lock_interface = True
 
             for node in node_group.nodes:
@@ -122,6 +127,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_texture = toggleTexture
             prop.toggle_shading = toggleShading
             prop.toggle_toon_edge = toggleToonEdge
+            scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
 
             for node in node_group.nodes:
