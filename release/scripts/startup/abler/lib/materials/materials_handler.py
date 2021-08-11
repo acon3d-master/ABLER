@@ -114,15 +114,16 @@ def changeImageAdjustBrightness(self, context):
     node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
     if not node_group: return
 
-    brightContrast = node_group.nodes.get('ACON_node_brightContrast')
-    if not brightContrast: return
+    bright = node_group.nodes.get('ACON_node_bright')
+    if not bright: return
 
-    inputs = brightContrast.inputs
+    inputs = bright.inputs
 
     prop = context.scene.ACON_prop
     value = prop.image_adjust_brightness
 
     inputs[1].default_value = value
+    inputs[2].default_value = value
 
 
 def changeImageAdjustContrast(self, context):
@@ -130,14 +131,15 @@ def changeImageAdjustContrast(self, context):
     node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
     if not node_group: return
 
-    brightContrast = node_group.nodes.get('ACON_node_brightContrast')
-    if not brightContrast: return
+    contrast = node_group.nodes.get('ACON_node_contrast')
+    if not contrast: return
 
-    inputs = brightContrast.inputs
+    inputs = contrast.inputs
 
     prop = context.scene.ACON_prop
     value = prop.image_adjust_contrast
 
+    inputs[1].default_value = -0.1 * value
     inputs[2].default_value = value
 
 
