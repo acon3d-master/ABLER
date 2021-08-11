@@ -21,13 +21,15 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     toggle_toon_edge : bpy.props.BoolProperty(
-        name="Toon Style",
+        name="Toon Style Edge",
+        description="Toggle toon style edge expression",
         default=True,
         update=materials_handler.toggleToonEdge
     )
 
     edge_min_line_width : bpy.props.FloatProperty(
-        name="min_line_width",
+        name="Min Line Width",
+        description="Adjust the thickness of minimum depth edges",
         default=1,
         min=0,
         max=5,
@@ -36,7 +38,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     edge_max_line_width : bpy.props.FloatProperty(
-        name="max_line_width",
+        name="Max Line Width",
+        description="Adjust the thickness of maximum depth edges",
         default=1,
         min=0,
         max=5,
@@ -45,7 +48,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     edge_line_detail : bpy.props.FloatProperty(
-        name="max_line_width",
+        name="Line Detail",
+        description="Amount of edges to be shown. (recommended: 1.2)",
         default=2,
         min=0,
         max=20,
@@ -54,32 +58,36 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     toggle_toon_face : bpy.props.BoolProperty(
-        name="Toon Style",
+        name="Toon Style Face",
+        description="Toggle toon style face expression",
         default=True,
         update=materials_handler.toggleToonFace
     )
 
     toggle_texture : bpy.props.BoolProperty(
         name="Texture",
+        description="Toggle material texture",
         default=True,
         update=materials_handler.toggleTexture
     )
 
     toggle_shading : bpy.props.BoolProperty(
         name="Shading",
+        description="Toggle shading",
         default=True,
         update=materials_handler.toggleShading
     )
 
     toon_shading_depth : bpy.props.EnumProperty(
         name="Toon Color Depth",
-        description="depth",
+        description="Change number of colors used for shading",
         items=[("2", "2 depth", ""), ("3", "3 depth", "")],
         update=materials_handler.changeToonDepth
     )
 
     toon_shading_brightness_1 : bpy.props.FloatProperty(
-        name="toon_shading_brightness_1",
+        name="Brightness 1",
+        description="Change shading brightness (Range: 0 ~ 10)",
         default=3,
         min=0,
         max=10,
@@ -88,7 +96,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     toon_shading_brightness_2 : bpy.props.FloatProperty(
-        name="toon_shading_brightness_2",
+        name="Brightness 2",
+        description="Change shading brightness (Range: 0 ~ 10)",
         default=5,
         min=0,
         max=10,
@@ -98,7 +107,6 @@ class AconSceneProperty(bpy.types.PropertyGroup):
 
     view : bpy.props.EnumProperty(
         name="View",
-        description="view",
         items=cameras.add_view_items_from_collection,
         update=cameras.goToCustomCamera
     )
@@ -110,23 +118,17 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     sun_rotation_x : bpy.props.FloatProperty(
-        name="sun_rotation_x",
+        name="Altitude",
+        description="Adjust sun altitude",
         subtype="ANGLE",
         unit="ROTATION",
         default=radians(60),
         update=shadow.changeSunRotation
     )
 
-    sun_rotation_y : bpy.props.FloatProperty(
-        name="sun_rotation_y",
-        subtype="ANGLE",
-        unit="ROTATION",
-        default=0,
-        update=shadow.changeSunRotation
-    )
-
     sun_rotation_z : bpy.props.FloatProperty(
-        name="sun_rotation_z",
+        name="Azimuth",
+        description="Adjust sun azimuth",
         subtype="ANGLE",
         unit="ROTATION",
         default=radians(60),
@@ -134,7 +136,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_brightness : bpy.props.FloatProperty(
-        name="brightness",
+        name="Brightness",
+        description="Adjust brightness of general image (Range: -1 ~ 1)",
         default=0,
         min=-1,
         max=1,
@@ -143,7 +146,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_contrast : bpy.props.FloatProperty(
-        name="contrast",
+        name="Contrast",
+        description="Adjust contrast of general image (Range: -1 ~ 1)",
         default=0,
         min=-1,
         max=1,
@@ -152,7 +156,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_color_r : bpy.props.FloatProperty(
-        name="image_adjust_color_r",
+        name="Red",
+        description="Adjust color balance (Range: 0 ~ 2)",
         default=1,
         min=0,
         max=2,
@@ -161,7 +166,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_color_g : bpy.props.FloatProperty(
-        name="image_adjust_color_g",
+        name="Green",
+        description="Adjust color balance (Range: 0 ~ 2)",
         default=1,
         min=0,
         max=2,
@@ -170,7 +176,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_color_b : bpy.props.FloatProperty(
-        name="image_adjust_color_b",
+        name="Blue",
+        description="Adjust color balance (Range: 0 ~ 2)",
         default=1,
         min=0,
         max=2,
@@ -179,7 +186,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_hue : bpy.props.FloatProperty(
-        name="hue",
+        name="Hue",
+        description="Adjust hue (Range: 0 ~ 1)",
         default=0.5,
         min=0,
         max=1,
@@ -188,7 +196,8 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     )
 
     image_adjust_saturation : bpy.props.FloatProperty(
-        name="saturation",
+        name="Saturation",
+        description="Adjust saturation (Range: 0 ~ 2)",
         default=1,
         min=0,
         max=2,

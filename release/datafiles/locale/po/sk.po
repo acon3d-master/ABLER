@@ -73694,8 +73694,8 @@ msgid "About Blender"
 msgstr "O aplikácii Blender"
 
 
-msgid "Open a window with information about Blender"
-msgstr "Otvorí okno s informáciami o aplikácii Blender"
+msgid "Open a window with information about ABLER"
+msgstr "Otvorí okno s informáciami o aplikácii ABLER"
 
 
 msgctxt "Operator"

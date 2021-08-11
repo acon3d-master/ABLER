@@ -1,6 +1,6 @@
 import bpy
 from bpy.app.handlers import persistent
-import requests, webbrowser, pickle, os, sys
+import requests, webbrowser, pickle, os
 
 
 class AconModalOperator(bpy.types.Operator):
@@ -23,7 +23,6 @@ class AconModalOperator(bpy.types.Operator):
 
     def invoke(self, context, event):
         context.window_manager.modal_handler_add(self)
-        bpy.ops.wm.splash('INVOKE_DEFAULT')
         return {'RUNNING_MODAL'}
 
 
@@ -130,13 +129,13 @@ class AconAnchorOperator(bpy.types.Operator):
 @persistent
 def open_credential_modal(dummy):
     prefs = bpy.context.preferences
-    prefs.view.show_splash = False
+    prefs.view.show_splash = True
 
     userInfo = bpy.data.meshes.new("ACON_userInfo")
     userInfo.ACON_prop.login_status = 'IDLE'
 
     try:
-        path = os.getcwd()
+        path = bpy.utils.resource_path("USER")
         path_cookiesFolder = os.path.join(path, 'cookies')
         path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
 
@@ -160,8 +159,10 @@ def open_credential_modal(dummy):
         if token: userInfo.ACON_prop.login_status = 'SUCCESS'
 
     except: print("Failed to load cookies")
+
+    if userInfo.ACON_prop.login_status is not 'SUCCESS':
+        bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
     
-    bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
 
 
 classes = (
