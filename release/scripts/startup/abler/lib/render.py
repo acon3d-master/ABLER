@@ -89,3 +89,8 @@ def clearCompositor():
     node_entry_left_out = node_rlayer.outputs[0]
     node_entry_right_in = node_composite.inputs[0]
     tree.links.new(node_entry_left_out, node_entry_right_in)
+
+
+def matchObjectVisibility():
+    for obj in bpy.data.objects:
+        obj.hide_render = obj.hide_get()
