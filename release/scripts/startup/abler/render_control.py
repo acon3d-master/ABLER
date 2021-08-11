@@ -11,8 +11,20 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from .lib import render
+from .lib import render, cameras
 from .lib.materials import materials_handler
+
+
+class Acon3dCameraViewOperator(bpy.types.Operator):
+    """Fit Camera Region to Viewport"""
+    bl_idname = "acon3d.camera_view"
+    bl_label = "Camera View"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        cameras.turnOnCameraView()
+
+        return {'FINISHED'}
 
 
 class Acon3dRenderFullOperator(bpy.types.Operator):
@@ -178,6 +190,8 @@ class Acon3dRenderPanel(bpy.types.Panel):
         col.prop(scene.render, "resolution_x", text="Resolution X")
         col.prop(scene.render, "resolution_y", text="Y")
         row = layout.row()
+        row.operator("acon3d.camera_view", text="Camera View", icon="RESTRICT_VIEW_OFF")
+        row = layout.row()
         row.operator("render.opengl", text="Quick Render", text_ctxt="*")
         if is_camera:
             row.operator("acon3d.render_full", text="Full Render")
@@ -188,6 +202,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
 
 
 classes = (
+    Acon3dCameraViewOperator,
     Acon3dRenderFullOperator,
     Acon3dRenderLineOperator,
     Acon3dRenderShadowOperator,
