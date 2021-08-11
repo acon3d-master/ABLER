@@ -93083,3 +93083,7 @@ msgstr "밝기 1"
 
 msgid "Brightness 2"
 msgstr "밝기 2"
+
+msgctxt "Operator"
+msgid "About ABLER"
+msgstr "ABLER에 대하여"

@@ -71077,11 +71077,11 @@ msgstr "Відкрити заставку з інформацією про ви�
 
 msgctxt "Operator"
 msgid "About ABLER"
-msgstr "Про Blender"
+msgstr "Про ABLER"
 
 
-msgid "Open a window with information about Blender"
-msgstr "Відкрити вікно з інформацією про Blender"
+msgid "Open a window with information about ABLER"
+msgstr "Відкрити вікно з інформацією про ABLER"
 
 
 msgctxt "Operator"

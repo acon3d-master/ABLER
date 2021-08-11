@@ -73691,11 +73691,11 @@ msgstr "Otvorí úvodnú obrazovku s informáciami o vydaní"
 
 msgctxt "Operator"
 msgid "About ABLER"
-msgstr "O aplikácii Blender"
+msgstr "O aplikácii ABLER"
 
 
-msgid "Open a window with information about Blender"
-msgstr "Otvorí okno s informáciami o aplikácii Blender"
+msgid "Open a window with information about ABLER"
+msgstr "Otvorí okno s informáciami o aplikácii ABLER"
 
 
 msgctxt "Operator"
