@@ -21,10 +21,22 @@ class CreateSceneOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
+        bpy.ops.acon3d.set_scene_name('INVOKE_DEFAULT')
+
+        return {'FINISHED'}
+
+
+class SetSceneNameOperator(bpy.types.Operator):
+    bl_idname = "acon3d.set_scene_name"
+    bl_label = "New Scene"
+
+    name: bpy.props.StringProperty(name="Name")
+
+    def execute(self, context):
         old_scene = context.scene
         new_scene = old_scene.copy()
 
-        sceneName = scenes.genSceneName("ACON_Scene_")
+        sceneName = self.name
         new_scene.name = sceneName
 
         new_scene.camera = old_scene.camera.copy()
@@ -37,6 +49,14 @@ class CreateSceneOperator(bpy.types.Operator):
         context.scene.ACON_prop.scene = new_scene.name
 
         return {'FINISHED'}
+
+    def invoke(self, context, event):
+        wm = context.window_manager
+        return wm.invoke_props_dialog(self)
+
+    def draw(self, context):
+        layout = self.layout
+        layout.prop(self, "name")
 
 
 class DeleteSceneOperator(bpy.types.Operator):
@@ -77,6 +97,7 @@ class Acon3dScenesPanel(bpy.types.Panel):
 
 classes = (
     CreateSceneOperator,
+    SetSceneNameOperator,
     DeleteSceneOperator,
     Acon3dScenesPanel,
 )

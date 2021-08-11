@@ -5,19 +5,6 @@ from types import SimpleNamespace
 from math import radians
 
 
-def genSceneName(name, i=1):
-    found = None
-    combinedName = name + str(i)
-
-    for scene in bpy.data.scenes:
-        if scene.name == combinedName:
-            found = True
-            break
-
-    if found: return genSceneName(name, i+1)
-    else: return combinedName
-
-
 def add_scene_items(self, context):
     items = []
     for item in bpy.data.scenes:
