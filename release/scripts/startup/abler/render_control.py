@@ -16,6 +16,7 @@ from .lib.materials import materials_handler
 
 
 class Acon3dRenderFullOperator(bpy.types.Operator):
+    """Render according to the set pixel"""
     bl_idname = "acon3d.render_full"
     bl_label = "Full Render"
     bl_translation_context = "*"
@@ -28,6 +29,7 @@ class Acon3dRenderFullOperator(bpy.types.Operator):
 
 
 class Acon3dRenderLineOperator(bpy.types.Operator):
+    """Renders only lines according to the set pixel"""
     bl_idname = "acon3d.render_line"
     bl_label = "Line Render"
     bl_translation_context = "*"
@@ -76,6 +78,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
 
 
 class Acon3dRenderShadowOperator(bpy.types.Operator):
+    """Renders only shadow according to the set pixel"""
     bl_idname = "acon3d.render_shadow"
     bl_label = "Shadow Render"
     bl_translation_context = "*"
