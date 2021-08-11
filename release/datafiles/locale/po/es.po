@@ -72846,8 +72846,8 @@ msgid "About Blender"
 msgstr "Acerca de Blender"
 
 
-msgid "Open a window with information about Blender"
-msgstr "Abre una ventana con información acerca de Blender"
+msgid "Open a window with information about ABLER"
+msgstr "Abre una ventana con información acerca de ABLER"
 
 
 msgctxt "Operator"
