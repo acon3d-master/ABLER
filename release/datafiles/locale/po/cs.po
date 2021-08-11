@@ -33263,8 +33263,8 @@ msgstr "Otevřít uvítací okno s informacemi o vydání"
 
 
 msgctxt "Operator"
-msgid "About Blender"
-msgstr "O Blenderu"
+msgid "About ABLER"
+msgstr "O ABLER"
 
 
 msgid "Open a window with information about ABLER"
