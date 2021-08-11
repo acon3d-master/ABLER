@@ -73033,7 +73033,7 @@ msgstr "Mở ảnh quảng cáo và thông tin phiên bản"
 
 
 msgctxt "Operator"
-msgid "About ABLER"
+msgid "About Blender"
 msgstr "Về Blender"
 
 

@@ -73690,7 +73690,7 @@ msgstr "Otvorí úvodnú obrazovku s informáciami o vydaní"
 
 
 msgctxt "Operator"
-msgid "About ABLER"
+msgid "About Blender"
 msgstr "O aplikácii Blender"
 
 

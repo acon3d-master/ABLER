@@ -57138,7 +57138,7 @@ msgstr "Ouvrir l’écran d’accueil avec les données de version"
 
 
 msgctxt "Operator"
-msgid "About ABLER"
+msgid "About Blender"
 msgstr "À propos de Blender"
 
 

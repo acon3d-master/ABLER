@@ -74105,7 +74105,7 @@ msgstr "スプラッシュスクリーンをリリース情報付で開きます
 
 
 msgctxt "Operator"
-msgid "About ABLER"
+msgid "About Blender"
 msgstr "Blenderについて"
 
 

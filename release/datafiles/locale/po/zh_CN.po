@@ -73691,7 +73691,7 @@ msgstr "打开附带版本信息的启动画面"
 
 
 msgctxt "Operator"
-msgid "About ABLER"
+msgid "About Blender"
 msgstr "关于Blender"
 
 

@@ -72842,7 +72842,7 @@ msgstr "Abre la imagen de bienvenida con información de la versión"
 
 
 msgctxt "Operator"
-msgid "About ABLER"
+msgid "About Blender"
 msgstr "Acerca de Blender"
 
 
