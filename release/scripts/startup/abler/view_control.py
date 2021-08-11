@@ -33,7 +33,6 @@ def genCameraName(name, i=1):
 
 
 class CreateCameraOperator(bpy.types.Operator):
-    """Create new camera with current view"""
     bl_idname = "acon3d.create_camera"
     bl_label = "Create New Camera"
     bl_translation_context = "*"
@@ -64,7 +63,6 @@ class CreateCameraOperator(bpy.types.Operator):
 
 
 class UpdateCustomCameraOperator(bpy.types.Operator):
-    """Move view to user-created camera"""
     bl_idname = "acon3d.update_custom_camera"
     bl_label = "Update"
     bl_translation_context = "*"
@@ -87,7 +85,6 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
 
 
 class DeleteCameraOperator(bpy.types.Operator):
-    """Delete selected user-created camera"""
     bl_idname = "acon3d.delete_camera"
     bl_label = "Delete"
     bl_translation_context = "*"
@@ -208,7 +205,8 @@ class RemoveBackgroundOperator(bpy.types.Operator):
         )
 
     def execute(self, context):
-        image = bpy.context.scene.camera.data.background_images[self.index]
+        image = context.scene.camera.data.background_images[self.index]
+        image.image = None
         bpy.context.scene.camera.data.background_images.remove(image)
         return {'FINISHED'}
 

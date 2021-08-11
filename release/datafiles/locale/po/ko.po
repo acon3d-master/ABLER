@@ -3632,7 +3632,7 @@ msgstr "F-정지"
 
 
 msgid "F-Stop ratio (lower numbers give more defocus, higher numbers give a sharper image)"
-msgstr "F-정지 비율 (낮은 값는 초점을 더 흐리게, 높은 값는 더 선명한 이미지를 제공함)"
+msgstr "흐려짐의 정도를 조정합니다. 낮을수록 흐려집니다"
 
 
 msgid "Ratio"
@@ -3660,7 +3660,7 @@ msgstr "초점 오브젝트"
 
 
 msgid "Use this object to define the depth of field focal point"
-msgstr "이 오브젝트를 사용하여 피사계 심도 초점을 정의합니다"
+msgstr "스포이드 버튼으로 선택한 오브젝트에 초점을 맞춥니다. 해제하려면 우측의 X표시를 눌러주세요"
 
 
 msgid "Use Depth of Field"
@@ -16003,7 +16003,7 @@ msgstr "초점의 길이"
 
 
 msgid "Perspective Camera lens value in millimeters"
-msgstr "밀리미터의 원근법 카메라 렌즈 값"
+msgstr "초점의 길이를 조정합니다. 초점이 짧을수록 광각, 초점이 길수록 평행투영에 가까워집니다"
 
 
 msgid "Lens Unit"
@@ -54386,7 +54386,7 @@ msgstr "뷰포트 렌더"
 
 
 msgid "Take a snapshot of the active viewport"
-msgstr "활성 뷰포트의 스냅 샷을 찍기"
+msgstr "뷰포트에 보이는 그대로 빠르게 렌더합니다"
 
 
 msgid "Render files from the animation range of this scene"
@@ -59091,7 +59091,7 @@ msgstr "비행 네비게이션"
 
 
 msgid "Interactively fly around the scene"
-msgstr "씬 주위에 대화형 날기"
+msgstr "W, A, S, D / Q, E / 방향키 / 마우스를 활용하여 뷰포트를 움직입니다"
 
 
 msgctxt "Operator"
@@ -70118,23 +70118,23 @@ msgstr "빛번짐 효과에 적용된 색상"
 
 
 msgid "Blend factor"
-msgstr "혼합 팩터"
+msgstr "빛번짐의 강도를 조정합니다"
 
 
 msgid "Knee"
-msgstr "굽은 구조"
+msgstr "변곡점"
 
 
 msgid "Makes transition between under/over-threshold gradual"
-msgstr "점진적으로 언더/오버 스레숄드 사이 변환을 만들기"
+msgstr "임계값 전후의 값을 더 부드럽게 변화시킵니다"
 
 
 msgid "Bloom spread distance"
-msgstr "빛번짐 효과 퍼지는 거리"
+msgstr "빛번짐 효과가 퍼지는 거리를 조정합니다"
 
 
 msgid "Filters out pixels under this level of brightness"
-msgstr "이 밝기 레벨에서 픽셀을 필터링합니다"
+msgstr "임계값이 작을수록 더 많이 번집니다"
 
 
 msgid "Max Size"
@@ -92949,6 +92949,14 @@ msgid "Toon Style"
 msgstr "만화 스타일"
 
 
+msgid "Toon Style Edge"
+msgstr "만화 스타일 모서리"
+
+
+msgid "Toon Style Face"
+msgstr "만화 스타일 표면"
+
+
 msgid "Min Line Width"
 msgstr "선 굵기 (최소)"
 
@@ -93006,7 +93014,7 @@ msgstr "흐려짐 정도"
 
 
 msgid "Quick Render"
-msgstr "빠른 렌더 (뷰포트 사용)"
+msgstr "빠른 렌더"
 
 
 msgid "Full Render"
@@ -93083,3 +93091,92 @@ msgstr "밝기 1"
 
 msgid "Brightness 2"
 msgstr "밝기 2"
+
+
+msgid "Toggle toon style edge expression"
+msgstr "만화스타일 모서리 표시하기 토글 버튼"
+
+
+msgid "Import objects according to the current settings"
+msgstr "현재 설정에 맞추어 모델을 가져옵니다"
+
+
+msgid "Adjust the thickness of minimum depth edges"
+msgstr "심도가 가장 낮은 선의 굵기를 조정합니다"
+
+
+msgid "Adjust the thickness of maximum depth edges"
+msgstr "심도가 가장 높은 선의 굵기를 조정합니다"
+
+
+msgid "Amount of edges to be shown. (recommended: 1.2)"
+msgstr "보여질 모서리의 양을 조정합니다 (권장: 1.2)"
+
+
+msgid "Toggle toon style face expression"
+msgstr "만화스타일 면 표시하기 토글 버튼"
+
+
+msgid "Toggle material texture"
+msgstr "면 재질 표시하기 토글 버튼"
+
+
+msgid "Toggle shading"
+msgstr "음영 표시하기 토글 버튼"
+
+
+msgid "Change number of colors used for shading"
+msgstr "만화스타일 음영 표현에 사용되는 색의 수를 조정합니다"
+
+
+msgid "Change shading brightness (Range: 0 ~ 10)"
+msgstr "음영 표현의 밝기를 조정합니다 (범위: 0 ~ 10)"
+
+
+msgid "Adjust brightness of general image (Range: -1 ~ 1)"
+msgstr "전반적인 이미지의 밝기를 조정합니다 (범위: -1 ~ 1)"
+
+
+msgid "Adjust contrast of general image (Range: -1 ~ 1)"
+msgstr "전반적인 이미지의 대비를 조정합니다 (범위: -1 ~ 1)"
+
+
+msgid "Adjust color balance (Range: 0 ~ 2)"
+msgstr "색상 밸런스를 조정합니다 (범위: 0 ~ 2)"
+
+
+msgid "Adjust hue (Range: 0 ~ 1)"
+msgstr "색조를 조정합니다 (범위: 0 ~ 1)"
+
+
+msgid "Adjust saturation (Range: 0 ~ 2)"
+msgstr "채도를 조정합니다 (범위: 0 ~ 2)"
+
+
+msgid "Adjust sun altitude"
+msgstr "그림자의 길이(태양의 고도)를 조정합니다"
+
+
+msgid "Adjust sun azimuth"
+msgstr "그림자의 방향(태양의 방위각)을 조정합니다"
+
+
+msgid "Render according to the set pixel"
+msgstr "설정한 픽셀에 맞추어 렌더합니다"
+
+
+msgid "Renders only lines according to the set pixel"
+msgstr "설정한 픽셀에 맞추어 선만 렌더합니다"
+
+
+msgid "Renders only shadow according to the set pixel"
+msgstr "설정한 픽셀에 맞추어 그림자만 렌더합니다"
+
+
+msgid "Clone selected material"
+msgstr "선택한 재질을 복사합니다"
+
+
+msgctxt "Operator"
+msgid "About ABLER"
+msgstr "ABLER에 대하여"
