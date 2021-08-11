@@ -15,8 +15,9 @@ from .lib import scenes
 
 
 class CreateSceneOperator(bpy.types.Operator):
+    """Create a new scene with current settings"""
     bl_idname = "acon3d.create_scene"
-    bl_label = "Create Scene"
+    bl_label = "New Scene"
     bl_translation_context = "*"
 
     def execute(self, context):
@@ -39,8 +40,9 @@ class CreateSceneOperator(bpy.types.Operator):
 
 
 class DeleteSceneOperator(bpy.types.Operator):
+    """Remove current scene from project"""
     bl_idname = "acon3d.delete_scene"
-    bl_label = "Delete Scene"
+    bl_label = "Remove Scene"
     bl_translation_context = "*"
 
     def execute(self, context):

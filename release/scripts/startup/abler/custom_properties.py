@@ -15,7 +15,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
 
     scene : bpy.props.EnumProperty(
         name="Scene",
-        description="Scene",
+        description="Change scene",
         items=scenes.add_scene_items,
         update=scenes.loadScene
     )
