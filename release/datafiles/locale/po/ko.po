@@ -93193,3 +93193,15 @@ msgstr "카메라 뷰"
 msgid "Fit Camera Region to Viewport"
 msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
 
+
+msgid "Fit Camera Region to Viewport"
+msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
+
+
+msgid "Toggle Toolbar"
+msgstr "툴바 열기 / 닫기"
+
+
+msgid "Toggle toolbar visibility"
+msgstr "툴바를 열거나 닫습니다"
+
