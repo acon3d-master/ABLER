@@ -20,6 +20,8 @@ from .lib.materials import materials_setup
 
 @persistent
 def load_handler(dummy):
+    cameras.makeSureCameraExists()
+    bpy.context.scene.camera.data.show_passepartout = False
     cameras.switchToRendredView()
     cameras.turnOnCameraView(False)
     shadow.setupSharpShadow()
