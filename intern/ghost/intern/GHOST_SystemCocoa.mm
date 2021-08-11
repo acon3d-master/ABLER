@@ -570,7 +570,7 @@ GHOST_TSuccess GHOST_SystemCocoa::init()
         // Create the application menu
         appMenu = [[NSMenu alloc] initWithTitle:@"Blender"];
 
-        [appMenu addItemWithTitle:@"About Blender"
+        [appMenu addItemWithTitle:@"About ABLER"
                            action:@selector(orderFrontStandardAboutPanel:)
                     keyEquivalent:@""];
         [appMenu addItem:[NSMenuItem separatorItem]];

@@ -73691,12 +73691,12 @@ msgstr "打开附带版本信息的启动画面"
 
 
 msgctxt "Operator"
-msgid "About Blender"
-msgstr "关于Blender"
+msgid "About ABLER"
+msgstr "关于ABLER"
 
 
-msgid "Open a window with information about Blender"
-msgstr "打开一个窗口，显示有关Blender的信息"
+msgid "Open a window with information about ABLER"
+msgstr "打开一个窗口，显示有关ABLER的信息"
 
 
 msgctxt "Operator"

@@ -28,7 +28,7 @@ def load_handler(dummy):
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):
-    """Import objects from a .blend file"""
+    """Import objects according to the current settings"""
     bl_idname = "acon3d.import_blend"
     bl_label = "Import"
     bl_translation_context = "*"
@@ -71,7 +71,6 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
 
 
 class Acon3dImportPanel(bpy.types.Panel):
-    """Creates a Panel in the scene context of the properties editor"""
     bl_idname = "ACON3D_PT_import"
     bl_label = "File Control"
     bl_category = "ACON3D"
