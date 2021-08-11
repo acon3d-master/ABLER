@@ -42669,7 +42669,7 @@ msgstr "開啟包含發行資訊的啟動畫面"
 
 
 msgctxt "Operator"
-msgid "About Blender"
+msgid "About ABLER"
 msgstr "關於 Blender"
 
 

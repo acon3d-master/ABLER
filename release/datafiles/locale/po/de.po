@@ -40789,7 +40789,7 @@ msgstr "Startbildschirm"
 
 
 msgctxt "Operator"
-msgid "About Blender"
+msgid "About ABLER"
 msgstr "Über Blender"
 
 

@@ -71076,7 +71076,7 @@ msgstr "Відкрити заставку з інформацією про ви�
 
 
 msgctxt "Operator"
-msgid "About Blender"
+msgid "About ABLER"
 msgstr "Про Blender"
 
 
