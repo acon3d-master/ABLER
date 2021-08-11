@@ -11,8 +11,20 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from .lib import render
+from .lib import render, cameras
 from .lib.materials import materials_handler
+
+
+class Acon3dCameraViewOperator(bpy.types.Operator):
+    """Fit Camera Region to Viewport"""
+    bl_idname = "acon3d.camera_view"
+    bl_label = "Camera View"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        cameras.turnOnCameraView()
+
+        return {'FINISHED'}
 
 
 class Acon3dRenderFullOperator(bpy.types.Operator):
@@ -23,6 +35,7 @@ class Acon3dRenderFullOperator(bpy.types.Operator):
 
     def execute(self, context):
         render.setupBackgroundImagesCompositor()
+        render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
         return {'FINISHED'}
@@ -40,6 +53,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
         toggleTexture = prop.toggle_texture
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
+        useBloom = scene.eevee.use_bloom
         use_lock_interface = scene.render.use_lock_interface
         render.clearCompositor()
 
@@ -47,6 +61,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             prop.toggle_texture = False
             prop.toggle_shading = False
             prop.toggle_toon_edge = True
+            scene.eevee.use_bloom = False
             scene.render.use_lock_interface = True
 
             for mat in bpy.data.materials:
@@ -63,6 +78,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             prop.toggle_texture = toggleTexture
             prop.toggle_shading = toggleShading
             prop.toggle_toon_edge = toggleToonEdge
+            scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
             
             for mat in bpy.data.materials:
@@ -72,6 +88,8 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
+        
+        render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
         return {'FINISHED'}
@@ -89,6 +107,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         toggleTexture = prop.toggle_texture
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
+        useBloom = scene.eevee.use_bloom
         use_lock_interface = scene.render.use_lock_interface
         render.clearCompositor()
 
@@ -99,6 +118,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_texture = False
             prop.toggle_shading = True
             prop.toggle_toon_edge = False
+            scene.eevee.use_bloom = False
             scene.render.use_lock_interface = True
 
             for node in node_group.nodes:
@@ -119,6 +139,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_texture = toggleTexture
             prop.toggle_shading = toggleShading
             prop.toggle_toon_edge = toggleToonEdge
+            scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
 
             for node in node_group.nodes:
@@ -132,6 +153,8 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
+
+        render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
         return {'FINISHED'}
@@ -167,6 +190,8 @@ class Acon3dRenderPanel(bpy.types.Panel):
         col.prop(scene.render, "resolution_x", text="Resolution X")
         col.prop(scene.render, "resolution_y", text="Y")
         row = layout.row()
+        row.operator("acon3d.camera_view", text="Camera View", icon="RESTRICT_VIEW_OFF")
+        row = layout.row()
         row.operator("render.opengl", text="Quick Render", text_ctxt="*")
         if is_camera:
             row.operator("acon3d.render_full", text="Full Render")
@@ -177,6 +202,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
 
 
 classes = (
+    Acon3dCameraViewOperator,
     Acon3dRenderFullOperator,
     Acon3dRenderLineOperator,
     Acon3dRenderShadowOperator,

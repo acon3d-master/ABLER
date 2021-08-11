@@ -93199,3 +93199,16 @@ msgstr "선택한 재질을 복사합니다"
 msgctxt "Operator"
 msgid "About ABLER"
 msgstr "ABLER에 대하여"
+
+
+msgid "Open a window with information about ABLER"
+msgstr "ABLER에 대한 정보창을 엽니다"
+
+
+msgid "Camera View"
+msgstr "카메라 뷰"
+
+
+msgid "Fit Camera Region to Viewport"
+msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
+

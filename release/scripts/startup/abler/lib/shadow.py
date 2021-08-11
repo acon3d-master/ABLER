@@ -26,5 +26,16 @@ def setupSharpShadow():
     bpy.context.scene.eevee.shadow_cascade_size = "4096"
     bpy.context.scene.eevee.use_soft_shadows = True
 
-    if "ACON_sun" in bpy.data.objects:
-        bpy.data.objects["ACON_sun"].data.angle = 0
+    acon_sun = bpy.data.objects.get("ACON_sun")
+
+    if not acon_sun:
+        acon_sun_data = bpy.data.lights.new("ACON_sun")
+        acon_sun_data.type = "SUN"
+        acon_sun_data.energy = 1
+        acon_sun = bpy.data.objects.new("ACON_sun", acon_sun_data)
+        acon_sun.rotation_euler.x = math.radians(90 - 35)
+        acon_sun.rotation_euler.y = 0
+        acon_sun.rotation_euler.z = math.radians(65)
+
+    acon_sun.data.angle = 0
+    acon_sun.data.use_contact_shadow = 1
