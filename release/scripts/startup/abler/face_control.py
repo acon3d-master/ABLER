@@ -43,12 +43,22 @@ class MATERIAL_UL_List(bpy.types.UIList):
 
 
 class CloneMaterialOperator(bpy.types.Operator):
+    """Clone selected material"""
     bl_idname = "acon3d.clone_material"
     bl_label = "Clone Material"
+
+    @classmethod
+    def poll(cls, context):
+        try:
+            if context.object.active_material:
+                return True
+            else: return False
+        except: return False
 
     def execute(self, context):
         mat = context.object.active_material.copy()
         context.object.active_material = mat
+
         return {'FINISHED'}
 
 
