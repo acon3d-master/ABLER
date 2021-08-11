@@ -331,7 +331,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     info["os"] = "Windows"
                     info["filename"] = asset['browser_download_url'].split("/")[-1]
                     #file name should be "ABLER Launcher v0.0.2.zip"
-                    info["version"] = info["filename"].split(' ')[-1][1:-4]
+                    info["version"] = info["filename"].split('_')[-1][1:-4]
                     info["arch"] = "x64"
                     results.append(info)
             if opsys.lower == "darwin":
