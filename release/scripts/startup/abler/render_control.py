@@ -23,6 +23,7 @@ class Acon3dRenderFullOperator(bpy.types.Operator):
 
     def execute(self, context):
         render.setupBackgroundImagesCompositor()
+        render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
         return {'FINISHED'}
@@ -72,6 +73,8 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
+        
+        render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
         return {'FINISHED'}
@@ -132,6 +135,8 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
+
+        render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
         return {'FINISHED'}
