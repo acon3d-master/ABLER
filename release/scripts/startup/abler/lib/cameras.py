@@ -31,7 +31,9 @@ def goToCustomCamera(self, context):
 
 def makeSureCameraExists():
     # early out if scene camera exists
-    if bpy.context.scene.camera: return
+    if bpy.context.scene.camera:
+        bpy.context.scene.camera.data.show_passepartout = False
+        return
 
     # get camera to set to context
     camera_object = bpy.data.objects.get("View_Camera")
