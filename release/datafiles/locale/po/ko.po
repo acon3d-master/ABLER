@@ -93041,7 +93041,7 @@ msgid "Azimuth"
 msgstr "방위각"
 
 
-msgid "Please login with ACON3D account."
+msgid "Please login with your ACON3D account."
 msgstr "에이콘3D 계정으로 로그인해주세요."
 
 
@@ -93081,7 +93081,7 @@ msgid "Welcome!"
 msgstr "환영합니다!"
 
 
-msgid "Click out to start Abler."
+msgid "Please click outside the popup box to start ABLER."
 msgstr "로그인창 바깥을 클릭하여 에이블러를 시작해주세요!"
 
 
