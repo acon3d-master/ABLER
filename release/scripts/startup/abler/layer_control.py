@@ -11,7 +11,6 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
-from bpy.props import BoolProperty, EnumProperty
 
 
 class Acon3dLayerPanel(bpy.types.Panel):
@@ -50,12 +49,12 @@ class Acon3dLayerPanel(bpy.types.Panel):
             sub = row.split()
             subrow = sub.row(align=True)
             subrow.alignment = 'RIGHT'
-            # print(bpy.context.scene.l_exclude)
             target = bpy.context.scene.l_exclude[findex]
             row.active = target.value
             # Parent collection runtime visibility
             subrow.prop(target, "value", text="")
             findex += 1
+
         return index
 
     def draw(self, context):
@@ -76,23 +75,8 @@ class Acon3dLayerPanel(bpy.types.Panel):
             )
 
 
-class CollectionLayerExcludeProperties(bpy.types.PropertyGroup):
-    def updateLayerVis(self, context):
-        target_layer = bpy.data.collections[self.name]
-        for objs in target_layer.objects:
-            objs.hide_viewport = not(self.value)
-            objs.hide_render = not(self.value)
-    name: bpy.props.StringProperty(name="Layer Name", default="")
-    value: bpy.props.BoolProperty(
-        name="Layer Exclude",
-        default=True,
-        update=updateLayerVis
-    )
-
-
 classes = (
     Acon3dLayerPanel,
-    CollectionLayerExcludeProperties,
 )
 
 
@@ -100,9 +84,6 @@ def register():
     from bpy.utils import register_class
     for cls in classes:
         register_class(cls)
-    bpy.types.Scene.l_exclude = bpy.props.CollectionProperty(
-        type=CollectionLayerExcludeProperties
-    )
 
 
 def unregister():
