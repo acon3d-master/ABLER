@@ -93041,8 +93041,8 @@ msgid "Azimuth"
 msgstr "방위각"
 
 
-msgid "Please Login"
-msgstr "에이콘3D 아이디로 로그인"
+msgid "Please login with ACON3D account."
+msgstr "에이콘3D 계정으로 로그인해주세요."
 
 
 msgid "Username"
@@ -93058,7 +93058,7 @@ msgstr "에이콘3D 보러가기"
 
 
 msgid "Don't have an ACON3D account?"
-msgstr "아이디가 아직 없으신가요?"
+msgstr "에이콘3D 계정이 없으신가요?"
 
 
 msgid "Blender Release Notes"

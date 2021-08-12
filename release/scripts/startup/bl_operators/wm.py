@@ -2718,7 +2718,7 @@ class WM_MT_splash(Menu):
                 if userInfo.ACON_prop.login_status == 'FAIL':
                     row.label(text="Login failed. Please try again.")
                 else: 
-                    row.label(text="Please Login")
+                    row.label(text="Please login with ACON3D account.")
 
                 layout.separator()
 
