@@ -1,0 +1,12 @@
+DEBUG 2021-08-12 12:17:03,023 - Reading QSS file in: :qdarkstyle\dark\style.qss
+INFO 2021-08-12 12:17:03,023 - QSS file sucessfuly loaded.
+DEBUG 2021-08-12 12:17:03,024 - Checking patches for being applied.
+INFO 2021-08-12 12:17:03,024 - Found version patches to be applied.
+INFO 2021-08-12 12:17:03,024 - Found application patches to be applied.
+INFO 2021-08-12 12:17:03,024 - Running version 1.9.8
+DEBUG 2021-08-12 12:17:03,024 - Constructing UI
+INFO 2021-08-12 12:17:03,055 - Reading existing configuration file
+DEBUG 2021-08-12 12:17:03,060 - Starting new HTTPS connection (1): api.github.com:443
+DEBUG 2021-08-12 12:17:03,341 - https://api.github.com:443 "GET /repos/acon3d/ABLER/releases/latest HTTP/1.1" 200 1006
+DEBUG 2021-08-12 12:17:03,346 - Starting new HTTPS connection (1): api.github.com:443
+DEBUG 2021-08-12 12:17:03,373 - https://api.github.com:443 "GET /repos/acon3d/ABLER/releases/latest HTTP/1.1" 200 1006
