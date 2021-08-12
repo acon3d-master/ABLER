@@ -162,8 +162,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global config
         global installedversion
         global launcher_installed
-        if os.path.isfile("./AblerLauncher.bak"):
-            os.remove("./AblerLauncher.bak")
+        if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\AblerLauncher.bak"):
+            os.remove(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\AblerLauncher.bak")
         if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini"):
             config_exist = True
             logger.info("Reading existing configuration file")
