@@ -164,10 +164,10 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global launcher_installed
         if os.path.isfile("./AblerLauncher.bak"):
             os.remove("./AblerLauncher.bak")
-        if os.path.isfile("./config.ini"):
+        if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini"):
             config_exist = True
             logger.info("Reading existing configuration file")
-            config.read("config.ini")
+            config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
             lastcheck = config.get("main", "lastcheck")
             lastversion = config.get("main", "lastdl")
             installedversion = config.get("main", "installed")
@@ -182,7 +182,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             logger.debug("No previous config found")
             self.btn_oneclick.hide()
             config_exist = False
-            config.read("config.ini")
+            config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
             config.add_section("main")
             config.set("main", "path", "")
             lastcheck = "Never"
@@ -191,7 +191,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             config.set("main", "installed", "")
             config.set("main", "launcher", "")
             config.set("main", "flavor", "")
-            with open("config.ini", "w") as f:
+            with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
                 config.write(f)
         self.btn_cancel.hide()
         self.frm_progress.hide()
@@ -250,9 +250,9 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         url = "https://api.github.com/repos/acon3d/ABLER/releases/latest"
         # Do path settings save here, in case user has manually edited it
         global config
-        config.read("config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
         config.set("main", "path", dir_)
-        with open("config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
         try:
@@ -327,7 +327,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
         launcher_installed = config.get("main", "launcher")
         config.set("main", "path", dir_)
-        with open("config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
         try:
@@ -389,12 +389,12 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         size_readable = self.hbytes(float(totalsize))
 
         global config
-        config.read("config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
         config.set("main", "path", dir_)
         config.set("main", "flavor", variation)
         config.set("main", "installed", version)
 
-        with open("config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
 
@@ -448,10 +448,10 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         size_readable = self.hbytes(float(totalsize))
 
         global config
-        config.read("config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
         config.set("main", "launcher", version)
 
-        with open("config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
 
