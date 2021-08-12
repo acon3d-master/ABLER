@@ -31,7 +31,9 @@ def goToCustomCamera(self, context):
 
 def makeSureCameraExists():
     # early out if scene camera exists
-    if bpy.context.scene.camera: return
+    if bpy.context.scene.camera:
+        bpy.context.scene.camera.data.show_passepartout = False
+        return
 
     # get camera to set to context
     camera_object = bpy.data.objects.get("View_Camera")
@@ -48,6 +50,8 @@ def makeSureCameraExists():
         camera_object.rotation_euler[1] = 0
         camera_object.rotation_euler[2] = 0.814928
         bpy.context.scene.collection.objects.link(camera_object)
+
+    camera_object.data.show_passepartout = False
 
     # set context camera
     bpy.context.scene.camera = camera_object
