@@ -28,6 +28,7 @@ import sys
 import urllib.parse
 import urllib.request
 import webbrowser
+import time
 from datetime import datetime
 from distutils.dir_util import copy_tree
 from distutils.version import StrictVersion
@@ -71,10 +72,13 @@ class WorkerThread(QtCore.QThread):
     finishedCP = QtCore.Signal()
     finishedCL = QtCore.Signal()
 
-    def __init__(self, url, file):
+    def __init__(self, url, file, path, temp_path):
         super(WorkerThread, self).__init__(parent=app)
         self.filename = file
         self.url = url
+        self.path = path
+        self.temp_path = temp_path
+
         if "macOS" in file:
             config.set("main", "lastdl", "OSX")
             with open("config.ini", "w") as f:
@@ -117,15 +121,27 @@ class WorkerThread(QtCore.QThread):
         self.update.emit(percent)
 
     def run(self):
-        urllib.request.urlretrieve(self.url, self.filename, reporthook=self.progress)
-        self.finishedDL.emit()
-        shutil.unpack_archive(self.filename, "./blendertemp/")
-        self.finishedEX.emit()
-        source = next(os.walk("./blendertemp/"))[1]
-        copy_tree(os.path.join("./blendertemp/", source[0]), dir_)
-        self.finishedCP.emit()
-        shutil.rmtree("./blendertemp")
-        self.finishedCL.emit()
+        try:
+            urllib.request.urlretrieve(self.url, self.filename, reporthook=self.progress)
+            self.finishedDL.emit()
+            shutil.unpack_archive(self.filename, self.temp_path)
+            os.remove(self.filename)
+            self.finishedEX.emit()
+            source = next(os.walk(self.temp_path))
+            if os.path.isfile(self.path + "\\AblerLauncher.exe"):
+                os.rename(self.path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.bak")
+                time.sleep(1)
+                shutil.copyfile(self.temp_path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.exe")
+                os.remove(self.path + "\\config.ini")
+                shutil.copyfile(self.temp_path + "\\config.ini", self.path + "\\config.ini")
+            else:
+                copy_tree(source[0], self.path)
+            self.finishedCP.emit()
+            shutil.rmtree(self.temp_path)
+            self.finishedCL.emit()
+        except Exception as e:
+            logger.error(e)
+
 
 
 class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
@@ -146,6 +162,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global config
         global installedversion
         global launcher_installed
+        if os.path.isfile("./AblerLauncher.bak"):
+            os.remove("./AblerLauncher.bak")
         if os.path.isfile("./config.ini"):
             config_exist = True
             logger.info("Reading existing configuration file")
@@ -251,7 +269,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         for asset in req.json()['assets']:
             opsys = platform.system()
             if opsys == "Windows":
-                if "Windows" in asset['browser_download_url'] and "zip" in asset['browser_download_url']:
+                target =  asset['browser_download_url']
+                if "Windows" in target and "zip" in target and "Release" in target:
                     info = {}
                     info["url"] = asset['browser_download_url']
                     info["os"] = "Windows"
@@ -325,12 +344,12 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             opsys = platform.system()
             if opsys == "Windows":
                 target = asset['browser_download_url']
-                if "Windows" in target and "launcher" in target and "zip" in target:
+                if "Windows" in target and "Launcher" in target and "zip" in target:
                     info = {}
                     info["url"] = asset['browser_download_url']
                     info["os"] = "Windows"
                     info["filename"] = asset['browser_download_url'].split("/")[-1]
-                    #file name should be "ABLER Launcher v0.0.2.zip"
+                    #file name should be "ABLER_Launcher_Windows_v0.0.2.zip"
                     info["version"] = info["filename"].split('_')[-1][1:-4]
                     info["arch"] = "x64"
                     results.append(info)
@@ -403,7 +422,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.progressBar.setValue(0)
         self.statusbar.showMessage(f"Downloading {size_readable}")
 
-        thread = WorkerThread(url, filename)
+        thread = WorkerThread(url, filename, dir_, "./blendertemp/")
         thread.update.connect(self.updatepb)
         thread.finishedDL.connect(self.extraction)
         thread.finishedEX.connect(self.finalcopy)
@@ -458,10 +477,10 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.progressBar.setValue(0)
         self.statusbar.showMessage(f"Downloading {size_readable}")
 
-        thread = WorkerThread(url, filename)
+        thread = WorkerThread(url, filename, launcherdir_, "./launchertemp")
         thread.update.connect(self.updatepb)
         thread.finishedDL.connect(self.extraction)
-        thread.finishedEX.connect(self.finalcopy)
+        thread.finishedEX.connect(self.finalcopy_launcher)
         thread.finishedCP.connect(self.cleanup)
         thread.finishedCL.connect(self.done_launcher)
         thread.start()
@@ -492,6 +511,16 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.lbl_copying.setText("<b>Copying</b>")
         self.lbl_task.setText("Copying files...")
         self.statusbar.showMessage(f"Copying files to {dir_}, please wait... ")
+
+    def finalcopy_launcher(self):
+        logger.info("Copying to " + launcherdir_)
+        nowpixmap = QtGui.QPixmap(":/newPrefix/images/Actions-arrow-right-icon.png")
+        donepixmap = QtGui.QPixmap(":/newPrefix/images/Check-icon.png")
+        self.lbl_extract_pic.setPixmap(donepixmap)
+        self.lbl_copy_pic.setPixmap(nowpixmap)
+        self.lbl_copying.setText("<b>Copying</b>")
+        self.lbl_task.setText("Copying files...")
+        self.statusbar.showMessage(f"Copying files to {launcherdir_}, please wait... ")
 
     def cleanup(self):
         logger.info("Cleaning up temp files")
@@ -535,7 +564,11 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         self.progressBar.setValue(100)
         self.lbl_task.setText("Finished")
         self.btn_Quit.setEnabled(True)
-        self.check_once()
+        QtWidgets.QMessageBox.information(
+            self, "Launcher updated", "ABLER launcher has been updated. Please re-run the launcher."
+        )
+        QtCore.QCoreApplication.instance().quit()
+        
 
 
     def exec_windows(self):
