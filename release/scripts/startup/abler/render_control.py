@@ -121,10 +121,6 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             scene.eevee.use_bloom = False
             scene.render.use_lock_interface = True
 
-            for node in node_group.nodes:
-                if node.name == 'ACON_nodeGroup_toonFace':
-                    node.inputs[5].default_value = 1
-
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
@@ -141,10 +137,6 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_toon_edge = toggleToonEdge
             scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
-
-            for node in node_group.nodes:
-                if node.name == 'ACON_nodeGroup_toonFace':
-                    node.inputs[5].default_value = 0.5
             
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
