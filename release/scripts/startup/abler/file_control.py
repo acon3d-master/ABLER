@@ -14,7 +14,7 @@ import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.app.handlers import persistent
 
-from .lib import cameras, shadow, render
+from .lib import cameras, shadow, render, scenes
 from .lib.materials import materials_setup
 
 
@@ -26,6 +26,7 @@ def load_handler(dummy):
     shadow.setupSharpShadow()
     render.setupBackgroundImagesCompositor()
     materials_setup.applyAconToonStyle()
+    scenes.setupPresets()
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):
@@ -71,6 +72,24 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
         return {'FINISHED'}
 
 
+class ToggleToolbarOperator(bpy.types.Operator):
+    """Toggle toolbar visibility"""
+    bl_idname = "acon3d.context_toggle"
+    bl_label = "Toggle Toolbar"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        context.scene.render.engine = "BLENDER_EEVEE"
+        for area in context.screen.areas: 
+            if area.type == 'VIEW_3D':
+                for space in area.spaces: 
+                    if space.type == 'VIEW_3D':
+                        value = space.show_region_toolbar
+                        space.show_region_toolbar = not value
+
+        return {'FINISHED'}
+
+
 class Acon3dImportPanel(bpy.types.Panel):
     bl_idname = "ACON3D_PT_import"
     bl_label = "File Control"
@@ -97,10 +116,13 @@ class Acon3dImportPanel(bpy.types.Panel):
         view = prefs.view
 
         row.prop(view, "language")
+        row = layout.row()
+        row.operator("acon3d.context_toggle")
 
 
 classes = (
     Acon3dImportPanel,
+    ToggleToolbarOperator,
     ImportOperator,
 )
 
