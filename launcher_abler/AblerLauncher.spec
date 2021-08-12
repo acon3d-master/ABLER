@@ -5,7 +5,7 @@ block_cipher = None
 
 
 a = Analysis(['AblerLauncher.py'],
-             pathex=['C:\\Users\\Acon3d\\Desktop\\RNd_aconBlender\\launcher_abler'],
+             pathex=['C:\\Users\\Acon3d\\Desktop\\RNd_aconBlender\\Launcher_abler'],
              binaries=[],
              datas=[],
              hiddenimports=[],

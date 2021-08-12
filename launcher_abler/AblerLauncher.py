@@ -324,7 +324,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         url = "https://api.github.com/repos/acon3d/ABLER/releases/latest"
         # Do path settings save here, in case user has manually edited it
         global config
-        config.read("config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
         launcher_installed = config.get("main", "launcher")
         config.set("main", "path", dir_)
         with open("config.ini", "w") as f:
