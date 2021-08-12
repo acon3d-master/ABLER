@@ -20,6 +20,7 @@ from .lib.materials import materials_setup
 
 @persistent
 def load_handler(dummy):
+    cameras.makeSureCameraExists()
     cameras.switchToRendredView()
     cameras.turnOnCameraView(False)
     shadow.setupSharpShadow()

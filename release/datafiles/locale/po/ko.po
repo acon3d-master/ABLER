@@ -83013,28 +83013,28 @@ msgstr "작업자 검색..."
 
 
 msgctxt "Operator"
-msgid "Tutorials"
-msgstr "튜토리얼"
+msgid "Blender Tutorials"
+msgstr "Blender 튜토리얼"
 
 
 msgctxt "Operator"
-msgid "Support"
-msgstr "지원"
+msgid "Blender Support"
+msgstr "Blender 지원"
 
 
 msgctxt "Operator"
-msgid "User Communities"
-msgstr "사용자 커뮤니티"
+msgid "Blender User Communities"
+msgstr "Blender 사용자 커뮤니티"
 
 
 msgctxt "Operator"
-msgid "Developer Community"
-msgstr "개발자 커뮤니티"
+msgid "Blender Developer Community"
+msgstr "Blender 개발자 커뮤니티"
 
 
 msgctxt "Operator"
-msgid "Python API Reference"
-msgstr "Python API 참조"
+msgid "Blender Python API Reference"
+msgstr "Blender Python API 참조"
 
 
 msgctxt "Operator"
@@ -83051,8 +83051,8 @@ msgstr "활성 항목이 없음"
 
 
 msgctxt "Operator"
-msgid "Developer Documentation"
-msgstr "개발자 문서"
+msgid "Blender Developer Documentation"
+msgstr "Blender 개발자 문서"
 
 
 msgid "Node Label"
@@ -93194,14 +93194,14 @@ msgid "Fit Camera Region to Viewport"
 msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
 
 
-msgid "Fit Camera Region to Viewport"
-msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
-
-
 msgid "Toggle Toolbar"
 msgstr "툴바 열기 / 닫기"
 
 
 msgid "Toggle toolbar visibility"
 msgstr "툴바를 열거나 닫습니다"
+
+
+msgid "ABLER Guide"
+msgstr "ABLER 가이드"
 
