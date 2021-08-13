@@ -41,33 +41,17 @@ class Acon3dShadowControlPanel(bpy.types.Panel):
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw_header(self, context):
-        is_ACON_sun = False
-        if "ACON_sun" in bpy.data.objects.keys() and bpy.data.objects["ACON_sun"].type == "LIGHT":
-            is_ACON_sun = True
         layout = self.layout
-        layout.active = is_ACON_sun
-        if layout.active:
-            sun_data = bpy.data.objects["ACON_sun"].data
-            layout.prop(sun_data, "use_shadow", text="")
+        layout.prop(context.scene.ACON_prop, "toggle_shadow", text="")
     
     def draw(self, context):
-        is_ACON_sun = False
-        if "ACON_sun" in bpy.data.objects.keys() and bpy.data.objects["ACON_sun"].type == "LIGHT":
-            is_ACON_sun = True
-            sun_data = bpy.data.objects["ACON_sun"].data.use_shadow
-            is_ACON_sun = is_ACON_sun and sun_data
-
         layout = self.layout
         layout.use_property_decorate = False  # No animation.
-        layout.active = is_ACON_sun
-        if layout.active:
-            layout.use_property_split = True
-            ob = bpy.data.objects["ACON_sun"]
-            if ob.rotation_mode == "XYZ":
-                row = layout.row(align=True)
-                row.prop(context.scene.ACON_prop, "sun_rotation_x", text="Altitude")
-                row = layout.row(align=True)
-                row.prop(context.scene.ACON_prop, "sun_rotation_z", text="Azimuth")
+        layout.use_property_split = True
+        row = layout.row(align=True)
+        row.prop(context.scene.ACON_prop, "sun_rotation_x", text="Altitude")
+        row = layout.row(align=True)
+        row.prop(context.scene.ACON_prop, "sun_rotation_z", text="Azimuth")
 
 
 classes = (
