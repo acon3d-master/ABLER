@@ -54767,7 +54767,7 @@ msgstr "안전 영역 프리셋을 추가 또는 제거"
 
 msgctxt "Operator"
 msgid "Delete Scene"
-msgstr "씬을 삭제"
+msgstr "씬 삭제"
 
 
 msgid "Delete active scene"
@@ -93041,8 +93041,8 @@ msgid "Azimuth"
 msgstr "방위각"
 
 
-msgid "Please Login"
-msgstr "에이콘3D 아이디로 로그인"
+msgid "Please login with your ACON3D account."
+msgstr "에이콘3D 계정으로 로그인해주세요."
 
 
 msgid "Username"
@@ -93050,7 +93050,7 @@ msgstr "아이디"
 
 
 msgid "  Submit"
-msgstr "   입력"
+msgstr "    입력"
 
 
 msgid "See ACON3D models!"
@@ -93058,7 +93058,7 @@ msgstr "에이콘3D 보러가기"
 
 
 msgid "Don't have an ACON3D account?"
-msgstr "아이디가 아직 없으신가요?"
+msgstr "에이콘3D 계정이 없으신가요?"
 
 
 msgid "Blender Release Notes"
@@ -93081,7 +93081,7 @@ msgid "Welcome!"
 msgstr "환영합니다!"
 
 
-msgid "Click out to start Abler."
+msgid "Please click outside the popup box to start ABLER."
 msgstr "로그인창 바깥을 클릭하여 에이블러를 시작해주세요!"
 
 
@@ -93092,6 +93092,25 @@ msgstr "밝기 1"
 msgid "Brightness 2"
 msgstr "밝기 2"
 
+
+msgid "Create Scene"
+msgstr "씬 생성"
+
+
+msgid "Create a new scene with current settings"
+msgstr "현재 설정을 이용하여 새로운 씬을 만듭니다"
+
+
+msgid "Remove Scene"
+msgstr "씬 제거"
+
+
+msgid "Remove current scene from project"
+msgstr "선택된 씬을 이 프로젝트에서 제거합니다"
+
+
+msgid "Change scene"
+msgstr "씬을 전환합니다"
 
 msgid "Toggle toon style edge expression"
 msgstr "만화스타일 모서리 표시하기 토글 버튼"

@@ -436,13 +436,13 @@ def applyAconToonStyle():
         node_texImage = None
         baseColor = (1, 1, 1, 1)
         nega_alpha = 0
-        is_arleady_toonStyle = False
+        node_combinedToon = None
         
         for node in nodes:
 
             if node.name == "ACON_nodeGroup_combinedToon":
                 node.node_tree = node_group_data_combined
-                is_arleady_toonStyle = True
+                node_combinedToon = node
             
             elif node.type == "TEX_IMAGE":
                 node_texImage = node
@@ -452,7 +452,10 @@ def applyAconToonStyle():
                 baseColor = (default_value[0], default_value[1], default_value[2], default_value[3])
                 nega_alpha = 1 - node.inputs[19].default_value
         
-        if is_arleady_toonStyle:
+        if node_combinedToon:
+            if node_texImage:
+                mat.node_tree.links.new(node_texImage.outputs[0], node_combinedToon.inputs[0])
+                mat.node_tree.links.new(node_texImage.outputs[1], node_combinedToon.inputs[8])
             continue
         
         out_node = nodes.new(type='ShaderNodeOutputMaterial')

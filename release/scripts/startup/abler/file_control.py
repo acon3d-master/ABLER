@@ -40,10 +40,16 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
     )
 
     def execute(self, context):
-        FILEPATH = self.filepath
 
-        collection = bpy.data.collections.new("Imported")
-        bpy.context.scene.collection.children.link(collection)
+        for obj in bpy.data.objects:
+            obj.select_set(False)
+
+        FILEPATH = self.filepath
+        
+        col_layers = bpy.data.collections.get("Layers")
+        if not col_layers:
+            col_layers = bpy.data.collections.new("Layers")
+            context.scene.collection.children.link(col_layers)
 
         with bpy.data.libraries.load(FILEPATH) as (data_from, data_to):
             data_to.collections = data_from.collections
@@ -63,11 +69,26 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
                     found = True
             
             if not found:
-                collection.children.link(coll)
+    
+                added_l_exclude = context.scene.l_exclude.add()
+                added_l_exclude.name = coll.name
+                added_l_exclude.value = True
+                col_layers.children.link(coll)
+
+                for obj in coll.objects:
+                    if obj.type == "MESH":
+                        obj.select_set(True)
         
         materials_setup.applyAconToonStyle()
         cameras.switchToRendredView()
         cameras.turnOnCameraView()
+
+        for area in context.screen.areas:
+            if area.type == 'VIEW_3D':
+                ctx = bpy.context.copy()
+                ctx['area'] = area
+                ctx['region'] = area.regions[-1]
+                bpy.ops.view3d.view_selected(ctx)
 
         return {'FINISHED'}
 
@@ -107,7 +128,7 @@ class Acon3dImportPanel(bpy.types.Panel):
         
         row = layout.row()
         row.scale_y = 1.0
-        row.operator("wm.open_mainfile")
+        row.operator("wm.open_mainfile").load_ui = False
         row.operator("acon3d.import_blend", text="Import")
         
         row = layout.row()

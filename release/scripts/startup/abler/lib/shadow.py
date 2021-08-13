@@ -12,6 +12,15 @@ def changeSunRotation(self, context):
     obj.rotation_euler.z = prop.sun_rotation_z
 
 
+def toggleShadow(self, context):
+    obj = bpy.data.objects.get("ACON_sun")
+    if not obj: return
+
+    prop = context.scene.ACON_prop
+
+    obj.data.use_shadow = prop.toggle_shadow
+
+
 def setupSharpShadow():
     bpy.context.scene.eevee.shadow_cube_size = "4096"
     bpy.context.scene.eevee.shadow_cascade_size = "4096"

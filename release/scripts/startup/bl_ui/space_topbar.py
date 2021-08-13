@@ -68,15 +68,15 @@ class TOPBAR_HT_upper_bar(Header):
             layout.template_running_jobs()
 
         # Active workspace view-layer is retrieved through window, not through workspace.
-        layout.template_ID(window, "scene", new="scene.new",
-                           unlink="scene.delete")
+        # layout.template_ID(window, "scene", new="scene.new",
+        #                    unlink="scene.delete")
 
-        row = layout.row(align=True)
-        row.template_search(
-            window, "view_layer",
-            scene, "view_layers",
-            new="scene.view_layer_add",
-            unlink="scene.view_layer_remove")
+        # row = layout.row(align=True)
+        # row.template_search(
+        #     window, "view_layer",
+        #     scene, "view_layers",
+        #     new="scene.view_layer_add",
+        #     unlink="scene.view_layer_remove")
 
 
 class TOPBAR_PT_tool_settings_extra(Panel):
@@ -286,7 +286,7 @@ class TOPBAR_MT_file(Menu):
 
         layout.operator_context = 'INVOKE_AREA'
         layout.menu("TOPBAR_MT_file_new", text="New", icon='FILE_NEW')
-        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER')
+        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER').load_ui = False
         layout.menu("TOPBAR_MT_file_open_recent")
         layout.operator("wm.revert_mainfile")
         layout.menu("TOPBAR_MT_file_recover")
@@ -720,7 +720,7 @@ class TOPBAR_MT_file_context_menu(Menu):
 
         layout.operator_context = 'INVOKE_AREA'
         layout.menu("TOPBAR_MT_file_new", text="New", icon='FILE_NEW')
-        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER')
+        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER').load_ui = False
 
         layout.separator()
 
