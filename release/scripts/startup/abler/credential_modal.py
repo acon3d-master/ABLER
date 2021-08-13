@@ -90,6 +90,8 @@ def requestLogin():
 
     except: print("Login request has failed.")
 
+    bpy.context.window.cursor_set("DEFAULT")
+
 
 def moveMouse():
     window = bpy.context.window
@@ -106,6 +108,7 @@ class AconLoginOperator(bpy.types.Operator):
     def execute(self, context):
         userInfo = bpy.data.meshes.get("ACON_userInfo")
         userInfo.ACON_prop.login_status = 'LOADING'
+        context.window.cursor_set("WAIT")
         bpy.app.timers.register(requestLogin, first_interval=0.1)
         return {'FINISHED'}
 
