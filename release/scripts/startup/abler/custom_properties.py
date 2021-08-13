@@ -30,6 +30,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     edge_min_line_width : bpy.props.FloatProperty(
         name="Min Line Width",
         description="Adjust the thickness of minimum depth edges",
+        subtype="PIXEL",
         default=1,
         min=0,
         max=5,
@@ -40,6 +41,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     edge_max_line_width : bpy.props.FloatProperty(
         name="Max Line Width",
         description="Adjust the thickness of maximum depth edges",
+        subtype="PIXEL",
         default=1,
         min=0,
         max=5,
@@ -50,6 +52,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     edge_line_detail : bpy.props.FloatProperty(
         name="Line Detail",
         description="Amount of edges to be shown. (recommended: 1.2)",
+        subtype="FACTOR",
         default=2,
         min=0,
         max=20,
@@ -88,6 +91,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     toon_shading_brightness_1 : bpy.props.FloatProperty(
         name="Brightness 1",
         description="Change shading brightness (Range: 0 ~ 10)",
+        subtype="FACTOR",
         default=3,
         min=0,
         max=10,
@@ -98,6 +102,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     toon_shading_brightness_2 : bpy.props.FloatProperty(
         name="Brightness 2",
         description="Change shading brightness (Range: 0 ~ 10)",
+        subtype="FACTOR",
         default=5,
         min=0,
         max=10,
@@ -138,6 +143,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_brightness : bpy.props.FloatProperty(
         name="Brightness",
         description="Adjust brightness of general image (Range: -1 ~ 1)",
+        subtype="FACTOR",
         default=0,
         min=-1,
         max=1,
@@ -148,6 +154,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_contrast : bpy.props.FloatProperty(
         name="Contrast",
         description="Adjust contrast of general image (Range: -1 ~ 1)",
+        subtype="FACTOR",
         default=0,
         min=-1,
         max=1,
@@ -158,6 +165,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_color_r : bpy.props.FloatProperty(
         name="Red",
         description="Adjust color balance (Range: 0 ~ 2)",
+        subtype="FACTOR",
         default=1,
         min=0,
         max=2,
@@ -168,6 +176,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_color_g : bpy.props.FloatProperty(
         name="Green",
         description="Adjust color balance (Range: 0 ~ 2)",
+        subtype="FACTOR",
         default=1,
         min=0,
         max=2,
@@ -178,6 +187,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_color_b : bpy.props.FloatProperty(
         name="Blue",
         description="Adjust color balance (Range: 0 ~ 2)",
+        subtype="FACTOR",
         default=1,
         min=0,
         max=2,
@@ -188,6 +198,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_hue : bpy.props.FloatProperty(
         name="Hue",
         description="Adjust hue (Range: 0 ~ 1)",
+        subtype="FACTOR",
         default=0.5,
         min=0,
         max=1,
@@ -198,6 +209,7 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     image_adjust_saturation : bpy.props.FloatProperty(
         name="Saturation",
         description="Adjust saturation (Range: 0 ~ 2)",
+        subtype="FACTOR",
         default=1,
         min=0,
         max=2,
