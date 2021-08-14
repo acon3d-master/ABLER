@@ -93224,3 +93224,27 @@ msgstr "툴바를 열거나 닫습니다"
 msgid "ABLER Guide"
 msgstr "ABLER 가이드"
 
+
+msgid "Indoor Daytime"
+msgstr "실내 일반"
+
+
+msgid "Indoor Sunset"
+msgstr "실내 노을"
+
+
+msgid "Indoor Nighttime"
+msgstr "실내 밤"
+
+
+msgid "Outdoor Daytime"
+msgstr "실외 일반"
+
+
+msgid "Outdoor Sunset"
+msgstr "실외 노을"
+
+
+msgid "Outdoor Nighttime"
+msgstr "실외 밤"
+
