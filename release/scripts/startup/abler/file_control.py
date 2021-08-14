@@ -90,7 +90,6 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
             if obj.type == "MESH":
                 obj.select_set(True)
             else: data_to.objects.remove(obj)
-
         
         materials_setup.applyAconToonStyle()
         cameras.switchToRendredView()
