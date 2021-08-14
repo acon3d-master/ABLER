@@ -18,10 +18,8 @@ def toggleSun(self, context):
 
     prop = context.scene.ACON_prop
 
-    acon_sun.data.use_shadow = prop.toggle_sun
     acon_sun.hide_viewport = not prop.toggle_sun
     acon_sun.hide_render = not prop.toggle_sun
-    acon_sun.data.use_shadow = prop.toggle_shadow
 
 
 def changeSunStrength(self, context):
