@@ -31,9 +31,30 @@ class Acon3dShadowPanel(bpy.types.Panel):
         return
 
 
+class Acon3dSunControlPanel(bpy.types.Panel):
+    bl_label = "Sun Light"
+    bl_idname = "ACON3D_PT_shadow_sub_1"
+    bl_parent_id = "ACON3D_PT_shadow"
+    bl_category = "ACON3D"
+    bl_space_type = 'VIEW_3D'
+    bl_region_type = 'UI'
+    bl_options = {'DEFAULT_CLOSED'}
+
+    def draw_header(self, context):
+        layout = self.layout
+        layout.prop(context.scene.ACON_prop, "toggle_sun", text="")
+
+    def draw(self, context):
+        layout = self.layout
+        layout.use_property_decorate = False  # No animation.
+        layout.use_property_split = True
+        row = layout.row(align=True)
+        row.prop(context.scene.ACON_prop, "sun_strength", text="Strength")
+
+
 class Acon3dShadowControlPanel(bpy.types.Panel):
     bl_label = "Shadow"
-    bl_idname = "ACON3D_PT_shadow_sub"
+    bl_idname = "ACON3D_PT_shadow_sub_2"
     bl_parent_id = "ACON3D_PT_shadow"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
@@ -56,6 +77,7 @@ class Acon3dShadowControlPanel(bpy.types.Panel):
 
 classes = (
     Acon3dShadowPanel,
+    Acon3dSunControlPanel,
     Acon3dShadowControlPanel,
 )
 
