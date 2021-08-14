@@ -1,41 +1,32 @@
+ABLER
+=====
 
-.. Keep this document short & concise,
-   linking to external resources instead of including content in-line.
-   See 'release/text/readme.html' for the end user read-me.
+ABLER is a modified version of Blender.
 
+Our aims for this project are mainly:
 
-Blender
-=======
+- To provide useful feature for cartoon style rendering output
+- To provide simple UX / UI
 
-Blender is the free and open source 3D creation suite.
-It supports the entirety of the 3D pipeline-modeling, rigging, animation, simulation, rendering, compositing,
-motion tracking and video editing.
-
-.. figure:: https://code.blender.org/wp-content/uploads/2018/12/springrg.jpg
-   :scale: 50 %
+.. figure:: https://user-images.githubusercontent.com/61715204/129457662-4167a538-8038-4edd-ac9d-f08909d627ea.png
+   :scale: 100 %
    :align: center
 
-
-Project Pages
--------------
-
-- `Main Website <http://www.blender.org>`__
-- `Reference Manual <https://docs.blender.org/manual/en/latest/index.html>`__
-- `User Community <https://www.blender.org/community/>`__
-
 Development
------------
+------------------------
 
-- `Build Instructions <https://wiki.blender.org/wiki/Building_Blender>`__
-- `Code Review & Bug Tracker <https://developer.blender.org>`__
-- `Developer Forum <https://devtalk.blender.org>`__
-- `Developer Documentation <https://wiki.blender.org>`__
+ABLER is developed by `ACON3D <https://github.com/blender/blender>`__.
+
+If you want to contribute or report a bug, please raise an `issue <https://github.com/acon3d/ABLER/issues>`__.
+
+If you need more information about development, see `Blender <https://github.com/blender/blender>`__.
 
 
 License
 -------
 
-Blender as a whole is licensed under the GNU General Public License, Version 3.
+Just like Blender, ABLER follows the GNU General Public License, Version 3.
+
 Individual files may have a different, but compatible license.
 
 See `blender.org/about/license <https://www.blender.org/about/license>`__ for details.
