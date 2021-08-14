@@ -11,6 +11,13 @@ bl_info = {
     "category": "ACON3D"
 }
 import bpy
+from bpy.app.handlers import persistent
+from .lib import layers
+
+
+@persistent
+def load_handler(dummy):
+    layers.subscribeToGroupedObjects()
 
 
 class Acon3dLayerPanel(bpy.types.Panel):
@@ -85,8 +92,12 @@ def register():
     for cls in classes:
         register_class(cls)
 
+    bpy.app.handlers.load_post.append(load_handler)
+
 
 def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
+    
+    bpy.app.handlers.load_post.remove(load_handler)
