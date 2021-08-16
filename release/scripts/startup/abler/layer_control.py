@@ -64,8 +64,8 @@ class Acon3dExplodeGroupOperator(bpy.types.Operator):
                 found_col = col
                 break
         
-        bpy.data.collections.remove(found_col)
-
+        if found_col: bpy.data.collections.remove(found_col)
+        
         return {'FINISHED'}
 
 

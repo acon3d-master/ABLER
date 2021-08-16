@@ -21,21 +21,17 @@ import bpy
 
 
 def obj_active_callback(ob):
-    if ob.select_get():
+
+    if "select_get" in ob and ob.select_get():
+
         col_group = bpy.data.collections.get("Groups")
         if not col_group: return
 
-        found_col = None
         for col in col_group.children:
-            for ob_2 in col.all_objects:
-                if ob_2 == ob:
-                    found_col = col
-                    break
-            if found_col: break
-
-        if found_col:
-            for ob_3 in found_col.all_objects:
-                ob_3.select_set(True)
+            ob_2 = col.all_objects.get(ob.name)
+            if ob_2:
+                for ob_3 in col.all_objects:
+                    ob_3.select_set(True)
 
 
 def subscribeToGroupedObjects():
