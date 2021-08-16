@@ -38,8 +38,7 @@ def subscribeToGroupedObjects():
     owner = object()
 
     subscribe_to = bpy.types.LayerObjects, "active"
-
-    bpy.msgbus.clear_by_owner(owner)
+    
     bpy.msgbus.subscribe_rna(
         key=subscribe_to,
         owner=owner,
