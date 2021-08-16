@@ -21,7 +21,6 @@ class Acon3dCreateGroupOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
-        # add camera to designated collection (create one if not exists)
         collection = bpy.data.collections.get("Groups")
         if not collection:
             collection = bpy.data.collections.new("Groups")
