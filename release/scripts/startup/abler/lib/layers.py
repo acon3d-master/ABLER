@@ -22,7 +22,8 @@ import bpy
 
 def obj_active_callback(ob):
 
-    if "select_get" in ob and ob.select_get():
+
+    if "select_get" in dir(ob) and ob.select_get():
 
         col_group = bpy.data.collections.get("Groups")
         if not col_group: return
