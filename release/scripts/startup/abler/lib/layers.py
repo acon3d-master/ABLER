@@ -20,35 +20,30 @@
 import bpy
 
 
-def obj_active_callback(ob):
+def obj_active_callback():
+    ob = bpy.context.active_object
+    
+    col_group = bpy.data.collections.get("Groups")
+    if not col_group: return
 
-
-    if "select_get" in dir(ob) and ob.select_get():
-
-        col_group = bpy.data.collections.get("Groups")
-        if not col_group: return
-
-        for col in col_group.children:
-            ob_2 = col.all_objects.get(ob.name)
-            if ob_2:
-                for ob_3 in col.all_objects:
-                    ob_3.select_set(True)
+    for col in col_group.children:
+        ob_2 = col.all_objects.get(ob.name)
+        if ob_2:
+            for ob_3 in col.all_objects:
+                ob_3.select_set(True)
 
 
 def subscribeToGroupedObjects():
     
-    for ob in bpy.data.objects:
+    owner = object()
 
-        if ob.type != 'MESH':
-            continue
+    subscribe_to = bpy.types.LayerObjects, "active"
 
-        subscribe_to = bpy.types.LayerObjects, "active"
-
-        bpy.msgbus.clear_by_owner(ob)
-        bpy.msgbus.subscribe_rna(
-            key=subscribe_to,
-            owner=ob,
-            args=(ob,),
-            notify=obj_active_callback,
-        )
+    bpy.msgbus.clear_by_owner(owner)
+    bpy.msgbus.subscribe_rna(
+        key=subscribe_to,
+        owner=owner,
+        args=(),
+        notify=obj_active_callback,
+    )
 
