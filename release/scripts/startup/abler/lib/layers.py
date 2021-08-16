@@ -21,6 +21,7 @@ import bpy
 
 
 def obj_active_callback():
+    
     ob = bpy.context.active_object
     
     col_group = bpy.data.collections.get("Groups")
