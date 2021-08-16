@@ -20,6 +20,55 @@ def load_handler(dummy):
     layers.subscribeToGroupedObjects()
 
 
+class Acon3dCreateGroupOperator(bpy.types.Operator):
+    """Create Group"""
+    bl_idname = "acon3d.create_group"
+    bl_label = "Create Group"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        # add camera to designated collection (create one if not exists)
+        collection = bpy.data.collections.get("Groups")
+        if not collection:
+            collection = bpy.data.collections.new("Groups")
+            context.scene.collection.children.link(collection)
+            layer_collection = context.view_layer.layer_collection
+            layer_collection.children.get("Groups").exclude = True
+
+        col_group = bpy.data.collections.new("ACON_group")
+        collection.children.link(col_group)
+        for obj in context.selected_objects:
+            col_group.objects.link(obj)
+
+        return {'FINISHED'}
+
+
+class Acon3dExplodeGroupOperator(bpy.types.Operator):
+    """Explode Group"""
+    bl_idname = "acon3d.explode_group"
+    bl_label = "Explode Group"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        col_group = bpy.data.collections.get("Groups")
+
+        found_col = None
+        for col in col_group.children:
+            not_this_col = False
+            for obj in context.selected_objects:
+                if not col.all_objects.get(obj.name):
+                    not_this_col = True
+                    break
+            if not_this_col: continue
+            else:
+                found_col = col
+                break
+        
+        bpy.data.collections.remove(found_col)
+
+        return {'FINISHED'}
+
+
 class Acon3dLayerPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
     bl_idname = "ACON3D_PT_Layer"
@@ -83,6 +132,8 @@ class Acon3dLayerPanel(bpy.types.Panel):
 
 
 classes = (
+    Acon3dCreateGroupOperator,
+    Acon3dExplodeGroupOperator,
     Acon3dLayerPanel,
 )
 

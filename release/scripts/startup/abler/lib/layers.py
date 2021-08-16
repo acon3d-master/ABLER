@@ -22,7 +22,8 @@ import bpy
 
 def obj_active_callback(ob):
     if ob.select_get():
-        col_group = bpy.data.collections.get("Group")
+        col_group = bpy.data.collections.get("Groups")
+        if not col_group: return
 
         found_col = None
         for col in col_group.children:
@@ -38,15 +39,15 @@ def obj_active_callback(ob):
 
 
 def subscribeToGroupedObjects():
-
-    col_group = bpy.data.collections.get("Group")
-
-    for ob in col_group.all_objects:
+    
+    for ob in bpy.data.objects:
 
         if ob.type != 'MESH':
             continue
+
         subscribe_to = bpy.types.LayerObjects, "active"
 
+        bpy.msgbus.clear_by_owner(ob)
         bpy.msgbus.subscribe_rna(
             key=subscribe_to,
             owner=ob,
