@@ -57,7 +57,7 @@ launcher_installed = ""
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 
 logging.basicConfig(
-    filename="AblerLauncher.log", format=LOG_FORMAT, level=logging.DEBUG, filemode="w"
+    filename=os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\AblerLauncher.log", format=LOG_FORMAT, level=logging.DEBUG, filemode="w"
 )
 
 logger = logging.getLogger()
@@ -132,8 +132,8 @@ class WorkerThread(QtCore.QThread):
                 os.rename(self.path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.bak")
                 time.sleep(1)
                 shutil.copyfile(self.temp_path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.exe")
-                os.remove(self.path + "\\config.ini")
-                shutil.copyfile(self.temp_path + "\\config.ini", self.path + "\\config.ini")
+                # os.remove(self.path + "\\config.ini")
+                # shutil.copyfile(self.temp_path + "\\config.ini", self.path + "\\config.ini")
             else:
                 copy_tree(source[0], self.path)
             self.finishedCP.emit()
@@ -450,6 +450,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global config
         config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
         config.set("main", "launcher", version)
+        logger.info(f"1 {config.get('main', 'installed')}")
 
         with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
             config.write(f)
@@ -483,6 +484,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         thread.finishedEX.connect(self.finalcopy_launcher)
         thread.finishedCP.connect(self.cleanup)
         thread.finishedCL.connect(self.done_launcher)
+
         thread.start()
 
     def updatepb(self, percent):
