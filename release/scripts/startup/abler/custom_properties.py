@@ -161,6 +161,23 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=cameras.goToCustomCamera
     )
 
+    toggle_sun : bpy.props.BoolProperty(
+        name="Sun Light",
+        default=True,
+        update=shadow.toggleSun
+    )
+
+    sun_strength : bpy.props.FloatProperty(
+        name="Strength",
+        description="Sunlight strength in watts per meter squared (W/m^2)",
+        subtype="FACTOR",
+        default=1,
+        min=0,
+        max=10,
+        step=1,
+        update=shadow.changeSunStrength
+    )
+
     toggle_shadow : bpy.props.BoolProperty(
         name="Shadow",
         default=True,

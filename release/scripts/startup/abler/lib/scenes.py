@@ -61,6 +61,8 @@ def loadScene(self, context):
     materials_handler.toggleShading(self, override)
     materials_handler.changeToonDepth(self, override)
     materials_handler.changeToonShadingBrightness(self, override)
+    shadow.toggleSun(self, override)
+    shadow.changeSunStrength(self, override)
     shadow.toggleShadow(self, override)
     shadow.changeSunRotation(self, override)
     materials_handler.changeImageAdjustBrightness(self, override)
@@ -105,6 +107,8 @@ def setupPresets():
     prop.toon_shading_depth = "3"
     prop.toon_shading_brightness_1 = 3
     prop.toon_shading_brightness_2 = 5
+    prop.toggle_sun = True
+    prop.sun_strength = 0.7
     prop.toggle_shadow = True
     prop.sun_rotation_x = radians(45)
     prop.sun_rotation_z = radians(45)
@@ -120,7 +124,7 @@ def setupPresets():
     new_scene.eevee.bloom_knee = 0.5
     new_scene.eevee.bloom_radius = 6.5
     new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 1.5
+    new_scene.eevee.bloom_intensity = 0.1
     new_scene.eevee.bloom_clamp = 0
     new_scene.camera.data.lens = 25
     new_scene.render.resolution_x = 4800
@@ -153,7 +157,9 @@ def setupPresets():
     prop.toon_shading_depth = "3"
     prop.toon_shading_brightness_1 = 3
     prop.toon_shading_brightness_2 = 5
-    prop.toggle_shadow = False
+    prop.toggle_sun = True
+    prop.sun_strength = 1
+    prop.toggle_shadow = True
     prop.sun_rotation_x = radians(15)
     prop.sun_rotation_z = radians(45)
     prop.image_adjust_brightness = 0
@@ -168,7 +174,7 @@ def setupPresets():
     new_scene.eevee.bloom_knee = 0.5
     new_scene.eevee.bloom_radius = 6.5
     new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 1
+    new_scene.eevee.bloom_intensity = 0.5
     new_scene.eevee.bloom_clamp = 0
     new_scene.camera.data.lens = 25
     new_scene.render.resolution_x = 4800
@@ -201,8 +207,10 @@ def setupPresets():
     prop.toon_shading_depth = "3"
     prop.toon_shading_brightness_1 = 3
     prop.toon_shading_brightness_2 = 5
+    prop.toggle_sun = True
+    prop.sun_strength = 0.5
     prop.toggle_shadow = False
-    prop.sun_rotation_x = radians(-90)
+    prop.sun_rotation_x = radians(65)
     prop.sun_rotation_z = radians(45)
     prop.image_adjust_brightness = 0.1
     prop.image_adjust_contrast = 0
@@ -216,7 +224,7 @@ def setupPresets():
     new_scene.eevee.bloom_knee = 0.5
     new_scene.eevee.bloom_radius = 6.5
     new_scene.eevee.bloom_color = (0.9, 0.9, 1)
-    new_scene.eevee.bloom_intensity = 1
+    new_scene.eevee.bloom_intensity = 0.5
     new_scene.eevee.bloom_clamp = 0
     new_scene.camera.data.lens = 25
     new_scene.render.resolution_x = 4800
@@ -249,6 +257,8 @@ def setupPresets():
     prop.toon_shading_depth = "3"
     prop.toon_shading_brightness_1 = 3
     prop.toon_shading_brightness_2 = 5
+    prop.toggle_sun = True
+    prop.sun_strength = 1
     prop.toggle_shadow = True
     prop.sun_rotation_x = radians(60)
     prop.sun_rotation_z = radians(45)
@@ -260,11 +270,11 @@ def setupPresets():
     prop.image_adjust_hue = 0.5
     prop.image_adjust_saturation = 1
     new_scene.eevee.use_bloom = False
-    new_scene.eevee.bloom_threshold = 2
+    new_scene.eevee.bloom_threshold = 1
     new_scene.eevee.bloom_knee = 0.5
     new_scene.eevee.bloom_radius = 6.5
     new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 0.8
+    new_scene.eevee.bloom_intensity = 0.1
     new_scene.eevee.bloom_clamp = 0
     new_scene.camera.data.lens = 35
     new_scene.render.resolution_x = 4800
@@ -297,7 +307,9 @@ def setupPresets():
     prop.toon_shading_depth = "3"
     prop.toon_shading_brightness_1 = 3
     prop.toon_shading_brightness_2 = 5
-    prop.toggle_shadow = False
+    prop.toggle_sun = True
+    prop.sun_strength = 1
+    prop.toggle_shadow = True
     prop.sun_rotation_x = radians(15)
     prop.sun_rotation_z = radians(45)
     prop.image_adjust_brightness = 0
@@ -312,7 +324,7 @@ def setupPresets():
     new_scene.eevee.bloom_knee = 0.5
     new_scene.eevee.bloom_radius = 6.5
     new_scene.eevee.bloom_color = (1, 0.9, 0.8)
-    new_scene.eevee.bloom_intensity = 0.8
+    new_scene.eevee.bloom_intensity = 0.5
     new_scene.eevee.bloom_clamp = 0
     new_scene.camera.data.lens = 35
     new_scene.render.resolution_x = 4800
@@ -345,22 +357,24 @@ def setupPresets():
     prop.toon_shading_depth = "3"
     prop.toon_shading_brightness_1 = 3
     prop.toon_shading_brightness_2 = 5
+    prop.toggle_sun = True
+    prop.sun_strength = 0.4
     prop.toggle_shadow = False
     prop.sun_rotation_x = radians(60)
     prop.sun_rotation_z = radians(45)
     prop.image_adjust_brightness = -0.3
-    prop.image_adjust_contrast = 0
+    prop.image_adjust_contrast = -0.25
     prop.image_adjust_color_r = 0.9
     prop.image_adjust_color_g = 0.9
     prop.image_adjust_color_b = 1.1
     prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1
+    prop.image_adjust_saturation = 1.2
     new_scene.eevee.use_bloom = True
     new_scene.eevee.bloom_threshold = 1
     new_scene.eevee.bloom_knee = 0.5
     new_scene.eevee.bloom_radius = 6.5
     new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 2
+    new_scene.eevee.bloom_intensity = 1
     new_scene.eevee.bloom_clamp = 0
     new_scene.camera.data.lens = 35
     new_scene.render.resolution_x = 4800
