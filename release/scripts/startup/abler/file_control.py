@@ -66,6 +66,10 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
 
         FILEPATH = self.filepath
         
+
+        col_imported = bpy.data.collections.new("Imported")
+        context.scene.collection.children.link(col_imported)
+
         col_layers = bpy.data.collections.get("Layers")
         if not col_layers:
             col_layers = bpy.data.collections.new("Layers")
@@ -82,6 +86,10 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
                 children_names[child] = True
         
         for coll in data_to.collections:
+
+            if "ACON_col" in coll.name:
+                data_to.collections.remove(coll)
+                break
             
             found = False
             for child in children_names:
@@ -89,15 +97,19 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
                     found = True
             
             if not found:
-    
-                added_l_exclude = context.scene.l_exclude.add()
-                added_l_exclude.name = coll.name
-                added_l_exclude.value = True
-                col_layers.children.link(coll)
+                col_imported.children.link(coll)
 
-                for obj in coll.objects:
-                    if obj.type == "MESH":
-                        obj.select_set(True)
+            if coll.name == "Layers" or ("Layers." in coll.name and len(coll.name) == 10):
+                for coll_2 in coll.children:
+                    added_l_exclude = context.scene.l_exclude.add()
+                    added_l_exclude.name = coll_2.name
+                    added_l_exclude.value = True
+                    col_layers.children.link(coll_2)
+
+        for obj in data_to.objects:
+            if obj.type == "MESH":
+                obj.select_set(True)
+            else: data_to.objects.remove(obj)
         
         materials_setup.applyAconToonStyle()
         cameras.switchToRendredView()
