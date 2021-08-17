@@ -33,6 +33,10 @@ from datetime import datetime
 from distutils.dir_util import copy_tree
 from distutils.version import StrictVersion
 
+
+import winshell
+from win32com.client import Dispatch
+
 import requests
 
 import mainwindow
@@ -48,7 +52,7 @@ app.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
 
 appversion = "1.9.8"
 dir_ = "C:/Program Files (x86)/ABLER"
-launcherdir_ = os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater"
+launcherdir_ = os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater"
 config = configparser.ConfigParser()
 btn = {}
 lastversion = ""
@@ -56,8 +60,12 @@ installedversion = ""
 launcher_installed = ""
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 
+if not os.path.isdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96"):
+    os.mkdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96")
+if not os.path.isdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater"):
+    os.mkdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater") 
 logging.basicConfig(
-    filename=os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\AblerLauncher.log", format=LOG_FORMAT, level=logging.DEBUG, filemode="w"
+    filename=os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.log", format=LOG_FORMAT, level=logging.DEBUG, filemode="w"
 )
 
 logger = logging.getLogger()
@@ -132,6 +140,13 @@ class WorkerThread(QtCore.QThread):
                 os.rename(self.path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.bak")
                 time.sleep(1)
                 shutil.copyfile(self.temp_path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.exe")
+                sym_path = os.getenv('APPDATA') + "\\Microsoft\\Windows\\Start Menu\\Programs\\ABLER\\Launch ABLER.lnk"
+                if os.path.isfile(sym_path):
+                    os.remove(sym_path)
+                shell = Dispatch('WScript.Shell')
+                shortcut = shell.CreateShortCut(sym_path)
+                shortcut.Targetpath = self.path + "\\AblerLauncher.exe"
+                shortcut.save()
                 # os.remove(self.path + "\\config.ini")
                 # shutil.copyfile(self.temp_path + "\\config.ini", self.path + "\\config.ini")
             else:
@@ -162,12 +177,12 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global config
         global installedversion
         global launcher_installed
-        if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\AblerLauncher.bak"):
-            os.remove(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\AblerLauncher.bak")
-        if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini"):
+        if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.bak"):
+            os.remove(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.bak")
+        if os.path.isfile(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini"):
             config_exist = True
             logger.info("Reading existing configuration file")
-            config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
+            config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
             lastcheck = config.get("main", "lastcheck")
             lastversion = config.get("main", "lastdl")
             installedversion = config.get("main", "installed")
@@ -182,7 +197,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             logger.debug("No previous config found")
             self.btn_oneclick.hide()
             config_exist = False
-            config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
+            config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
             config.add_section("main")
             config.set("main", "path", "")
             lastcheck = "Never"
@@ -191,7 +206,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             config.set("main", "installed", "")
             config.set("main", "launcher", "")
             config.set("main", "flavor", "")
-            with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
+            with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini", "w") as f:
                 config.write(f)
         self.btn_cancel.hide()
         self.frm_progress.hide()
@@ -250,9 +265,9 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         url = "https://api.github.com/repos/acon3d/ABLER/releases/latest"
         # Do path settings save here, in case user has manually edited it
         global config
-        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
         config.set("main", "path", dir_)
-        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
         try:
@@ -284,6 +299,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.btn_execute.clicked.connect(self.exec_linux)
         finallist = results
         if len(finallist) != 0:
+            if installedversion is None or installedversion is "":
+                installedversion = "0.0.0"
             if StrictVersion(finallist[0]["version"]) > StrictVersion(installedversion):
                 self.btn_update.show()
                 self.btn_update.clicked.connect(
@@ -324,10 +341,10 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         url = "https://api.github.com/repos/acon3d/ABLER/releases/latest"
         # Do path settings save here, in case user has manually edited it
         global config
-        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
         launcher_installed = config.get("main", "launcher")
         config.set("main", "path", dir_)
-        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
         try:
@@ -359,6 +376,9 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 self.btn_execute.clicked.connect(self.exec_linux)
         finallist = results
         if len(finallist) != 0:
+            print(launcher_installed)
+            if launcher_installed is None or launcher_installed is "":
+                launcher_installed = "0.0.0"
             if StrictVersion(finallist[0]["version"]) > StrictVersion(launcher_installed):
                 self.btn_execute.hide()
                 self.btn_update.hide()
@@ -389,12 +409,12 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         size_readable = self.hbytes(float(totalsize))
 
         global config
-        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
         config.set("main", "path", dir_)
         config.set("main", "flavor", variation)
         config.set("main", "installed", version)
 
-        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
 
@@ -448,11 +468,11 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         size_readable = self.hbytes(float(totalsize))
 
         global config
-        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini")
+        config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
         config.set("main", "launcher", version)
         logger.info(f"1 {config.get('main', 'installed')}")
 
-        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.93\\updater\\config.ini", "w") as f:
+        with open(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini", "w") as f:
             config.write(f)
         f.close()
 
