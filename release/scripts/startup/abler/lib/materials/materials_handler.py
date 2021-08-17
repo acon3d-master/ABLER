@@ -99,7 +99,7 @@ def setMaterialParametersByType(mat):
         mat.shadow_method = "CLIP"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 1
-        toonNode.inputs[3].default_value = 0
+        toonNode.inputs[3].default_value = 0.5
         
     if type == "Glow":
         mat.blend_method = "CLIP"
