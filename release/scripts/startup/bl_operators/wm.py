@@ -2728,7 +2728,17 @@ class WM_MT_splash(Menu):
                 row = column.row()
                 row.prop(userInfo.ACON_prop, "username")
                 row = column.row()
-                row.prop(userInfo.ACON_prop, "password")
+                if userInfo.ACON_prop.show_password:
+                    row.prop(userInfo.ACON_prop, "password_shown")
+                else:
+                    row.prop(userInfo.ACON_prop, "password")
+
+                column = row_outside.column()
+                column.separator()
+                column.separator()
+                column.separator()
+                row = column.row()
+                row.prop(userInfo.ACON_prop, "show_password", text="", icon="HIDE_OFF", emboss=False, invert_checkbox=True)
 
                 column = row_outside.column()
                 column.scale_x = 0.5

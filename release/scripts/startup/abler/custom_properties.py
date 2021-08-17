@@ -311,6 +311,12 @@ class AconMeshProperty(bpy.types.PropertyGroup):
     def unregister(cls):
         del bpy.types.Mesh.ACON_prop
 
+    def toggle_show_password(self, context):
+        if self.show_password:
+            self.password_shown = self.password
+        else:
+            self.password = self.password_shown
+
     username : bpy.props.StringProperty(
         name="Username",
         description="Username"
@@ -320,6 +326,18 @@ class AconMeshProperty(bpy.types.PropertyGroup):
         name="Password",
         description="Password",
         subtype="PASSWORD"
+    )
+
+    password_shown : bpy.props.StringProperty(
+        name="Password",
+        description="Password",
+        subtype="NONE"
+    )
+
+    show_password : bpy.props.BoolProperty(
+        name="Show Password",
+        default=False,
+        update=toggle_show_password
     )
 
     login_status : bpy.props.StringProperty(

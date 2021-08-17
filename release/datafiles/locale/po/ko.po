@@ -93252,3 +93252,19 @@ msgstr "실외 노을"
 msgid "Outdoor Nighttime"
 msgstr "실외 밤"
 
+
+msgid "Login failed"
+msgstr "로그인에 실패하였습니다"
+
+
+msgid "When logging into ABLER, some letters may not be"
+msgstr "입력한 문자 중 일부가 누락되는 현상이 일부 환경에서 발생할"
+
+
+msgid "entered properly. Please copy & paste your password"
+msgstr "수 있습니다. 로그인 정보를 입력할 때 복사 및 붙여넣기를"
+
+
+msgid "or type slowly when logging in."
+msgstr "사용하거나 천천히 입력하시기를 부탁드립니다."
+
