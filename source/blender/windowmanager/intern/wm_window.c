@@ -449,7 +449,7 @@ void wm_window_title(wmWindowManager *wm, wmWindow *win)
       char str[sizeof(((Main *)NULL)->name) + 24];
       BLI_snprintf(str,
                    sizeof(str),
-                   "Blender%s [%s%s]",
+                   "ABLER%s [%s%s]",
                    wm->file_saved ? "" : "*",
                    BKE_main_blendfile_path_from_global(),
                    G_MAIN->recovered ? " (Recovered)" : "");
