@@ -18405,7 +18405,7 @@ msgstr "사각형 스폿 라이트 셰이프를 캐스트"
 
 
 msgid "Sun Light"
-msgstr "태양 라이트"
+msgstr "햇빛"
 
 
 msgid "Constant direction parallel ray Light"
@@ -93223,4 +93223,32 @@ msgstr "툴바를 열거나 닫습니다"
 
 msgid "ABLER Guide"
 msgstr "ABLER 가이드"
+
+
+msgid "Sunlight strength in watts per meter squared (W/m^2)"
+msgstr "제곱미터당 와트수로 나타낸 태양의 강도 (W/m^2)"
+
+
+msgid "Indoor Daytime"
+msgstr "실내 일반"
+
+
+msgid "Indoor Sunset"
+msgstr "실내 노을"
+
+
+msgid "Indoor Nighttime"
+msgstr "실내 밤"
+
+
+msgid "Outdoor Daytime"
+msgstr "실외 일반"
+
+
+msgid "Outdoor Sunset"
+msgstr "실외 노을"
+
+
+msgid "Outdoor Nighttime"
+msgstr "실외 밤"
 
