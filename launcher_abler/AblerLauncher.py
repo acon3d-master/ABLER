@@ -16,25 +16,20 @@
 """
 
 import configparser
-import json
 import logging
 import os
 import os.path
 import platform
 import shutil
-import ssl
 import subprocess
 import sys
 import urllib.parse
 import urllib.request
-import webbrowser
 import time
-from datetime import datetime
 from distutils.dir_util import copy_tree
 from distutils.version import StrictVersion
 
 
-import winshell
 from win32com.client import Dispatch
 
 import requests
@@ -59,6 +54,9 @@ lastversion = ""
 installedversion = ""
 launcher_installed = ""
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
+test_arg = False
+if len(sys.argv) > 1 and sys.argv[1] is '--test':
+    test_arg = True
 
 if not os.path.isdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96"):
     os.mkdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96")
@@ -263,6 +261,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global lastversion
         global installedversion
         url = "https://api.github.com/repos/acon3d/ABLER/releases/latest"
+        if test_arg:
+            url = "https://api.github.com/repos/acon3d/ABLER/releases"
         # Do path settings save here, in case user has manually edited it
         global config
         config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
@@ -279,7 +279,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             logger.error("No connection to Blender nightly builds server")
             self.frm_start.show()
         results = []
-
+        if test_arg:
+            req = req.json()[0]
         version_tag = req.json()['name'][1:]
         for asset in req.json()['assets']:
             opsys = platform.system()
@@ -339,6 +340,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global launcher_installed
         global launcherdir_
         url = "https://api.github.com/repos/acon3d/ABLER/releases/latest"
+        if test_arg:
+            url = "https://api.github.com/repos/acon3d/ABLER/releases"
         # Do path settings save here, in case user has manually edited it
         global config
         config.read(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\config.ini")
@@ -356,7 +359,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             logger.error("No connection to Blender nightly builds server")
             self.frm_start.show()
         results = []
-
+        if test_arg:
+            req = req.json()[0]
         for asset in req.json()['assets']:
             opsys = platform.system()
             if opsys == "Windows":
@@ -589,13 +593,18 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         QtWidgets.QMessageBox.information(
             self, "Launcher updated", "ABLER launcher has been updated. Please re-run the launcher."
         )
-        QtCore.QCoreApplication.instance().quit()
+        try:
+            _ = subprocess.Popen(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.exe")
+            QtCore.QCoreApplication.instance().quit()
+        except Exception as e:
+            logger.error(e)
         
 
 
     def exec_windows(self):
         _ = subprocess.Popen(os.path.join('"' + dir_ + "\\blender.exe" + '"'))
         logger.info(f"Executing {dir_}blender.exe")
+        QtCore.QCoreApplication.instance().quit()
 
     def exec_osx(self):
         BlenderOSXPath = os.path.join(
