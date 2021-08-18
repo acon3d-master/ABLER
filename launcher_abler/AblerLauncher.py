@@ -55,7 +55,7 @@ installedversion = ""
 launcher_installed = ""
 LOG_FORMAT = "%(levelname)s %(asctime)s - %(message)s"
 test_arg = False
-if len(sys.argv) > 1 and sys.argv[1] is '--test':
+if len(sys.argv) > 1 and sys.argv[1] == '--test':
     test_arg = True
 
 if not os.path.isdir(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96"):
@@ -67,6 +67,8 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger()
+
+
 
 
 class WorkerThread(QtCore.QThread):
@@ -271,7 +273,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             config.write(f)
         f.close()
         try:
-            req = requests.get(url)
+            req = requests.get(url).json()
         except Exception:
             self.statusBar().showMessage(
                 "Error reaching server - check your internet connection"
@@ -280,9 +282,9 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.frm_start.show()
         results = []
         if test_arg:
-            req = req.json()[0]
-        version_tag = req.json()['name'][1:]
-        for asset in req.json()['assets']:
+            req = req[0]
+        version_tag = req['name'][1:]
+        for asset in req['assets']:
             opsys = platform.system()
             if opsys == "Windows":
                 target =  asset['browser_download_url']
@@ -351,7 +353,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             config.write(f)
         f.close()
         try:
-            req = requests.get(url)
+            req = requests.get(url).json()
         except Exception:
             self.statusBar().showMessage(
                 "Error reaching server - check your internet connection"
@@ -360,8 +362,9 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.frm_start.show()
         results = []
         if test_arg:
-            req = req.json()[0]
-        for asset in req.json()['assets']:
+            req = req[0]
+
+        for asset in req['assets']:
             opsys = platform.system()
             if opsys == "Windows":
                 target = asset['browser_download_url']
@@ -594,7 +597,10 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self, "Launcher updated", "ABLER launcher has been updated. Please re-run the launcher."
         )
         try:
-            _ = subprocess.Popen(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.exe")
+            if test_arg:
+                _ = subprocess.Popen([os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.exe", "--test"])
+            else:
+                _ = subprocess.Popen(os.getenv('APPDATA') + "\\Blender Foundation\\Blender\\2.96\\updater\\AblerLauncher.exe")
             QtCore.QCoreApplication.instance().quit()
         except Exception as e:
             logger.error(e)
