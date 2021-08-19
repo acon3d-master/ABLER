@@ -1,3 +1,22 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+
 import bpy
 from math import radians
 from .lib import cameras, shadow, scenes
@@ -153,6 +172,23 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=cameras.goToCustomCamera
     )
 
+    toggle_sun : bpy.props.BoolProperty(
+        name="Sun Light",
+        default=True,
+        update=shadow.toggleSun
+    )
+
+    sun_strength : bpy.props.FloatProperty(
+        name="Strength",
+        description="Sunlight strength in watts per meter squared (W/m^2)",
+        subtype="FACTOR",
+        default=1,
+        min=0,
+        max=10,
+        step=1,
+        update=shadow.changeSunStrength
+    )
+
     toggle_shadow : bpy.props.BoolProperty(
         name="Shadow",
         default=True,
@@ -286,6 +322,12 @@ class AconMeshProperty(bpy.types.PropertyGroup):
     def unregister(cls):
         del bpy.types.Mesh.ACON_prop
 
+    def toggle_show_password(self, context):
+        if self.show_password:
+            self.password_shown = self.password
+        else:
+            self.password = self.password_shown
+
     username : bpy.props.StringProperty(
         name="Username",
         description="Username"
@@ -295,6 +337,18 @@ class AconMeshProperty(bpy.types.PropertyGroup):
         name="Password",
         description="Password",
         subtype="PASSWORD"
+    )
+
+    password_shown : bpy.props.StringProperty(
+        name="Password",
+        description="Password",
+        subtype="NONE"
+    )
+
+    show_password : bpy.props.BoolProperty(
+        name="Show Password",
+        default=False,
+        update=toggle_show_password
     )
 
     login_status : bpy.props.StringProperty(
@@ -319,3 +373,4 @@ def register():
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
+

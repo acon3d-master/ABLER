@@ -1,3 +1,22 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -10,10 +29,11 @@ bl_info = {
     "tracker_url": "",
     "category": "ACON3D"
 }
+
+
 import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.app.handlers import persistent
-
 from .lib import cameras, shadow, render, scenes
 from .lib.materials import materials_setup
 
@@ -46,6 +66,10 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
 
         FILEPATH = self.filepath
         
+
+        col_imported = bpy.data.collections.new("Imported")
+        context.scene.collection.children.link(col_imported)
+
         col_layers = bpy.data.collections.get("Layers")
         if not col_layers:
             col_layers = bpy.data.collections.new("Layers")
@@ -62,6 +86,10 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
                 children_names[child] = True
         
         for coll in data_to.collections:
+
+            if "ACON_col" in coll.name:
+                data_to.collections.remove(coll)
+                break
             
             found = False
             for child in children_names:
@@ -69,15 +97,19 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
                     found = True
             
             if not found:
-    
-                added_l_exclude = context.scene.l_exclude.add()
-                added_l_exclude.name = coll.name
-                added_l_exclude.value = True
-                col_layers.children.link(coll)
+                col_imported.children.link(coll)
 
-                for obj in coll.objects:
-                    if obj.type == "MESH":
-                        obj.select_set(True)
+            if coll.name == "Layers" or ("Layers." in coll.name and len(coll.name) == 10):
+                for coll_2 in coll.children:
+                    added_l_exclude = context.scene.l_exclude.add()
+                    added_l_exclude.name = coll_2.name
+                    added_l_exclude.value = True
+                    col_layers.children.link(coll_2)
+
+        for obj in data_to.objects:
+            if obj.type == "MESH":
+                obj.select_set(True)
+            else: data_to.objects.remove(obj)
         
         materials_setup.applyAconToonStyle()
         cameras.switchToRendredView()
@@ -164,3 +196,4 @@ def unregister():
         unregister_class(cls)
     
     bpy.app.handlers.load_post.remove(load_handler)
+
