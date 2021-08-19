@@ -59,7 +59,7 @@ const UserDef U_default = {
     .uiflag = (USER_FILTERFILEEXTS | USER_DRAWVIEWINFO | USER_PLAINMENUS |
                USER_LOCK_CURSOR_ADJUST | USER_DEPTH_CURSOR | USER_AUTOPERSP | USER_GLOBALUNDO |
                USER_HIDE_DOT | USER_SHOW_GIZMO_NAVIGATE | USER_SHOW_VIEWPORTNAME | USER_SHOW_FPS |
-               USER_CONTINUOUS_MOUSE | USER_SAVE_PROMPT),
+               USER_CONTINUOUS_MOUSE | USER_SAVE_PROMPT | USER_ORBIT_SELECTION),
     .uiflag2 = USER_UIFLAG2_UNUSED_0,
     .gpu_flag = USER_GPU_FLAG_OVERLAY_SMOOTH_WIRE,
     .app_flag = 0,
@@ -189,8 +189,8 @@ const UserDef U_default = {
     .pie_menu_threshold = 12,
     .opensubdiv_compute_type = 0,
     .factor_display_type = USER_FACTOR_AS_FACTOR,
-    .render_display_type = USER_RENDER_DISPLAY_WINDOW,
-    .filebrowser_display_type = USER_TEMP_SPACE_DISPLAY_WINDOW,
+    .render_display_type = USER_RENDER_DISPLAY_SCREEN,
+    .filebrowser_display_type = USER_TEMP_SPACE_DISPLAY_FULLSCREEN,
     .viewport_aa = 8,
 
     .walk_navigation =

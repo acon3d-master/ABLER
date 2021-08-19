@@ -18,6 +18,8 @@
 
 
 import bpy
+import ctypes
+import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
 
@@ -64,18 +66,47 @@ class Acon3dAlertOperator(bpy.types.Operator):
 class Acon3dModalOperator(bpy.types.Operator):
     bl_idname = "acon3d.modal_operator"
     bl_label = "Login Modal Operator"
-
+    pass_key = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z', 'ZERO', 'ONE', 'TWO', 'THREE',
+                'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT',
+                'NINE',
+                'BACK_SPACE', 'SEMI_COLON', 'PERIOD', 'COMMA', 'QUOTE',
+                'ACCENT_GRAVE', 'MINUS', 'PLUS', 'SLASH', 'BACK_SLASH', 'EQUAL',
+                'LEFT_BRACKET', 'RIGHT_BRACKET', 'NUMPAD_2', 'NUMPAD_4', 'NUMPAD_6',
+                'NUMPAD_8', 'NUMPAD_1', 'NUMPAD_3', 'NUMPAD_5', 'NUMPAD_7',
+                'NUMPAD_9', 'NUMPAD_PERIOD', 'NUMPAD_SLASH', 'NUMPAD_ASTERIX',
+                'NUMPAD_0', 'NUMPAD_MINUS', 'NUMPAD_ENTER', 'NUMPAD_PLUS',
+    }
     def execute(self, context):
         return {'FINISHED'}
 
     def modal(self, context, event):
         userInfo = bpy.data.meshes.get("ACON_userInfo")
+        def char2key(c):
+            result = ctypes.windll.User32.VkKeyScanW(ord(c))
+            shift_state = (result & 0xFF00) >> 8
+            vk_key = result & 0xFF
+            return vk_key
+
 
         if userInfo and userInfo.ACON_prop.login_status == 'SUCCESS':
             return {'FINISHED'}
 
         if event.type == 'LEFTMOUSE':
             bpy.ops.wm.splash('INVOKE_DEFAULT')
+        if event.type in self.pass_key:
+            if platform.system() == 'Windows':
+                if event.type == 'BACK_SPACE':
+                    ctypes.windll.user32.keybd_event(char2key('\b'))
+                else:
+                    ctypes.windll.user32.keybd_event(char2key(event.unicode))
+            elif platform.system() == 'Darwin':
+                print("macOS")
+            elif platform.system() == 'Linux':
+                print("Linux")
 
         return {'RUNNING_MODAL'}
 
