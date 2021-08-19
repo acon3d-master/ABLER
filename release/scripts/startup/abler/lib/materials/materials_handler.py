@@ -1,3 +1,22 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+
 import bpy
 
 
@@ -80,7 +99,7 @@ def setMaterialParametersByType(mat):
         mat.shadow_method = "CLIP"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 1
-        toonNode.inputs[3].default_value = 0
+        toonNode.inputs[3].default_value = 0.5
         
     if type == "Glow":
         mat.blend_method = "CLIP"
@@ -230,3 +249,4 @@ def changeToonShadingBrightness(self, context):
 
     inputs[2].default_value = value_1
     inputs[3].default_value = value_2
+

@@ -18405,7 +18405,7 @@ msgstr "사각형 스폿 라이트 셰이프를 캐스트"
 
 
 msgid "Sun Light"
-msgstr "태양 라이트"
+msgstr "햇빛"
 
 
 msgid "Constant direction parallel ray Light"
@@ -93225,6 +93225,10 @@ msgid "ABLER Guide"
 msgstr "ABLER 가이드"
 
 
+msgid "Sunlight strength in watts per meter squared (W/m^2)"
+msgstr "제곱미터당 와트수로 나타낸 태양의 강도 (W/m^2)"
+
+
 msgid "Indoor Daytime"
 msgstr "실내 일반"
 
@@ -93247,4 +93251,20 @@ msgstr "실외 노을"
 
 msgid "Outdoor Nighttime"
 msgstr "실외 밤"
+
+
+msgid "Login failed"
+msgstr "로그인에 실패하였습니다"
+
+
+msgid "When logging into ABLER, some letters may not be"
+msgstr "입력한 문자 중 일부가 누락되는 현상이 일부 환경에서 발생할"
+
+
+msgid "entered properly. Please copy & paste your password"
+msgstr "수 있습니다. 로그인 정보를 입력할 때 복사 및 붙여넣기를"
+
+
+msgid "or type slowly when logging in."
+msgstr "사용하거나 천천히 입력하시기를 부탁드립니다."
 

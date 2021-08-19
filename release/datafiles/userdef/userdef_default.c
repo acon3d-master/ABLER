@@ -60,7 +60,7 @@ const UserDef U_default = {
                USER_LOCK_CURSOR_ADJUST | USER_DEPTH_CURSOR | USER_AUTOPERSP | USER_GLOBALUNDO |
                USER_HIDE_DOT | USER_SHOW_GIZMO_NAVIGATE | USER_SHOW_VIEWPORTNAME | USER_SHOW_FPS |
                USER_CONTINUOUS_MOUSE | USER_SAVE_PROMPT),
-    .uiflag2 = USER_REGION_OVERLAP,
+    .uiflag2 = USER_UIFLAG2_UNUSED_0,
     .gpu_flag = USER_GPU_FLAG_OVERLAY_SMOOTH_WIRE,
     .app_flag = 0,
     /** Default language of English (1), not Automatic (0). */
