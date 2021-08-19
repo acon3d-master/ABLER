@@ -68,7 +68,11 @@ class Acon3dExplodeGroupOperator(bpy.types.Operator):
     def execute(self, context):
         
         for selected_object in context.selected_objects:
+            
             group_props = selected_object.ACON_prop.group
+
+            if not len(group_props): continue
+
             last_group_prop = group_props[len(group_props) - 1]
             
             selected_group = bpy.data.collections.get(last_group_prop.name)
