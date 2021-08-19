@@ -346,11 +346,36 @@ class AconMeshProperty(bpy.types.PropertyGroup):
     )
 
 
+class AconObjectGroupProperty(bpy.types.PropertyGroup):
+
+    name : bpy.props.StringProperty(
+        name="Group",
+        description="Group",
+        default=""
+    )
+
+
+class AconObjectProperty(bpy.types.PropertyGroup):
+    @classmethod
+    def register(cls):
+        bpy.types.Object.ACON_prop = bpy.props.PointerProperty(type=AconObjectProperty)
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Object.ACON_prop
+
+    group : bpy.props.CollectionProperty(
+            type=AconObjectGroupProperty
+        )
+
+
 classes = (
     CollectionLayerExcludeProperties,
     AconSceneProperty,
     AconMaterialProperty,
     AconMeshProperty,
+    AconObjectGroupProperty,
+    AconObjectProperty,
 )
 
 

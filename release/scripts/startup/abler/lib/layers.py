@@ -22,22 +22,25 @@ import bpy
 
 def obj_active_callback():
     
-    ob = bpy.context.active_object
-    
-    col_group = bpy.data.collections.get("Groups")
-    if not col_group: return
+    selected_object = bpy.context.active_object
+    group_props = selected_object.ACON_prop.group
 
-    for col in col_group.children:
-        ob_2 = col.all_objects.get(ob.name)
-        if ob_2:
-            for ob_3 in col.all_objects:
-                ob_3.select_set(True)
+    if not len(group_props): return
+    
+    last_group_prop = group_props[len(group_props) - 1]
+    
+    selected_group = bpy.data.collections.get(last_group_prop.name)
+    if not selected_group: return
+
+    for obj in selected_group.all_objects:
+        obj.select_set(True)
+
+
+owner = object()
 
 
 def subscribeToGroupedObjects():
     
-    owner = object()
-
     subscribe_to = bpy.types.LayerObjects, "active"
     
     bpy.msgbus.subscribe_rna(
@@ -46,4 +49,9 @@ def subscribeToGroupedObjects():
         args=(),
         notify=obj_active_callback,
     )
+
+
+def clearSubscribers():
+    
+    bpy.msgbus.clear_by_owner(owner)
 

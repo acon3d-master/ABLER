@@ -53,6 +53,8 @@ class Acon3dCreateGroupOperator(bpy.types.Operator):
         collection.children.link(col_group)
         for obj in context.selected_objects:
             col_group.objects.link(obj)
+            new_group_prop = obj.ACON_prop.group.add()
+            new_group_prop.name = col_group.name
 
         return {'FINISHED'}
 
@@ -64,21 +66,15 @@ class Acon3dExplodeGroupOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
-        col_group = bpy.data.collections.get("Groups")
-
-        found_col = None
-        for col in col_group.children:
-            not_this_col = False
-            for obj in context.selected_objects:
-                if not col.all_objects.get(obj.name):
-                    not_this_col = True
-                    break
-            if not_this_col: continue
-            else:
-                found_col = col
-                break
         
-        if found_col: bpy.data.collections.remove(found_col)
+        for selected_object in context.selected_objects:
+            group_props = selected_object.ACON_prop.group
+            last_group_prop = group_props[len(group_props) - 1]
+            
+            selected_group = bpy.data.collections.get(last_group_prop.name)
+            if selected_group: bpy.data.collections.remove(selected_group)
+
+            group_props.remove(len(group_props) - 1)
         
         return {'FINISHED'}
 
@@ -164,4 +160,6 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
+
+    layers.clearSubscribers()
 
