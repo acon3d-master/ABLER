@@ -136,8 +136,9 @@ class WorkerThread(QtCore.QThread):
             os.remove(self.filename)
             self.finishedEX.emit()
             source = next(os.walk(self.temp_path))
-            if os.path.isfile(self.path + "\\AblerLauncher.exe"):
-                os.rename(self.path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.bak")
+            if "updater" in self.path:
+                if os.path.isfile(self.path + "\\AblerLauncher.exe"):
+                    os.rename(self.path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.bak")
                 time.sleep(1)
                 shutil.copyfile(self.temp_path + "\\AblerLauncher.exe", self.path + "\\AblerLauncher.exe")
                 sym_path = os.getenv('APPDATA') + "\\Microsoft\\Windows\\Start Menu\\Programs\\ABLER\\Launch ABLER.lnk"
