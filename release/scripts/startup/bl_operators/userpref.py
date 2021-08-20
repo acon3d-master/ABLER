@@ -104,8 +104,6 @@ class PREFERENCES_OT_copy_prev(Operator):
         if version_new == 300:
             version_new = 294
             version_old = 293
-        else:
-            print("TODO: remove exception!")
         # End special case.
 
         # Ensure we only try to copy files from a point release.
