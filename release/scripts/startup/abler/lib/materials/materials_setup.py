@@ -471,9 +471,13 @@ def applyAconToonStyle():
                 nega_alpha = 1 - node.inputs[19].default_value
         
         if node_combinedToon:
+
             if node_texImage:
                 mat.node_tree.links.new(node_texImage.outputs[0], node_combinedToon.inputs[0])
                 mat.node_tree.links.new(node_texImage.outputs[1], node_combinedToon.inputs[8])
+
+            materials_handler.setMaterialParametersByType(mat)
+            
             continue
         
         out_node = nodes.new(type='ShaderNodeOutputMaterial')
