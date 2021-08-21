@@ -18,7 +18,7 @@
 
 
 import bpy
-from . import shadow, common
+from . import shadow
 from .materials import materials_handler
 from types import SimpleNamespace
 from math import radians
@@ -42,8 +42,7 @@ items = []
 def add_scene_items(self, context):
     items.clear()
     for item in bpy.data.scenes:
-        decoded_name = common.decode(item.name)
-        items.append((item.name, decoded_name, ""))
+        items.append((item.name, item.name, ""))
 
     return items
 
@@ -82,7 +81,7 @@ def loadScene(self, context):
 def createScene(old_scene, type, name):
 
     new_scene = old_scene.copy()
-    new_scene.name = common.encode(name)
+    new_scene.name = name
 
     new_scene.camera = old_scene.camera.copy()
     new_scene.camera.data = old_scene.camera.data.copy()
