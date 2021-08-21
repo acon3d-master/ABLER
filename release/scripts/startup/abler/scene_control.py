@@ -57,7 +57,7 @@ class SetScenePropsOperator(bpy.types.Operator):
         name="Preset",
         description="Scene preset",
         items=[
-            ("None", "Use Current Scene", ""),
+            ("None", "Use Current Scene Settings", ""),
             ("Indoor Daytime", "Indoor Daytime", ""),
             ("Indoor Sunset", "Indoor Sunset", ""),
             ("Indoor Nighttime", "Indoor Nighttime", ""),
