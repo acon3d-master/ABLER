@@ -18,40 +18,55 @@
 
 
 import bpy
+from bpy.app.handlers import persistent
 
 
-def obj_active_callback():
+def selectByGroup():
     
     selected_object = bpy.context.active_object
     group_props = selected_object.ACON_prop.group
 
-    if not len(group_props): return
+    group_length = len(group_props)
+    if not group_length: return
     
-    last_group_prop = group_props[len(group_props) - 1]
+    last_group_prop = group_props[group_length - 1]
     
     selected_group = bpy.data.collections.get(last_group_prop.name)
-    if not selected_group: return
+    if not selected_group:
+        group_props.remove(group_length - 1)
+        return selectByGroup()
 
     for obj in selected_group.all_objects:
         obj.select_set(True)
 
 
-owner = object()
+@persistent
+def checkObjectSelectionChange(dummy):
+    
+    depsgraph = bpy.context.evaluated_depsgraph_get()
+    test = depsgraph.id_type_updated("SCENE")
+    if not test: return
+    
+    new_selected_objects_str = ""
+    for obj in bpy.context.selected_objects:
+        new_selected_objects_str += obj.name
+
+    ACON_prop = bpy.context.scene.ACON_prop
+    
+    if new_selected_objects_str == ACON_prop.selected_objects_str: return
+    
+    if new_selected_objects_str:
+        selectByGroup()
+
+    ACON_prop.selected_objects_str = ""
+    for obj in bpy.context.selected_objects:
+        ACON_prop.selected_objects_str += obj.name
 
 
 def subscribeToGroupedObjects():
-    
-    subscribe_to = bpy.types.LayerObjects, "active"
-    
-    bpy.msgbus.subscribe_rna(
-        key=subscribe_to,
-        owner=owner,
-        args=(),
-        notify=obj_active_callback,
-    )
+    bpy.app.handlers.depsgraph_update_post.append(checkObjectSelectionChange)
 
 
 def clearSubscribers():
-    
-    bpy.msgbus.clear_by_owner(owner)
+    bpy.app.handlers.depsgraph_update_post.remove(checkObjectSelectionChange)
 

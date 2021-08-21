@@ -279,6 +279,10 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=materials_handler.changeImageAdjustSaturation
     )
 
+    selected_objects_str : bpy.props.StringProperty(
+        name="Selected Objects"
+    )
+
 
 class AconMaterialProperty(bpy.types.PropertyGroup):
     @classmethod
