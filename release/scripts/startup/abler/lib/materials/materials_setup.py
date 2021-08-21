@@ -18,6 +18,7 @@
 
 
 import bpy
+from types import SimpleNamespace
 from . import materials_handler
 from .. import cameras
 
@@ -305,10 +306,17 @@ def createAconMatNodeGroups():
     node_group.links.new(node_subtract_2.outputs[0], node_glossy.inputs[1])
 
     node_multiply_2 = nodes.new('ShaderNodeMixRGB')
-    node_multiply_2.name = 'ACON_node_toonEdgeFactor'
     node_multiply_2.blend_type = 'MULTIPLY'
-    node_multiply_2.inputs[0].default_value = 1
     node_group.links.new(node_multiply_2.outputs[0], node_mixShader_2.inputs[2])
+    
+    node_multiply_5 = nodes.new("ShaderNodeMath")
+    node_multiply_5.operation = "MULTIPLY"
+    node_group.links.new(node_multiply_5.outputs[0], node_multiply_2.inputs[0])
+    
+    node_value_2 = nodes.new("ShaderNodeValue")
+    node_value_2.name = 'ACON_node_toonEdgeFactor'
+    node_value_2.outputs[0].default_value = 1
+    node_group.links.new(node_value_2.outputs[0], node_multiply_5.inputs[0])
 
     node_mixColor_3 = nodes.new('ShaderNodeMixRGB')
     node_mixColor_3.blend_type = 'MIX'
@@ -316,16 +324,23 @@ def createAconMatNodeGroups():
     node_group.links.new(node_mixColor_3.outputs[0], node_multiply_2.inputs[2])
     
     node_mixColor_2 = nodes.new('ShaderNodeMixRGB')
-    node_mixColor_2.name = 'ACON_node_shadeMixFactor'
     node_mixColor_2.blend_type = 'MIX'
-    node_mixColor_2.inputs[0].default_value = 0
     node_group.links.new(node_mixColor_2.outputs[0], node_multiply_2.inputs[1])
+    
+    node_multiply_4 = nodes.new("ShaderNodeMath")
+    node_multiply_4.operation = "MULTIPLY"
+    node_group.links.new(node_multiply_4.outputs[0], node_mixColor_2.inputs[0])
+    
+    node_value_1 = nodes.new("ShaderNodeValue")
+    node_value_1.name = 'ACON_node_shadeMixFactor'
+    node_value_1.outputs[0].default_value = 1
+    node_group.links.new(node_value_1.outputs[0], node_multiply_4.inputs[0])
     
     node_group_toonFace = nodes.new(type='ShaderNodeGroup')
     node_group_toonFace.name = 'ACON_nodeGroup_toonFace'
     node_group_toonFace.node_tree = node_group_data_toonFace
     node_group_toonFace.inputs[4].default_value = 1
-    node_group.links.new(node_group_toonFace.outputs[0], node_mixColor_2.inputs[1])
+    node_group.links.new(node_group_toonFace.outputs[0], node_mixColor_2.inputs[2])
     
     node_group_outline = nodes.new(type='ShaderNodeGroup')
     node_group_outline.name = 'ACON_nodeGroup_outline'
@@ -339,7 +354,7 @@ def createAconMatNodeGroups():
     node_mixColor = nodes.new('ShaderNodeMixRGB')
     node_mixColor.name = 'ACON_node_textureMixFactor'
     node_mixColor.blend_type = 'MIX'
-    node_group.links.new(node_mixColor.outputs[0], node_mixColor_2.inputs[2])
+    node_group.links.new(node_mixColor.outputs[0], node_mixColor_2.inputs[1])
     node_group.links.new(node_mixColor.outputs[0], node_group_toonFace.inputs[0])
     node_group.links.new(node_mixColor.outputs[0], node_emission.inputs[0])
     node_group.links.new(node_mixColor.outputs[0], node_glossy.inputs[0])
@@ -370,20 +385,23 @@ def createAconMatNodeGroups():
     node_group.inputs.new('NodeSocketFloat', 'AlphaMixFactor')
     node_group.inputs.new('NodeSocketFloat', 'MixFactor1')
     node_group.inputs.new('NodeSocketFloat', 'MixFactor2')
-    node_group.inputs.new('NodeSocketFloat', 'MixFactor3')
+    node_group.inputs.new('NodeSocketFloat', 'Shading Mix Factor')
     node_group.inputs.new('NodeSocketFloat', 'Strength')
     node_group.inputs.new('NodeSocketFloat', 'Smoothness')
     node_group.inputs.new('NodeSocketFloat', 'Negative Alpha')
     node_group.inputs.new('NodeSocketFloat', 'Image Alpha')
+    node_group.inputs.new('NodeSocketFloat', 'Edge Mix Factor')
     node_group.links.new(inputs.outputs[0], node_bright.inputs[0])
     node_group.links.new(inputs.outputs[1], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[1], node_mixColor_3.inputs[0])
     node_group.links.new(inputs.outputs[2], node_mixShader_3.inputs[0])
     node_group.links.new(inputs.outputs[3], node_mixShader.inputs[0])
+    node_group.links.new(inputs.outputs[4], node_multiply_4.inputs[1])
     node_group.links.new(inputs.outputs[5], node_emission.inputs[1])
     node_group.links.new(inputs.outputs[6], node_subtract_2.inputs[1])
     node_group.links.new(inputs.outputs[7], node_multiply_1.inputs[0])
     node_group.links.new(inputs.outputs[8], node_multiply_3.inputs[0])
+    node_group.links.new(inputs.outputs[9], node_multiply_5.inputs[1])
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
     node_group.inputs[1].default_value = 0
@@ -391,6 +409,7 @@ def createAconMatNodeGroups():
     node_group.inputs[1].max_value = 1
     node_group.inputs[2].default_value = 1
     node_group.inputs[3].default_value = 1
+    node_group.inputs[4].default_value = 1
     node_group.inputs[5].default_value = 1
     node_group.inputs[5].min_value = 0
     node_group.inputs[6].default_value = 0.5
@@ -402,6 +421,7 @@ def createAconMatNodeGroups():
     node_group.inputs[8].default_value = 1
     node_group.inputs[8].min_value = 0
     node_group.inputs[8].max_value = 1
+    node_group.inputs[9].default_value = 1
 
     context = bpy.context
 
@@ -414,6 +434,7 @@ def createAconMatNodeGroups():
     materials_handler.changeImageAdjustContrast(None, context)
     materials_handler.changeImageAdjustColor(None, context)
     materials_handler.changeImageAdjustHue(None, context)
+    materials_handler.changeImageAdjustSaturation(None, context)
     materials_handler.changeImageAdjustSaturation(None, context)
     
     return node_group
@@ -476,6 +497,13 @@ def applyAconToonStyle():
                 mat.node_tree.links.new(node_texImage.outputs[1], node_combinedToon.inputs[8])
 
             materials_handler.setMaterialParametersByType(mat)
+            override = SimpleNamespace()
+            override_object = SimpleNamespace()
+            override.object = override_object
+            override_object.active_material = mat
+            materials_handler.toggleEachEdge(None, override)
+            materials_handler.toggleEachShading(None, override)
+            materials_handler.toggleEachShadow(None, override)
             
             continue
         
@@ -524,6 +552,13 @@ def applyAconToonStyle():
                 mat.ACON_prop.type = "Clear"
         
         materials_handler.setMaterialParametersByType(mat)
+        override = SimpleNamespace()
+        override_object = SimpleNamespace()
+        override.object = override_object
+        override_object.active_material = mat
+        materials_handler.toggleEachEdge(None, override)
+        materials_handler.toggleEachShading(None, override)
+        materials_handler.toggleEachShadow(None, override)
         
     cameras.switchToRendredView()
 
