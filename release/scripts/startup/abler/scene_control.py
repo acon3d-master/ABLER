@@ -47,7 +47,7 @@ class CreateSceneOperator(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class SetSceneNameOperator(bpy.types.Operator):
+class SetScenePropsOperator(bpy.types.Operator):
     bl_idname = "acon3d.set_scene_name"
     bl_label = "New Scene"
 
@@ -124,7 +124,7 @@ class Acon3dScenesPanel(bpy.types.Panel):
 
 classes = (
     CreateSceneOperator,
-    SetSceneNameOperator,
+    SetScenePropsOperator,
     DeleteSceneOperator,
     Acon3dScenesPanel,
 )
