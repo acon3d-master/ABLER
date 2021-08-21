@@ -48,14 +48,18 @@ def setupBackgroundImagesCompositor():
         node_image = nodes.new("CompositorNodeImage")
         node_image.image = image
         
-        node_setAlpha = nodes.new("CompositorNodeSetAlpha")
-        node_setAlpha.inputs[1].default_value = background_image.alpha
-        tree.links.new(node_image.outputs[0], node_setAlpha.inputs[0])
+        node_setAlpha_1 = nodes.new("CompositorNodeSetAlpha")
+        tree.links.new(node_image.outputs[0], node_setAlpha_1.inputs[0])
+        tree.links.new(node_image.outputs[1], node_setAlpha_1.inputs[1])
+        
+        node_setAlpha_2 = nodes.new("CompositorNodeSetAlpha")
+        node_setAlpha_2.inputs[1].default_value = background_image.alpha
+        tree.links.new(node_setAlpha_1.outputs[0], node_setAlpha_2.inputs[0])
         
         node_scale = nodes.new("CompositorNodeScale")
         node_scale.space = "RENDER_SIZE"
         node_scale.frame_method = background_image.frame_method
-        tree.links.new(node_setAlpha.outputs[0], node_scale.inputs[0])
+        tree.links.new(node_setAlpha_2.outputs[0], node_scale.inputs[0])
         
         node_conditional = node_scale
         
@@ -111,6 +115,15 @@ def clearCompositor():
 
 
 def matchObjectVisibility():
+        
+    for l_prop in bpy.context.scene.l_exclude:
+        layer = bpy.data.collections.get(l_prop.name)
+        if layer:
+            for objs in layer.objects:
+                objs.hide_viewport = not(l_prop.value)
+                objs.hide_render = not(l_prop.value)
+
     for obj in bpy.data.objects:
-        obj.hide_render = obj.hide_get()
+        if obj.hide_get():
+            obj.hide_render = True
 
