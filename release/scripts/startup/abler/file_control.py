@@ -46,7 +46,6 @@ def load_handler(dummy):
     shadow.setupSharpShadow()
     render.setupBackgroundImagesCompositor()
     materials_setup.applyAconToonStyle()
-    scenes.setupPresets()
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):

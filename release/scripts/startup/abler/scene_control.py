@@ -53,31 +53,37 @@ class SetSceneNameOperator(bpy.types.Operator):
 
     name: bpy.props.StringProperty(name="Name")
 
+    preset : bpy.props.EnumProperty(
+        name="Preset",
+        description="Scene preset",
+        items=[
+            ("None", "Use Current Scene", ""),
+            ("Indoor Daytime", "Indoor Daytime", ""),
+            ("Indoor Sunset", "Indoor Sunset", ""),
+            ("Indoor Nighttime", "Indoor Nighttime", ""),
+            ("Outdoor Daytime", "Outdoor Daytime", ""),
+            ("Outdoor Sunset", "Outdoor Sunset", ""),
+            ("Outdoor Nighttime", "Outdoor Nighttime", "")
+        ]
+    )
+
     def execute(self, context):
         old_scene = context.scene
-        new_scene = old_scene.copy()
-
-        sceneName = self.name
-        new_scene.name = sceneName
-
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
-
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
-        
+        new_scene = scenes.createScene(old_scene, self.preset, self.name)
         context.scene.ACON_prop.scene = new_scene.name
-
         return {'FINISHED'}
 
     def invoke(self, context, event):
+        self.name = scenes.genSceneName("ACON_Scene_")
         wm = context.window_manager
         return wm.invoke_props_dialog(self)
 
     def draw(self, context):
         layout = self.layout
+        layout.separator()
         layout.prop(self, "name")
+        layout.prop(self, "preset")
+        layout.separator()
 
 
 class DeleteSceneOperator(bpy.types.Operator):
