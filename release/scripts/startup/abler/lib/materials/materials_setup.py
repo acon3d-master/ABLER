@@ -176,20 +176,21 @@ def createToonFaceNodeGroup():
     node_multiply_1.inputs[0].default_value = 1
     node_group.links.new(node_multiply_1.outputs[0], outputs.inputs[0])
 
-    node_mix = nodes.new('ShaderNodeMixRGB')
-    node_mix.blend_type = 'MIX'
-    node_group.links.new(node_mix.outputs[0], node_multiply_1.inputs[2])
+    node_mix_1 = nodes.new('ShaderNodeMixRGB')
+    node_mix_1.blend_type = 'MIX'
+    node_group.links.new(node_mix_1.outputs[0], node_multiply_1.inputs[2])
 
-    node_map = nodes.new('ShaderNodeMapRange')
-    node_map.inputs[1].default_value = 0
-    node_map.inputs[2].default_value = 1
-    node_map.inputs[3].default_value = 0
-    node_map.inputs[4].default_value = 0.5
-    node_group.links.new(node_map.outputs[0], node_mix.inputs[2])
+    node_mix_2 = nodes.new('ShaderNodeMixRGB')
+    node_group.links.new(node_mix_2.outputs[0], node_mix_1.inputs[2])
+
+    node_lessThan = nodes.new("ShaderNodeMath")
+    node_lessThan.operation = "LESS_THAN"
+    node_lessThan.inputs[1].default_value = 1
+    node_group.links.new(node_lessThan.outputs[0], node_mix_2.inputs[0])
 
     node_overlay = nodes.new('ShaderNodeMixRGB')
     node_overlay.blend_type = 'OVERLAY'
-    node_group.links.new(node_overlay.outputs[0], node_map.inputs[0])
+    node_group.links.new(node_overlay.outputs[0], node_mix_2.inputs[2])
 
     node_colorRamp_1 = nodes.new('ShaderNodeValToRGB')
     node_colorRamp_1.color_ramp.interpolation = 'CONSTANT'
@@ -218,7 +219,9 @@ def createToonFaceNodeGroup():
     node_shaderToRGB_1 = nodes.new('ShaderNodeShaderToRGB')
     node_group.links.new(node_shaderToRGB_1.outputs[0], node_multiply_2.inputs[0])
     node_group.links.new(node_shaderToRGB_1.outputs[0], node_multiply_3.inputs[0])
-    node_group.links.new(node_shaderToRGB_1.outputs[0], node_mix.inputs[1])
+    node_group.links.new(node_shaderToRGB_1.outputs[0], node_mix_1.inputs[1])
+    node_group.links.new(node_shaderToRGB_1.outputs[0], node_mix_2.inputs[1])
+    node_group.links.new(node_shaderToRGB_1.outputs[0], node_lessThan.inputs[0])
 
     node_diffuseBSDF = nodes.new('ShaderNodeBsdfDiffuse')
     node_diffuseBSDF.inputs[0].default_value = (1, 1, 1, 1)
@@ -230,13 +233,11 @@ def createToonFaceNodeGroup():
     node_group.inputs.new('NodeSocketFloat', 'Brightness 1')
     node_group.inputs.new('NodeSocketFloat', 'Brightness 2')
     node_group.inputs.new('NodeSocketFloat', 'Mix Factor')
-    node_group.inputs.new('NodeSocketFloat', 'Map Factor')
     node_group.links.new(inputs.outputs[0], node_multiply_1.inputs[1])
     node_group.links.new(inputs.outputs[1], node_overlay.inputs[0])
     node_group.links.new(inputs.outputs[2], node_multiply_2.inputs[1])
     node_group.links.new(inputs.outputs[3], node_multiply_3.inputs[1])
-    node_group.links.new(inputs.outputs[4], node_mix.inputs[0])
-    node_group.links.new(inputs.outputs[5], node_map.inputs[4])
+    node_group.links.new(inputs.outputs[4], node_mix_1.inputs[0])
 
     node_group.inputs[1].default_value = 0
     node_group.inputs[1].min_value = 0
@@ -249,8 +250,6 @@ def createToonFaceNodeGroup():
     node_group.inputs[3].default_value = 5
     node_group.inputs[3].min_value = 0
     node_group.inputs[3].max_value = 10
-    
-    node_group.inputs[5].default_value = 1
 
     node_group.inputs[0].default_value = (1, 1, 1, 1)
     
