@@ -1,5 +1,23 @@
-import bpy
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
 
+
+import bpy
 from . import materials_handler
 from .. import cameras
 
@@ -436,13 +454,13 @@ def applyAconToonStyle():
         node_texImage = None
         baseColor = (1, 1, 1, 1)
         nega_alpha = 0
-        is_arleady_toonStyle = False
+        node_combinedToon = None
         
         for node in nodes:
 
             if node.name == "ACON_nodeGroup_combinedToon":
                 node.node_tree = node_group_data_combined
-                is_arleady_toonStyle = True
+                node_combinedToon = node
             
             elif node.type == "TEX_IMAGE":
                 node_texImage = node
@@ -452,7 +470,14 @@ def applyAconToonStyle():
                 baseColor = (default_value[0], default_value[1], default_value[2], default_value[3])
                 nega_alpha = 1 - node.inputs[19].default_value
         
-        if is_arleady_toonStyle:
+        if node_combinedToon:
+
+            if node_texImage:
+                mat.node_tree.links.new(node_texImage.outputs[0], node_combinedToon.inputs[0])
+                mat.node_tree.links.new(node_texImage.outputs[1], node_combinedToon.inputs[8])
+
+            materials_handler.setMaterialParametersByType(mat)
+            
             continue
         
         out_node = nodes.new(type='ShaderNodeOutputMaterial')
@@ -502,3 +527,4 @@ def applyAconToonStyle():
         materials_handler.setMaterialParametersByType(mat)
         
     cameras.switchToRendredView()
+

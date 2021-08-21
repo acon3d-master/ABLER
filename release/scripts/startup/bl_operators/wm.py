@@ -2708,7 +2708,7 @@ class WM_MT_splash(Menu):
             if userInfo.ACON_prop.login_status == 'SUCCESS':
                 row.label(text="Welcome!")
                 row = layout.row()
-                row.label(text="Click out to start Abler.")
+                row.label(text="Please click outside the popup box to start ABLER.")
             
             elif userInfo.ACON_prop.login_status == 'LOADING':
                 row.label(text="Hold on...")
@@ -2718,7 +2718,7 @@ class WM_MT_splash(Menu):
                 if userInfo.ACON_prop.login_status == 'FAIL':
                     row.label(text="Login failed. Please try again.")
                 else: 
-                    row.label(text="Please Login")
+                    row.label(text="Please login with your ACON3D account.")
 
                 layout.separator()
 
@@ -2728,7 +2728,17 @@ class WM_MT_splash(Menu):
                 row = column.row()
                 row.prop(userInfo.ACON_prop, "username")
                 row = column.row()
-                row.prop(userInfo.ACON_prop, "password")
+                if userInfo.ACON_prop.show_password:
+                    row.prop(userInfo.ACON_prop, "password_shown")
+                else:
+                    row.prop(userInfo.ACON_prop, "password")
+
+                column = row_outside.column()
+                column.separator()
+                column.separator()
+                column.separator()
+                row = column.row()
+                row.prop(userInfo.ACON_prop, "show_password", text="", icon="HIDE_OFF", emboss=False, invert_checkbox=True)
 
                 column = row_outside.column()
                 column.scale_x = 0.5
@@ -2842,6 +2852,7 @@ class WM_OT_drop_blend_file(Operator):
         props = col.operator("wm.open_mainfile", text="Open", icon='FILE_FOLDER')
         props.filepath = self.filepath
         props.display_file_selector = False
+        props.load_ui = False
 
         layout.separator()
         col = layout.column()

@@ -286,7 +286,7 @@ class TOPBAR_MT_file(Menu):
 
         layout.operator_context = 'INVOKE_AREA'
         layout.menu("TOPBAR_MT_file_new", text="New", icon='FILE_NEW')
-        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER')
+        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER').load_ui = False
         layout.menu("TOPBAR_MT_file_open_recent")
         layout.operator("wm.revert_mainfile")
         layout.menu("TOPBAR_MT_file_recover")
@@ -670,42 +670,42 @@ class TOPBAR_MT_help(Menu):
 
         show_developer = context.preferences.view.show_developer_ui
 
-        layout.operator("wm.url_open_preset", text="Manual",
+        anchor = layout.operator("acon3d.anchor", text="ABLER Guide", icon='EVENT_A')
+        anchor.href = 'https://www.notion.so/acon3d/ae6c0a608fd749b4a14b1cf98f058ff7'
+
+        layout.separator()
+
+        layout.operator("wm.url_open_preset", text="Blender Manual",
                         icon='HELP').type = 'MANUAL'
 
         layout.operator(
-            "wm.url_open", text="Tutorials", icon='URL',
+            "wm.url_open", text="Blender Tutorials", icon='URL',
         ).url = "https://www.blender.org/tutorials"
         layout.operator(
-            "wm.url_open", text="Support", icon='URL',
+            "wm.url_open", text="Blender Support", icon='URL',
         ).url = "https://www.blender.org/support"
 
         layout.separator()
 
         layout.operator(
-            "wm.url_open", text="User Communities", icon='URL',
+            "wm.url_open", text="Blender User Communities", icon='URL',
         ).url = "https://www.blender.org/community/"
         layout.operator(
-            "wm.url_open", text="Developer Community", icon='URL',
+            "wm.url_open", text="Blender Developer Community", icon='URL',
         ).url = "https://devtalk.blender.org"
 
         layout.separator()
 
         layout.operator(
-            "wm.url_open", text="Python API Reference", icon='URL',
+            "wm.url_open", text="Blender Python API Reference", icon='URL',
         ).url = bpy.types.WM_OT_doc_view._prefix
 
         if show_developer:
             layout.operator(
-                "wm.url_open", text="Developer Documentation", icon='URL',
+                "wm.url_open", text="Blender Developer Documentation", icon='URL',
             ).url = "https://wiki.blender.org/wiki/Main_Page"
 
             layout.operator("wm.operator_cheat_sheet", icon='TEXT')
-
-        layout.separator()
-
-        layout.operator("wm.url_open_preset",
-                        text="Report a Bug", icon='URL').type = 'BUG'
 
         layout.separator()
 
@@ -720,7 +720,7 @@ class TOPBAR_MT_file_context_menu(Menu):
 
         layout.operator_context = 'INVOKE_AREA'
         layout.menu("TOPBAR_MT_file_new", text="New", icon='FILE_NEW')
-        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER')
+        layout.operator("wm.open_mainfile", text="Open...", icon='FILE_FOLDER').load_ui = False
 
         layout.separator()
 

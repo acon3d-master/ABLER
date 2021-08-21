@@ -1,3 +1,22 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -10,6 +29,8 @@ bl_info = {
     "tracker_url": "",
     "category": "ACON3D"
 }
+
+
 import bpy
 from .lib import render, cameras
 from .lib.materials import materials_handler
@@ -121,10 +142,6 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             scene.eevee.use_bloom = False
             scene.render.use_lock_interface = True
 
-            for node in node_group.nodes:
-                if node.name == 'ACON_nodeGroup_toonFace':
-                    node.inputs[5].default_value = 1
-
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
@@ -141,10 +158,6 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_toon_edge = toggleToonEdge
             scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
-
-            for node in node_group.nodes:
-                if node.name == 'ACON_nodeGroup_toonFace':
-                    node.inputs[5].default_value = 0.5
             
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
@@ -220,3 +233,4 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
+

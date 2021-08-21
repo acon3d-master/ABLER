@@ -6961,45 +6961,45 @@ class VIEW3D_PT_view3d_stereo(Panel):
         split.prop(view, "stereo_3d_volume_alpha", text="Alpha")
 
 
-class VIEW3D_PT_context_properties(Panel):
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_category = "Item"
-    bl_label = "Properties"
-    bl_options = {'DEFAULT_CLOSED'}
+# class VIEW3D_PT_context_properties(Panel):
+#     bl_space_type = 'VIEW_3D'
+#     bl_region_type = 'UI'
+#     bl_category = "Item"
+#     bl_label = "Properties"
+#     bl_options = {'DEFAULT_CLOSED'}
 
-    @staticmethod
-    def _active_context_member(context):
-        obj = context.object
-        if obj:
-            object_mode = obj.mode
-            if object_mode == 'POSE':
-                return "active_pose_bone"
-            elif object_mode == 'EDIT' and obj.type == 'ARMATURE':
-                return "active_bone"
-            else:
-                return "object"
+#     @staticmethod
+#     def _active_context_member(context):
+#         obj = context.object
+#         if obj:
+#             object_mode = obj.mode
+#             if object_mode == 'POSE':
+#                 return "active_pose_bone"
+#             elif object_mode == 'EDIT' and obj.type == 'ARMATURE':
+#                 return "active_bone"
+#             else:
+#                 return "object"
 
-        return ""
+#         return ""
 
-    @classmethod
-    def poll(cls, context):
-        import rna_prop_ui
-        member = cls._active_context_member(context)
+#     @classmethod
+#     def poll(cls, context):
+#         import rna_prop_ui
+#         member = cls._active_context_member(context)
 
-        if member:
-            context_member, member = rna_prop_ui.rna_idprop_context_value(context, member, object)
-            return context_member and rna_prop_ui.rna_idprop_has_properties(context_member)
+#         if member:
+#             context_member, member = rna_prop_ui.rna_idprop_context_value(context, member, object)
+#             return context_member and rna_prop_ui.rna_idprop_has_properties(context_member)
 
-        return False
+#         return False
 
-    def draw(self, context):
-        import rna_prop_ui
-        member = VIEW3D_PT_context_properties._active_context_member(context)
+#     def draw(self, context):
+#         import rna_prop_ui
+#         member = VIEW3D_PT_context_properties._active_context_member(context)
 
-        if member:
-            # Draw with no edit button
-            rna_prop_ui.draw(self.layout, context, member, object, use_edit=False)
+#         if member:
+#             # Draw with no edit button
+#             rna_prop_ui.draw(self.layout, context, member, object, use_edit=False)
 
 
 # Grease Pencil Object - Multiframe falloff tools
@@ -7669,19 +7669,19 @@ classes = (
     VIEW3D_MT_sculpt_automasking_pie,
     VIEW3D_MT_wpaint_vgroup_lock_pie,
     VIEW3D_MT_sculpt_face_sets_edit_pie,
-    VIEW3D_PT_active_tool,
-    VIEW3D_PT_active_tool_duplicate,
-    VIEW3D_PT_view3d_properties,
-    VIEW3D_PT_view3d_lock,
-    VIEW3D_PT_view3d_cursor,
-    VIEW3D_PT_collections,
+    # VIEW3D_PT_active_tool,
+    # VIEW3D_PT_active_tool_duplicate,
+    # VIEW3D_PT_view3d_properties,
+    # VIEW3D_PT_view3d_lock,
+    # VIEW3D_PT_view3d_cursor,
+    # VIEW3D_PT_collections,
     VIEW3D_PT_object_type_visibility,
-    VIEW3D_PT_grease_pencil,
-    VIEW3D_PT_annotation_onion,
+    # VIEW3D_PT_grease_pencil,
+    # VIEW3D_PT_annotation_onion,
     VIEW3D_PT_gpencil_multi_frame,
     VIEW3D_PT_gpencil_curve_edit,
-    VIEW3D_PT_quad_view,
-    VIEW3D_PT_view3d_stereo,
+    # VIEW3D_PT_quad_view,
+    # VIEW3D_PT_view3d_stereo,
     VIEW3D_PT_shading,
     VIEW3D_PT_shading_lighting,
     VIEW3D_PT_shading_color,
@@ -7713,7 +7713,6 @@ classes = (
     VIEW3D_PT_gpencil_guide,
     VIEW3D_PT_transform_orientations,
     VIEW3D_PT_overlay_gpencil_options,
-    VIEW3D_PT_context_properties,
     VIEW3D_PT_paint_vertex_context_menu,
     VIEW3D_PT_paint_texture_context_menu,
     VIEW3D_PT_paint_weight_context_menu,

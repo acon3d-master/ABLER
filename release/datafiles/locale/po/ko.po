@@ -18405,7 +18405,7 @@ msgstr "사각형 스폿 라이트 셰이프를 캐스트"
 
 
 msgid "Sun Light"
-msgstr "태양 라이트"
+msgstr "햇빛"
 
 
 msgid "Constant direction parallel ray Light"
@@ -83013,28 +83013,28 @@ msgstr "작업자 검색..."
 
 
 msgctxt "Operator"
-msgid "Tutorials"
-msgstr "튜토리얼"
+msgid "Blender Tutorials"
+msgstr "Blender 튜토리얼"
 
 
 msgctxt "Operator"
-msgid "Support"
-msgstr "지원"
+msgid "Blender Support"
+msgstr "Blender 지원"
 
 
 msgctxt "Operator"
-msgid "User Communities"
-msgstr "사용자 커뮤니티"
+msgid "Blender User Communities"
+msgstr "Blender 사용자 커뮤니티"
 
 
 msgctxt "Operator"
-msgid "Developer Community"
-msgstr "개발자 커뮤니티"
+msgid "Blender Developer Community"
+msgstr "Blender 개발자 커뮤니티"
 
 
 msgctxt "Operator"
-msgid "Python API Reference"
-msgstr "Python API 참조"
+msgid "Blender Python API Reference"
+msgstr "Blender Python API 참조"
 
 
 msgctxt "Operator"
@@ -83051,8 +83051,8 @@ msgstr "활성 항목이 없음"
 
 
 msgctxt "Operator"
-msgid "Developer Documentation"
-msgstr "개발자 문서"
+msgid "Blender Developer Documentation"
+msgstr "Blender 개발자 문서"
 
 
 msgid "Node Label"
@@ -93041,8 +93041,8 @@ msgid "Azimuth"
 msgstr "방위각"
 
 
-msgid "Please Login"
-msgstr "에이콘3D 아이디로 로그인"
+msgid "Please login with your ACON3D account."
+msgstr "에이콘3D 계정으로 로그인해주세요."
 
 
 msgid "Username"
@@ -93058,7 +93058,7 @@ msgstr "에이콘3D 보러가기"
 
 
 msgid "Don't have an ACON3D account?"
-msgstr "아이디가 아직 없으신가요?"
+msgstr "에이콘3D 계정이 없으신가요?"
 
 
 msgid "Blender Release Notes"
@@ -93081,7 +93081,7 @@ msgid "Welcome!"
 msgstr "환영합니다!"
 
 
-msgid "Click out to start Abler."
+msgid "Please click outside the popup box to start ABLER."
 msgstr "로그인창 바깥을 클릭하여 에이블러를 시작해주세요!"
 
 
@@ -93211,4 +93211,60 @@ msgstr "카메라 뷰"
 
 msgid "Fit Camera Region to Viewport"
 msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
+
+
+msgid "Toggle Toolbar"
+msgstr "툴바 열기 / 닫기"
+
+
+msgid "Toggle toolbar visibility"
+msgstr "툴바를 열거나 닫습니다"
+
+
+msgid "ABLER Guide"
+msgstr "ABLER 가이드"
+
+
+msgid "Sunlight strength in watts per meter squared (W/m^2)"
+msgstr "제곱미터당 와트수로 나타낸 태양의 강도 (W/m^2)"
+
+
+msgid "Indoor Daytime"
+msgstr "실내 일반"
+
+
+msgid "Indoor Sunset"
+msgstr "실내 노을"
+
+
+msgid "Indoor Nighttime"
+msgstr "실내 밤"
+
+
+msgid "Outdoor Daytime"
+msgstr "실외 일반"
+
+
+msgid "Outdoor Sunset"
+msgstr "실외 노을"
+
+
+msgid "Outdoor Nighttime"
+msgstr "실외 밤"
+
+
+msgid "Login failed"
+msgstr "로그인에 실패하였습니다"
+
+
+msgid "When logging into ABLER, some letters may not be"
+msgstr "입력한 문자 중 일부가 누락되는 현상이 일부 환경에서 발생할"
+
+
+msgid "entered properly. Please copy & paste your password"
+msgstr "수 있습니다. 로그인 정보를 입력할 때 복사 및 붙여넣기를"
+
+
+msgid "or type slowly when logging in."
+msgstr "사용하거나 천천히 입력하시기를 부탁드립니다."
 
