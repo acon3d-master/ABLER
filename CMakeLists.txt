@@ -1021,7 +1021,6 @@ if(WITH_CPU_SIMD)
 else()
   message(STATUS "SIMD instructions disabled")
 endif()
-set(CMAKE_OSX_ARCHITECTURES "arm64")
 # set the endian define
 if(MSVC)
   # for some reason this fails on msvc
