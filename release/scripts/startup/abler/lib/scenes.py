@@ -36,9 +36,11 @@ def genSceneName(name, i=1):
     if found: return genSceneName(name, i+1)
     else: return combinedName
 
+# items should be a global variable due to a bug in EnumProperty
+items = []
 
 def add_scene_items(self, context):
-    items = []
+    items.clear()
     for item in bpy.data.scenes:
         items.append((item.name, item.name, ""))
 
@@ -76,311 +78,229 @@ def loadScene(self, context):
     target_scene.ACON_prop.scene = current_scene.ACON_prop.scene
 
 
-def setupPresets():
-    context = bpy.context
-    old_scene = context.scene
+def createScene(old_scene, type, name):
 
-    # create indoor-daytime preset
-    sceneName = "Indoor Daytime"
-    new_scene = bpy.data.scenes.get(sceneName)
+    new_scene = old_scene.copy()
+    new_scene.name = name
 
-    if not new_scene:
-        new_scene = old_scene.copy()
-        new_scene.name = sceneName
+    new_scene.camera = old_scene.camera.copy()
+    new_scene.camera.data = old_scene.camera.data.copy()
+    new_scene.collection.objects.link(new_scene.camera)
 
-    if old_scene.camera is new_scene.camera:
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
-    
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
-    
+    try: new_scene.collection.objects.unlink(old_scene.camera)
+    except: print("Failed to unlink camera from old scene.")\
+
     prop = new_scene.ACON_prop
-    prop.toggle_toon_edge = True
-    prop.edge_min_line_width = 1
-    prop.edge_max_line_width = 1
-    prop.edge_line_detail = 1.5
-    prop.toggle_toon_face = True
-    prop.toggle_texture = True
-    prop.toggle_shading = True
-    prop.toon_shading_depth = "3"
-    prop.toon_shading_brightness_1 = 3
-    prop.toon_shading_brightness_2 = 5
-    prop.toggle_sun = True
-    prop.sun_strength = 0.7
-    prop.toggle_shadow = True
-    prop.sun_rotation_x = radians(45)
-    prop.sun_rotation_z = radians(45)
-    prop.image_adjust_brightness = 0.7
-    prop.image_adjust_contrast = 0.5
-    prop.image_adjust_color_r = 0.95
-    prop.image_adjust_color_g = 0.95
-    prop.image_adjust_color_b = 1.05
-    prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1
-    new_scene.eevee.use_bloom = True
-    new_scene.eevee.bloom_threshold = 2
-    new_scene.eevee.bloom_knee = 0.5
-    new_scene.eevee.bloom_radius = 6.5
-    new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 0.1
-    new_scene.eevee.bloom_clamp = 0
-    new_scene.camera.data.lens = 25
-    new_scene.render.resolution_x = 4800
-    new_scene.render.resolution_y = 2700
 
-    # create indoor-sunset preset
-    sceneName = "Indoor Sunset"
-    new_scene = bpy.data.scenes.get(sceneName)
-
-    if not new_scene:
-        new_scene = old_scene.copy()
-        new_scene.name = sceneName
-
-    if old_scene.camera is new_scene.camera:
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
+    if type == "Indoor Daytime":
+        
+        prop.toggle_toon_edge = True
+        prop.edge_min_line_width = 1
+        prop.edge_max_line_width = 1
+        prop.edge_line_detail = 1.5
+        prop.toggle_toon_face = True
+        prop.toggle_texture = True
+        prop.toggle_shading = True
+        prop.toon_shading_depth = "3"
+        prop.toon_shading_brightness_1 = 3
+        prop.toon_shading_brightness_2 = 5
+        prop.toggle_sun = True
+        prop.sun_strength = 0.7
+        prop.toggle_shadow = True
+        prop.sun_rotation_x = radians(45)
+        prop.sun_rotation_z = radians(45)
+        prop.image_adjust_brightness = 0.7
+        prop.image_adjust_contrast = 0.5
+        prop.image_adjust_color_r = 0.95
+        prop.image_adjust_color_g = 0.95
+        prop.image_adjust_color_b = 1.05
+        prop.image_adjust_hue = 0.5
+        prop.image_adjust_saturation = 1
+        new_scene.eevee.use_bloom = True
+        new_scene.eevee.bloom_threshold = 2
+        new_scene.eevee.bloom_knee = 0.5
+        new_scene.eevee.bloom_radius = 6.5
+        new_scene.eevee.bloom_color = (1, 1, 1)
+        new_scene.eevee.bloom_intensity = 0.1
+        new_scene.eevee.bloom_clamp = 0
+        new_scene.camera.data.lens = 25
+        new_scene.render.resolution_x = 4800
+        new_scene.render.resolution_y = 2700
     
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
+    if type == "Indoor Sunset":
+
+        prop.toggle_toon_edge = True
+        prop.edge_min_line_width = 1
+        prop.edge_max_line_width = 1
+        prop.edge_line_detail = 1.5
+        prop.toggle_toon_face = True
+        prop.toggle_texture = True
+        prop.toggle_shading = True
+        prop.toon_shading_depth = "3"
+        prop.toon_shading_brightness_1 = 3
+        prop.toon_shading_brightness_2 = 5
+        prop.toggle_sun = True
+        prop.sun_strength = 1
+        prop.toggle_shadow = True
+        prop.sun_rotation_x = radians(15)
+        prop.sun_rotation_z = radians(45)
+        prop.image_adjust_brightness = 0
+        prop.image_adjust_contrast = 0
+        prop.image_adjust_color_r = 1.1
+        prop.image_adjust_color_g = 0.9
+        prop.image_adjust_color_b = 0.9
+        prop.image_adjust_hue = 0.5
+        prop.image_adjust_saturation = 1
+        new_scene.eevee.use_bloom = True
+        new_scene.eevee.bloom_threshold = 1
+        new_scene.eevee.bloom_knee = 0.5
+        new_scene.eevee.bloom_radius = 6.5
+        new_scene.eevee.bloom_color = (1, 1, 1)
+        new_scene.eevee.bloom_intensity = 0.5
+        new_scene.eevee.bloom_clamp = 0
+        new_scene.camera.data.lens = 25
+        new_scene.render.resolution_x = 4800
+        new_scene.render.resolution_y = 2700
     
-    prop = new_scene.ACON_prop
-    prop.toggle_toon_edge = True
-    prop.edge_min_line_width = 1
-    prop.edge_max_line_width = 1
-    prop.edge_line_detail = 1.5
-    prop.toggle_toon_face = True
-    prop.toggle_texture = True
-    prop.toggle_shading = True
-    prop.toon_shading_depth = "3"
-    prop.toon_shading_brightness_1 = 3
-    prop.toon_shading_brightness_2 = 5
-    prop.toggle_sun = True
-    prop.sun_strength = 1
-    prop.toggle_shadow = True
-    prop.sun_rotation_x = radians(15)
-    prop.sun_rotation_z = radians(45)
-    prop.image_adjust_brightness = 0
-    prop.image_adjust_contrast = 0
-    prop.image_adjust_color_r = 1.1
-    prop.image_adjust_color_g = 0.9
-    prop.image_adjust_color_b = 0.9
-    prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1
-    new_scene.eevee.use_bloom = True
-    new_scene.eevee.bloom_threshold = 1
-    new_scene.eevee.bloom_knee = 0.5
-    new_scene.eevee.bloom_radius = 6.5
-    new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 0.5
-    new_scene.eevee.bloom_clamp = 0
-    new_scene.camera.data.lens = 25
-    new_scene.render.resolution_x = 4800
-    new_scene.render.resolution_y = 2700
-
-    # create indoor-nighttime preset
-    sceneName = "Indoor Nighttime"
-    new_scene = bpy.data.scenes.get(sceneName)
-
-    if not new_scene:
-        new_scene = old_scene.copy()
-        new_scene.name = sceneName
-
-    if old_scene.camera is new_scene.camera:
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
+    if type == "Indoor Nighttime":
+        
+        prop.toggle_toon_edge = True
+        prop.edge_min_line_width = 1
+        prop.edge_max_line_width = 1
+        prop.edge_line_detail = 1.5
+        prop.toggle_toon_face = True
+        prop.toggle_texture = True
+        prop.toggle_shading = True
+        prop.toon_shading_depth = "3"
+        prop.toon_shading_brightness_1 = 3
+        prop.toon_shading_brightness_2 = 5
+        prop.toggle_sun = True
+        prop.sun_strength = 0.5
+        prop.toggle_shadow = False
+        prop.sun_rotation_x = radians(65)
+        prop.sun_rotation_z = radians(45)
+        prop.image_adjust_brightness = 0.1
+        prop.image_adjust_contrast = 0
+        prop.image_adjust_color_r = 1.05
+        prop.image_adjust_color_g = 1
+        prop.image_adjust_color_b = 0.95
+        prop.image_adjust_hue = 0.5
+        prop.image_adjust_saturation = 1
+        new_scene.eevee.use_bloom = True
+        new_scene.eevee.bloom_threshold = 1
+        new_scene.eevee.bloom_knee = 0.5
+        new_scene.eevee.bloom_radius = 6.5
+        new_scene.eevee.bloom_color = (0.9, 0.9, 1)
+        new_scene.eevee.bloom_intensity = 0.5
+        new_scene.eevee.bloom_clamp = 0
+        new_scene.camera.data.lens = 25
+        new_scene.render.resolution_x = 4800
+        new_scene.render.resolution_y = 2700
     
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
+    if type =="Outdoor Daytime":
+        
+        prop.toggle_toon_edge = True
+        prop.edge_min_line_width = 1
+        prop.edge_max_line_width = 1
+        prop.edge_line_detail = 1.5
+        prop.toggle_toon_face = True
+        prop.toggle_texture = True
+        prop.toggle_shading = True
+        prop.toon_shading_depth = "3"
+        prop.toon_shading_brightness_1 = 3
+        prop.toon_shading_brightness_2 = 5
+        prop.toggle_sun = True
+        prop.sun_strength = 1
+        prop.toggle_shadow = True
+        prop.sun_rotation_x = radians(60)
+        prop.sun_rotation_z = radians(45)
+        prop.image_adjust_brightness = 0.7
+        prop.image_adjust_contrast = 0.5
+        prop.image_adjust_color_r = 1
+        prop.image_adjust_color_g = 1
+        prop.image_adjust_color_b = 1
+        prop.image_adjust_hue = 0.5
+        prop.image_adjust_saturation = 1
+        new_scene.eevee.use_bloom = False
+        new_scene.eevee.bloom_threshold = 1
+        new_scene.eevee.bloom_knee = 0.5
+        new_scene.eevee.bloom_radius = 6.5
+        new_scene.eevee.bloom_color = (1, 1, 1)
+        new_scene.eevee.bloom_intensity = 0.1
+        new_scene.eevee.bloom_clamp = 0
+        new_scene.camera.data.lens = 35
+        new_scene.render.resolution_x = 4800
+        new_scene.render.resolution_y = 2700
     
-    prop = new_scene.ACON_prop
-    prop.toggle_toon_edge = True
-    prop.edge_min_line_width = 1
-    prop.edge_max_line_width = 1
-    prop.edge_line_detail = 1.5
-    prop.toggle_toon_face = True
-    prop.toggle_texture = True
-    prop.toggle_shading = True
-    prop.toon_shading_depth = "3"
-    prop.toon_shading_brightness_1 = 3
-    prop.toon_shading_brightness_2 = 5
-    prop.toggle_sun = True
-    prop.sun_strength = 0.5
-    prop.toggle_shadow = False
-    prop.sun_rotation_x = radians(65)
-    prop.sun_rotation_z = radians(45)
-    prop.image_adjust_brightness = 0.1
-    prop.image_adjust_contrast = 0
-    prop.image_adjust_color_r = 1.05
-    prop.image_adjust_color_g = 1
-    prop.image_adjust_color_b = 0.95
-    prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1
-    new_scene.eevee.use_bloom = True
-    new_scene.eevee.bloom_threshold = 1
-    new_scene.eevee.bloom_knee = 0.5
-    new_scene.eevee.bloom_radius = 6.5
-    new_scene.eevee.bloom_color = (0.9, 0.9, 1)
-    new_scene.eevee.bloom_intensity = 0.5
-    new_scene.eevee.bloom_clamp = 0
-    new_scene.camera.data.lens = 25
-    new_scene.render.resolution_x = 4800
-    new_scene.render.resolution_y = 2700
-
-    # create outdoor-daytime preset
-    sceneName = "Outdoor Daytime"
-    new_scene = bpy.data.scenes.get(sceneName)
-
-    if not new_scene:
-        new_scene = old_scene.copy()
-        new_scene.name = sceneName
-
-    if old_scene.camera is new_scene.camera:
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
+    if type =="Outdoor Sunset":
+        
+        prop.toggle_toon_edge = True
+        prop.edge_min_line_width = 1
+        prop.edge_max_line_width = 1
+        prop.edge_line_detail = 1.5
+        prop.toggle_toon_face = True
+        prop.toggle_texture = True
+        prop.toggle_shading = True
+        prop.toon_shading_depth = "3"
+        prop.toon_shading_brightness_1 = 3
+        prop.toon_shading_brightness_2 = 5
+        prop.toggle_sun = True
+        prop.sun_strength = 1
+        prop.toggle_shadow = True
+        prop.sun_rotation_x = radians(15)
+        prop.sun_rotation_z = radians(45)
+        prop.image_adjust_brightness = 0
+        prop.image_adjust_contrast = 0
+        prop.image_adjust_color_r = 1.1
+        prop.image_adjust_color_g = 0.9
+        prop.image_adjust_color_b = 0.9
+        prop.image_adjust_hue = 0.5
+        prop.image_adjust_saturation = 1
+        new_scene.eevee.use_bloom = True
+        new_scene.eevee.bloom_threshold = 0.8
+        new_scene.eevee.bloom_knee = 0.5
+        new_scene.eevee.bloom_radius = 6.5
+        new_scene.eevee.bloom_color = (1, 0.9, 0.8)
+        new_scene.eevee.bloom_intensity = 0.5
+        new_scene.eevee.bloom_clamp = 0
+        new_scene.camera.data.lens = 35
+        new_scene.render.resolution_x = 4800
+        new_scene.render.resolution_y = 2700
     
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
-    
-    prop = new_scene.ACON_prop
-    prop.toggle_toon_edge = True
-    prop.edge_min_line_width = 1
-    prop.edge_max_line_width = 1
-    prop.edge_line_detail = 1.5
-    prop.toggle_toon_face = True
-    prop.toggle_texture = True
-    prop.toggle_shading = True
-    prop.toon_shading_depth = "3"
-    prop.toon_shading_brightness_1 = 3
-    prop.toon_shading_brightness_2 = 5
-    prop.toggle_sun = True
-    prop.sun_strength = 1
-    prop.toggle_shadow = True
-    prop.sun_rotation_x = radians(60)
-    prop.sun_rotation_z = radians(45)
-    prop.image_adjust_brightness = 0.7
-    prop.image_adjust_contrast = 0.5
-    prop.image_adjust_color_r = 1
-    prop.image_adjust_color_g = 1
-    prop.image_adjust_color_b = 1
-    prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1
-    new_scene.eevee.use_bloom = False
-    new_scene.eevee.bloom_threshold = 1
-    new_scene.eevee.bloom_knee = 0.5
-    new_scene.eevee.bloom_radius = 6.5
-    new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 0.1
-    new_scene.eevee.bloom_clamp = 0
-    new_scene.camera.data.lens = 35
-    new_scene.render.resolution_x = 4800
-    new_scene.render.resolution_y = 2700
+    if type =="Outdoor Nighttime":
+        
+        prop.toggle_toon_edge = True
+        prop.edge_min_line_width = 1
+        prop.edge_max_line_width = 1
+        prop.edge_line_detail = 1.5
+        prop.toggle_toon_face = True
+        prop.toggle_texture = True
+        prop.toggle_shading = True
+        prop.toon_shading_depth = "3"
+        prop.toon_shading_brightness_1 = 3
+        prop.toon_shading_brightness_2 = 5
+        prop.toggle_sun = True
+        prop.sun_strength = 0.4
+        prop.toggle_shadow = False
+        prop.sun_rotation_x = radians(60)
+        prop.sun_rotation_z = radians(45)
+        prop.image_adjust_brightness = -0.3
+        prop.image_adjust_contrast = -0.25
+        prop.image_adjust_color_r = 0.9
+        prop.image_adjust_color_g = 0.9
+        prop.image_adjust_color_b = 1.1
+        prop.image_adjust_hue = 0.5
+        prop.image_adjust_saturation = 1.2
+        new_scene.eevee.use_bloom = True
+        new_scene.eevee.bloom_threshold = 1
+        new_scene.eevee.bloom_knee = 0.5
+        new_scene.eevee.bloom_radius = 6.5
+        new_scene.eevee.bloom_color = (1, 1, 1)
+        new_scene.eevee.bloom_intensity = 1
+        new_scene.eevee.bloom_clamp = 0
+        new_scene.camera.data.lens = 35
+        new_scene.render.resolution_x = 4800
+        new_scene.render.resolution_y = 2700
 
-    # create outdoor-sunset preset
-    sceneName = "Outdoor Sunset"
-    new_scene = bpy.data.scenes.get(sceneName)
-
-    if not new_scene:
-        new_scene = old_scene.copy()
-        new_scene.name = sceneName
-
-    if old_scene.camera is new_scene.camera:
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
-    
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
-    
-    prop = new_scene.ACON_prop
-    prop.toggle_toon_edge = True
-    prop.edge_min_line_width = 1
-    prop.edge_max_line_width = 1
-    prop.edge_line_detail = 1.5
-    prop.toggle_toon_face = True
-    prop.toggle_texture = True
-    prop.toggle_shading = True
-    prop.toon_shading_depth = "3"
-    prop.toon_shading_brightness_1 = 3
-    prop.toon_shading_brightness_2 = 5
-    prop.toggle_sun = True
-    prop.sun_strength = 1
-    prop.toggle_shadow = True
-    prop.sun_rotation_x = radians(15)
-    prop.sun_rotation_z = radians(45)
-    prop.image_adjust_brightness = 0
-    prop.image_adjust_contrast = 0
-    prop.image_adjust_color_r = 1.1
-    prop.image_adjust_color_g = 0.9
-    prop.image_adjust_color_b = 0.9
-    prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1
-    new_scene.eevee.use_bloom = True
-    new_scene.eevee.bloom_threshold = 0.8
-    new_scene.eevee.bloom_knee = 0.5
-    new_scene.eevee.bloom_radius = 6.5
-    new_scene.eevee.bloom_color = (1, 0.9, 0.8)
-    new_scene.eevee.bloom_intensity = 0.5
-    new_scene.eevee.bloom_clamp = 0
-    new_scene.camera.data.lens = 35
-    new_scene.render.resolution_x = 4800
-    new_scene.render.resolution_y = 2700
-
-    # create outdoor-nighttime preset
-    sceneName = "Outdoor Nighttime"
-    new_scene = bpy.data.scenes.get(sceneName)
-
-    if not new_scene:
-        new_scene = old_scene.copy()
-        new_scene.name = sceneName
-
-    if old_scene.camera is new_scene.camera:
-        new_scene.camera = old_scene.camera.copy()
-        new_scene.camera.data = old_scene.camera.data.copy()
-        new_scene.collection.objects.link(new_scene.camera)
-    
-        try: new_scene.collection.objects.unlink(old_scene.camera)
-        except: print("Failed to unlink camera from old scene.")
-    
-    prop = new_scene.ACON_prop
-    prop.toggle_toon_edge = True
-    prop.edge_min_line_width = 1
-    prop.edge_max_line_width = 1
-    prop.edge_line_detail = 1.5
-    prop.toggle_toon_face = True
-    prop.toggle_texture = True
-    prop.toggle_shading = True
-    prop.toon_shading_depth = "3"
-    prop.toon_shading_brightness_1 = 3
-    prop.toon_shading_brightness_2 = 5
-    prop.toggle_sun = True
-    prop.sun_strength = 0.4
-    prop.toggle_shadow = False
-    prop.sun_rotation_x = radians(60)
-    prop.sun_rotation_z = radians(45)
-    prop.image_adjust_brightness = -0.3
-    prop.image_adjust_contrast = -0.25
-    prop.image_adjust_color_r = 0.9
-    prop.image_adjust_color_g = 0.9
-    prop.image_adjust_color_b = 1.1
-    prop.image_adjust_hue = 0.5
-    prop.image_adjust_saturation = 1.2
-    new_scene.eevee.use_bloom = True
-    new_scene.eevee.bloom_threshold = 1
-    new_scene.eevee.bloom_knee = 0.5
-    new_scene.eevee.bloom_radius = 6.5
-    new_scene.eevee.bloom_color = (1, 1, 1)
-    new_scene.eevee.bloom_intensity = 1
-    new_scene.eevee.bloom_clamp = 0
-    new_scene.camera.data.lens = 35
-    new_scene.render.resolution_x = 4800
-    new_scene.render.resolution_y = 2700
-
-
-    # set to original scene in ui panel
-    context.scene.ACON_prop.scene = old_scene.name
+    return new_scene
 
