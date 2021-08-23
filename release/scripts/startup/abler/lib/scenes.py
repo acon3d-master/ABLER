@@ -18,7 +18,7 @@
 
 
 import bpy
-from . import shadow
+from . import shadow, layers
 from .materials import materials_handler
 from types import SimpleNamespace
 from math import radians
@@ -72,6 +72,7 @@ def loadScene(self, context):
     materials_handler.changeImageAdjustColor(self, override)
     materials_handler.changeImageAdjustHue(self, override)
     materials_handler.changeImageAdjustSaturation(self, override)
+    layers.handleLayerVisibilityOnSceneChange(current_scene, target_scene)
     
     context.window.scene = target_scene
 

@@ -40,12 +40,23 @@ class CollectionLayerExcludeProperties(bpy.types.PropertyGroup):
             objs.hide_viewport = not(self.value)
             objs.hide_render = not(self.value)
 
+    def updateLayerLock(self, context):
+        target_layer = bpy.data.collections[self.name]
+        for objs in target_layer.objects:
+            objs.hide_select = self.lock
+
     name: bpy.props.StringProperty(name="Layer Name", default="")
     
     value: bpy.props.BoolProperty(
         name="Layer Exclude",
         default=True,
         update=updateLayerVis
+    )
+    
+    lock: bpy.props.BoolProperty(
+        name="Layer Lock",
+        default=False,
+        update=updateLayerLock
     )
 
 
