@@ -3632,7 +3632,7 @@ msgstr "F-정지"
 
 
 msgid "F-Stop ratio (lower numbers give more defocus, higher numbers give a sharper image)"
-msgstr "F-정지 비율 (낮은 값는 초점을 더 흐리게, 높은 값는 더 선명한 이미지를 제공함)"
+msgstr "흐려짐의 정도를 조정합니다. 낮을수록 흐려집니다"
 
 
 msgid "Ratio"
@@ -3660,7 +3660,7 @@ msgstr "초점 오브젝트"
 
 
 msgid "Use this object to define the depth of field focal point"
-msgstr "이 오브젝트를 사용하여 피사계 심도 초점을 정의합니다"
+msgstr "스포이드 버튼으로 선택한 오브젝트에 초점을 맞춥니다. 해제하려면 우측의 X표시를 눌러주세요"
 
 
 msgid "Use Depth of Field"
@@ -14462,7 +14462,7 @@ msgstr "그린"
 
 
 msgid "Blue"
-msgstr "불루"
+msgstr "블루"
 
 
 msgid "Show Line"
@@ -16003,7 +16003,7 @@ msgstr "초점의 길이"
 
 
 msgid "Perspective Camera lens value in millimeters"
-msgstr "밀리미터의 원근법 카메라 렌즈 값"
+msgstr "초점의 길이를 조정합니다. 초점이 짧을수록 광각, 초점이 길수록 평행투영에 가까워집니다"
 
 
 msgid "Lens Unit"
@@ -18405,7 +18405,7 @@ msgstr "사각형 스폿 라이트 셰이프를 캐스트"
 
 
 msgid "Sun Light"
-msgstr "태양 라이트"
+msgstr "햇빛"
 
 
 msgid "Constant direction parallel ray Light"
@@ -54386,7 +54386,7 @@ msgstr "뷰포트 렌더"
 
 
 msgid "Take a snapshot of the active viewport"
-msgstr "활성 뷰포트의 스냅 샷을 찍기"
+msgstr "뷰포트에 보이는 그대로 빠르게 렌더합니다"
 
 
 msgid "Render files from the animation range of this scene"
@@ -54767,7 +54767,7 @@ msgstr "안전 영역 프리셋을 추가 또는 제거"
 
 msgctxt "Operator"
 msgid "Delete Scene"
-msgstr "씬을 삭제"
+msgstr "씬 삭제"
 
 
 msgid "Delete active scene"
@@ -59091,7 +59091,7 @@ msgstr "비행 네비게이션"
 
 
 msgid "Interactively fly around the scene"
-msgstr "씬 주위에 대화형 날기"
+msgstr "W, A, S, D / Q, E / 방향키 / 마우스를 활용하여 뷰포트를 움직입니다"
 
 
 msgctxt "Operator"
@@ -70118,23 +70118,23 @@ msgstr "빛번짐 효과에 적용된 색상"
 
 
 msgid "Blend factor"
-msgstr "혼합 팩터"
+msgstr "빛번짐의 강도를 조정합니다"
 
 
 msgid "Knee"
-msgstr "굽은 구조"
+msgstr "변곡점"
 
 
 msgid "Makes transition between under/over-threshold gradual"
-msgstr "점진적으로 언더/오버 스레숄드 사이 변환을 만들기"
+msgstr "임계값 전후의 값을 더 부드럽게 변화시킵니다"
 
 
 msgid "Bloom spread distance"
-msgstr "빛번짐 효과 퍼지는 거리"
+msgstr "빛번짐 효과가 퍼지는 거리를 조정합니다"
 
 
 msgid "Filters out pixels under this level of brightness"
-msgstr "이 밝기 레벨에서 픽셀을 필터링합니다"
+msgstr "임계값이 작을수록 더 많이 번집니다"
 
 
 msgid "Max Size"
@@ -83013,28 +83013,28 @@ msgstr "작업자 검색..."
 
 
 msgctxt "Operator"
-msgid "Tutorials"
-msgstr "튜토리얼"
+msgid "Blender Tutorials"
+msgstr "Blender 튜토리얼"
 
 
 msgctxt "Operator"
-msgid "Support"
-msgstr "지원"
+msgid "Blender Support"
+msgstr "Blender 지원"
 
 
 msgctxt "Operator"
-msgid "User Communities"
-msgstr "사용자 커뮤니티"
+msgid "Blender User Communities"
+msgstr "Blender 사용자 커뮤니티"
 
 
 msgctxt "Operator"
-msgid "Developer Community"
-msgstr "개발자 커뮤니티"
+msgid "Blender Developer Community"
+msgstr "Blender 개발자 커뮤니티"
 
 
 msgctxt "Operator"
-msgid "Python API Reference"
-msgstr "Python API 참조"
+msgid "Blender Python API Reference"
+msgstr "Blender Python API 참조"
 
 
 msgctxt "Operator"
@@ -83051,8 +83051,8 @@ msgstr "활성 항목이 없음"
 
 
 msgctxt "Operator"
-msgid "Developer Documentation"
-msgstr "개발자 문서"
+msgid "Blender Developer Documentation"
+msgstr "Blender 개발자 문서"
 
 
 msgid "Node Label"
@@ -92949,6 +92949,14 @@ msgid "Toon Style"
 msgstr "만화 스타일"
 
 
+msgid "Toon Style Edge"
+msgstr "만화 스타일 모서리"
+
+
+msgid "Toon Style Face"
+msgstr "만화 스타일 표면"
+
+
 msgid "Min Line Width"
 msgstr "선 굵기 (최소)"
 
@@ -93006,7 +93014,7 @@ msgstr "흐려짐 정도"
 
 
 msgid "Quick Render"
-msgstr "빠른 렌더 (뷰포트 사용)"
+msgstr "빠른 렌더"
 
 
 msgid "Full Render"
@@ -93033,16 +93041,16 @@ msgid "Azimuth"
 msgstr "방위각"
 
 
-msgid "Please Login"
-msgstr "에이콘3D 아이디로 로그인"
+msgid "Please login with your ACON3D account."
+msgstr "에이콘3D 계정으로 로그인해주세요."
 
 
 msgid "Username"
 msgstr "아이디"
 
 
-msgid " Submit"
-msgstr "  입력"
+msgid "  Submit"
+msgstr "    입력"
 
 
 msgid "See ACON3D models!"
@@ -93050,7 +93058,7 @@ msgstr "에이콘3D 보러가기"
 
 
 msgid "Don't have an ACON3D account?"
-msgstr "아이디가 아직 없으신가요?"
+msgstr "에이콘3D 계정이 없으신가요?"
 
 
 msgid "Blender Release Notes"
@@ -93073,5 +93081,190 @@ msgid "Welcome!"
 msgstr "환영합니다!"
 
 
-msgid "Click out to start Abler."
+msgid "Please click outside the popup box to start ABLER."
 msgstr "로그인창 바깥을 클릭하여 에이블러를 시작해주세요!"
+
+
+msgid "Brightness 1"
+msgstr "밝기 1"
+
+
+msgid "Brightness 2"
+msgstr "밝기 2"
+
+
+msgid "Create Scene"
+msgstr "씬 생성"
+
+
+msgid "Create a new scene with current settings"
+msgstr "현재 설정을 이용하여 새로운 씬을 만듭니다"
+
+
+msgid "Remove Scene"
+msgstr "씬 제거"
+
+
+msgid "Remove current scene from project"
+msgstr "선택된 씬을 이 프로젝트에서 제거합니다"
+
+
+msgid "Change scene"
+msgstr "씬을 전환합니다"
+
+msgid "Toggle toon style edge expression"
+msgstr "만화스타일 모서리 표시하기 토글 버튼"
+
+
+msgid "Import objects according to the current settings"
+msgstr "현재 설정에 맞추어 모델을 가져옵니다"
+
+
+msgid "Adjust the thickness of minimum depth edges"
+msgstr "심도가 가장 낮은 선의 굵기를 조정합니다"
+
+
+msgid "Adjust the thickness of maximum depth edges"
+msgstr "심도가 가장 높은 선의 굵기를 조정합니다"
+
+
+msgid "Amount of edges to be shown. (recommended: 1.2)"
+msgstr "보여질 모서리의 양을 조정합니다 (권장: 1.2)"
+
+
+msgid "Toggle toon style face expression"
+msgstr "만화스타일 면 표시하기 토글 버튼"
+
+
+msgid "Toggle material texture"
+msgstr "면 재질 표시하기 토글 버튼"
+
+
+msgid "Toggle shading"
+msgstr "음영 표시하기 토글 버튼"
+
+
+msgid "Change number of colors used for shading"
+msgstr "만화스타일 음영 표현에 사용되는 색의 수를 조정합니다"
+
+
+msgid "Change shading brightness (Range: 0 ~ 10)"
+msgstr "음영 표현의 밝기를 조정합니다 (범위: 0 ~ 10)"
+
+
+msgid "Adjust brightness of general image (Range: -1 ~ 1)"
+msgstr "전반적인 이미지의 밝기를 조정합니다 (범위: -1 ~ 1)"
+
+
+msgid "Adjust contrast of general image (Range: -1 ~ 1)"
+msgstr "전반적인 이미지의 대비를 조정합니다 (범위: -1 ~ 1)"
+
+
+msgid "Adjust color balance (Range: 0 ~ 2)"
+msgstr "색상 밸런스를 조정합니다 (범위: 0 ~ 2)"
+
+
+msgid "Adjust hue (Range: 0 ~ 1)"
+msgstr "색조를 조정합니다 (범위: 0 ~ 1)"
+
+
+msgid "Adjust saturation (Range: 0 ~ 2)"
+msgstr "채도를 조정합니다 (범위: 0 ~ 2)"
+
+
+msgid "Adjust sun altitude"
+msgstr "그림자의 길이(태양의 고도)를 조정합니다"
+
+
+msgid "Adjust sun azimuth"
+msgstr "그림자의 방향(태양의 방위각)을 조정합니다"
+
+
+msgid "Render according to the set pixel"
+msgstr "설정한 픽셀에 맞추어 렌더합니다"
+
+
+msgid "Renders only lines according to the set pixel"
+msgstr "설정한 픽셀에 맞추어 선만 렌더합니다"
+
+
+msgid "Renders only shadow according to the set pixel"
+msgstr "설정한 픽셀에 맞추어 그림자만 렌더합니다"
+
+
+msgid "Clone selected material"
+msgstr "선택한 재질을 복사합니다"
+
+
+msgctxt "Operator"
+msgid "About ABLER"
+msgstr "ABLER에 대하여"
+
+
+msgid "Open a window with information about ABLER"
+msgstr "ABLER에 대한 정보창을 엽니다"
+
+
+msgid "Camera View"
+msgstr "카메라 뷰"
+
+
+msgid "Fit Camera Region to Viewport"
+msgstr "카메라 영역을 뷰포트 크기에 맞도록 조정합니다"
+
+
+msgid "Toggle Toolbar"
+msgstr "툴바 열기 / 닫기"
+
+
+msgid "Toggle toolbar visibility"
+msgstr "툴바를 열거나 닫습니다"
+
+
+msgid "ABLER Guide"
+msgstr "ABLER 가이드"
+
+
+msgid "Sunlight strength in watts per meter squared (W/m^2)"
+msgstr "제곱미터당 와트수로 나타낸 태양의 강도 (W/m^2)"
+
+
+msgid "Indoor Daytime"
+msgstr "실내 일반"
+
+
+msgid "Indoor Sunset"
+msgstr "실내 노을"
+
+
+msgid "Indoor Nighttime"
+msgstr "실내 밤"
+
+
+msgid "Outdoor Daytime"
+msgstr "실외 일반"
+
+
+msgid "Outdoor Sunset"
+msgstr "실외 노을"
+
+
+msgid "Outdoor Nighttime"
+msgstr "실외 밤"
+
+
+msgid "Login failed"
+msgstr "로그인에 실패하였습니다"
+
+
+msgid "When logging into ABLER, some letters may not be"
+msgstr "입력한 문자 중 일부가 누락되는 현상이 일부 환경에서 발생할"
+
+
+msgid "entered properly. Please copy & paste your password"
+msgstr "수 있습니다. 로그인 정보를 입력할 때 복사 및 붙여넣기를"
+
+
+msgid "or type slowly when logging in."
+msgstr "사용하거나 천천히 입력하시기를 부탁드립니다."
+

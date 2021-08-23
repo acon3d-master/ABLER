@@ -492,7 +492,7 @@ def get_applescript(requested_applescript: Path) -> Path:
     if requested_applescript:
         return requested_applescript.absolute()
 
-    return DARWIN_DIRECTORY / 'blender.applescript'
+    return DARWIN_DIRECTORY / 'abler.applescript'
 
 
 def get_volume_name_from_dmg_filepath(dmg_filepath: Path) -> str:

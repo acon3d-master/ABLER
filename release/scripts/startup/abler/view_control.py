@@ -1,3 +1,22 @@
+# ##### BEGIN GPL LICENSE BLOCK #####
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation; either version 2
+#  of the License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ##### END GPL LICENSE BLOCK #####
+
+
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -10,8 +29,9 @@ bl_info = {
     "tracker_url": "",
     "category": "ACON3D"
 }
-import bpy
 
+
+import bpy
 from .lib import cameras
 
 
@@ -33,7 +53,6 @@ def genCameraName(name, i=1):
 
 
 class CreateCameraOperator(bpy.types.Operator):
-    """Create new camera with current view"""
     bl_idname = "acon3d.create_camera"
     bl_label = "Create New Camera"
     bl_translation_context = "*"
@@ -64,7 +83,6 @@ class CreateCameraOperator(bpy.types.Operator):
 
 
 class UpdateCustomCameraOperator(bpy.types.Operator):
-    """Move view to user-created camera"""
     bl_idname = "acon3d.update_custom_camera"
     bl_label = "Update"
     bl_translation_context = "*"
@@ -87,7 +105,6 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
 
 
 class DeleteCameraOperator(bpy.types.Operator):
-    """Delete selected user-created camera"""
     bl_idname = "acon3d.delete_camera"
     bl_label = "Delete"
     bl_translation_context = "*"
@@ -208,7 +225,8 @@ class RemoveBackgroundOperator(bpy.types.Operator):
         )
 
     def execute(self, context):
-        image = bpy.context.scene.camera.data.background_images[self.index]
+        image = context.scene.camera.data.background_images[self.index]
+        image.image = None
         bpy.context.scene.camera.data.background_images.remove(image)
         return {'FINISHED'}
 
@@ -303,3 +321,4 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
+
