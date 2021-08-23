@@ -18,6 +18,8 @@
 
 
 import bpy
+import ctypes
+import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
 
@@ -64,18 +66,47 @@ class Acon3dAlertOperator(bpy.types.Operator):
 class Acon3dModalOperator(bpy.types.Operator):
     bl_idname = "acon3d.modal_operator"
     bl_label = "Login Modal Operator"
-
+    pass_key = {
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
+                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
+                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z', 'ZERO', 'ONE', 'TWO', 'THREE',
+                'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT',
+                'NINE',
+                'BACK_SPACE', 'SEMI_COLON', 'PERIOD', 'COMMA', 'QUOTE',
+                'ACCENT_GRAVE', 'MINUS', 'PLUS', 'SLASH', 'BACK_SLASH', 'EQUAL',
+                'LEFT_BRACKET', 'RIGHT_BRACKET', 'NUMPAD_2', 'NUMPAD_4', 'NUMPAD_6',
+                'NUMPAD_8', 'NUMPAD_1', 'NUMPAD_3', 'NUMPAD_5', 'NUMPAD_7',
+                'NUMPAD_9', 'NUMPAD_PERIOD', 'NUMPAD_SLASH', 'NUMPAD_ASTERIX',
+                'NUMPAD_0', 'NUMPAD_MINUS', 'NUMPAD_ENTER', 'NUMPAD_PLUS',
+    }
     def execute(self, context):
         return {'FINISHED'}
 
     def modal(self, context, event):
         userInfo = bpy.data.meshes.get("ACON_userInfo")
+        def char2key(c):
+            result = ctypes.windll.User32.VkKeyScanW(ord(c))
+            shift_state = (result & 0xFF00) >> 8
+            vk_key = result & 0xFF
+            return vk_key
+
 
         if userInfo and userInfo.ACON_prop.login_status == 'SUCCESS':
             return {'FINISHED'}
 
         if event.type == 'LEFTMOUSE':
             bpy.ops.wm.splash('INVOKE_DEFAULT')
+        if event.type in self.pass_key:
+            if platform.system() == 'Windows':
+                if event.type == 'BACK_SPACE':
+                    ctypes.windll.user32.keybd_event(char2key('\b'))
+                else:
+                    ctypes.windll.user32.keybd_event(char2key(event.unicode))
+            elif platform.system() == 'Darwin':
+                print("macOS")
+            elif platform.system() == 'Linux':
+                print("Linux")
 
         return {'RUNNING_MODAL'}
 
@@ -85,9 +116,9 @@ class Acon3dModalOperator(bpy.types.Operator):
 
 
 def requestLogin():
-
+    userInfo = bpy.data.meshes.get("ACON_userInfo")
+    prop = userInfo.ACON_prop
     try:
-
         window = bpy.context.window
         width = window.width
         height = window.height
@@ -97,8 +128,6 @@ def requestLogin():
         path_cookiesFolder = os.path.join(path, 'cookies')
         path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
 
-        userInfo = bpy.data.meshes.get("ACON_userInfo")
-        prop = userInfo.ACON_prop
 
         if prop.show_password:
             prop.password = prop.password_shown
@@ -169,15 +198,17 @@ def requestLogin():
         
         bpy.app.timers.register(moveMouse, first_interval=0.1)
 
-    except:
-        print("Login request has failed.")
-        bpy.ops.acon3d.alert(
-            'INVOKE_DEFAULT',
-            title="Login failed",
-            message_1="When logging into ABLER, some letters may not be",
-            message_2="entered properly. Please copy & paste your password",
-            message_3="or type slowly when logging in."
-        )
+    except Exception as e:
+        if prop.login_status != 'SUCCESS':
+            print("Login request has failed.")
+            print(e)
+            bpy.ops.acon3d.alert(
+                'INVOKE_DEFAULT',
+                title="Login failed",
+                message_1="When logging into ABLER, some letters may not be",
+                message_2="entered properly. Please copy & paste your password",
+                message_3="or type slowly when logging in."
+            )
 
     bpy.context.window.cursor_set("DEFAULT")
 
@@ -252,10 +283,12 @@ def open_credential_modal(dummy):
 
     except: print("Failed to load cookies")
 
-    if userInfo.ACON_prop.login_status is not 'SUCCESS':
+    if userInfo.ACON_prop.login_status != 'SUCCESS':
         bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
     
-
+@persistent
+def hide_header(dummy):
+    bpy.data.screens['ACON3D'].areas[0].spaces[0].show_region_header = False
 
 classes = (
     Acon3dAlertOperator,
@@ -270,11 +303,13 @@ def register():
         bpy.utils.register_class(cls)
 
     bpy.app.handlers.load_post.append(open_credential_modal)
+    bpy.app.handlers.load_post.append(hide_header)
 
 
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
     
+    bpy.app.handlers.load_post.remove(hide_header)
     bpy.app.handlers.load_post.remove(open_credential_modal)
 

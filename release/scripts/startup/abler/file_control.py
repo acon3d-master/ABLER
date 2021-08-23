@@ -46,7 +46,6 @@ def load_handler(dummy):
     shadow.setupSharpShadow()
     render.setupBackgroundImagesCompositor()
     materials_setup.applyAconToonStyle()
-    scenes.setupPresets()
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):
@@ -149,7 +148,6 @@ class Acon3dImportPanel(bpy.types.Panel):
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
     
     def draw_header(self, context):
         layout = self.layout

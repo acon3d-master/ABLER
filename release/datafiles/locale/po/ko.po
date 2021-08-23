@@ -972,7 +972,7 @@ msgstr "포인트"
 
 
 msgid "Edge"
-msgstr "에지"
+msgstr "모서리"
 
 
 msgid "Face"
@@ -18909,7 +18909,7 @@ msgstr "스무스로 간주되는 페이스 노멀 사이의 최대 각도 (커�
 
 
 msgid "Edges"
-msgstr "에지"
+msgstr "모서리"
 
 
 msgid "Edges of the mesh"
@@ -82093,7 +82093,7 @@ msgstr "버텍스"
 
 msgctxt "Operator"
 msgid "Edge"
-msgstr "에지"
+msgstr "모서리"
 
 
 msgctxt "Operator"
@@ -93267,4 +93267,8 @@ msgstr "수 있습니다. 로그인 정보를 입력할 때 복사 및 붙여넣
 
 msgid "or type slowly when logging in."
 msgstr "사용하거나 천천히 입력하시기를 부탁드립니다."
+
+
+msgid "Use Current Scene Settings"
+msgstr "현재 씬 설정을 그대로 사용"
 

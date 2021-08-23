@@ -34,7 +34,7 @@ const UserDef U_default = {
     .versionfile = BLENDER_FILE_VERSION,
     .subversionfile = BLENDER_FILE_SUBVERSION,
     .flag = (USER_AUTOSAVE | USER_TOOLTIPS | USER_SAVE_PREVIEWS | USER_RELPATHS |
-             USER_RELEASECONFIRM | USER_SCRIPT_AUTOEXEC_DISABLE | USER_NONEGFRAMES),
+             USER_RELEASECONFIRM | USER_SCRIPT_AUTOEXEC_DISABLE | USER_NONEGFRAMES | USER_FILENOUI),
     .dupflag = USER_DUP_MESH | USER_DUP_CURVE | USER_DUP_SURF | USER_DUP_FONT | USER_DUP_MBALL |
                USER_DUP_LAMP | USER_DUP_ARM | USER_DUP_ACT | USER_DUP_LIGHTPROBE |
                USER_DUP_GPENCIL,
@@ -58,8 +58,8 @@ const UserDef U_default = {
     .mini_axis_type = USER_MINI_AXIS_TYPE_GIZMO,
     .uiflag = (USER_FILTERFILEEXTS | USER_DRAWVIEWINFO | USER_PLAINMENUS |
                USER_LOCK_CURSOR_ADJUST | USER_DEPTH_CURSOR | USER_AUTOPERSP | USER_GLOBALUNDO |
-               USER_HIDE_DOT | USER_SHOW_GIZMO_NAVIGATE | USER_SHOW_VIEWPORTNAME | USER_SHOW_FPS |
-               USER_CONTINUOUS_MOUSE | USER_SAVE_PROMPT),
+               USER_HIDE_DOT | USER_SHOW_VIEWPORTNAME | USER_SHOW_FPS |
+               USER_CONTINUOUS_MOUSE | USER_SAVE_PROMPT | USER_ORBIT_SELECTION),
     .uiflag2 = USER_UIFLAG2_UNUSED_0,
     .gpu_flag = USER_GPU_FLAG_OVERLAY_SMOOTH_WIRE,
     .app_flag = 0,
@@ -105,7 +105,7 @@ const UserDef U_default = {
     .autoexec_paths = {NULL},
     .user_menus = {NULL},
 
-    .keyconfigstr = "Blender",
+    .keyconfigstr = "ABLER",
     .undosteps = 32,
     .undomemory = 0,
     .gp_manhattandist = 1,
@@ -189,13 +189,13 @@ const UserDef U_default = {
     .pie_menu_threshold = 12,
     .opensubdiv_compute_type = 0,
     .factor_display_type = USER_FACTOR_AS_FACTOR,
-    .render_display_type = USER_RENDER_DISPLAY_WINDOW,
-    .filebrowser_display_type = USER_TEMP_SPACE_DISPLAY_WINDOW,
+    .render_display_type = USER_RENDER_DISPLAY_SCREEN,
+    .filebrowser_display_type = USER_TEMP_SPACE_DISPLAY_FULLSCREEN,
     .viewport_aa = 8,
 
     .walk_navigation =
         {
-            .mouse_speed = 1,
+            .mouse_speed = 0.5,
             .walk_speed = 2.5,
             .walk_speed_factor = 5,
             .view_height = 1.6,
@@ -230,7 +230,7 @@ const UserDef U_default = {
 
     .collection_instance_empty_size = 1.0f,
 
-    .statusbar_flag = STATUSBAR_SHOW_VERSION,
+    .statusbar_flag = STATUSBAR_SHOW_VERSION | STATUSBAR_SHOW_VRAM | STATUSBAR_SHOW_STATS | STATUSBAR_SHOW_MEMORY,
 
     .runtime =
         {
