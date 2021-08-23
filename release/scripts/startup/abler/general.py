@@ -144,21 +144,21 @@ class ToggleToolbarOperator(bpy.types.Operator):
 
 class Acon3dImportPanel(bpy.types.Panel):
     bl_idname = "ACON3D_PT_import"
-    bl_label = "File Control"
+    bl_label = "General"
     bl_category = "ACON3D"
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'UI'
     
     def draw_header(self, context):
         layout = self.layout
-        layout.label(icon="FILE")
+        layout.label(icon="EVENT_A")
 
     def draw(self, context):
         layout = self.layout
         
         row = layout.row()
         row.scale_y = 1.0
-        row.operator("wm.open_mainfile").load_ui = False
+        row.operator("wm.open_mainfile", text="File Open").load_ui = False
         row.operator("acon3d.import_blend", text="Import")
         
         row = layout.row()
@@ -169,6 +169,8 @@ class Acon3dImportPanel(bpy.types.Panel):
         row.prop(view, "language")
         row = layout.row()
         row.operator("acon3d.context_toggle")
+        row = layout.row()
+        row.operator('view3d.walk', text='Fly (shift + `)', text_ctxt="*")
 
 
 classes = (
