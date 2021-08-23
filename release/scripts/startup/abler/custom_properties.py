@@ -279,6 +279,10 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=materials_handler.changeImageAdjustSaturation
     )
 
+    selected_objects_str : bpy.props.StringProperty(
+        name="Selected Objects"
+    )
+
 
 class AconMaterialProperty(bpy.types.PropertyGroup):
     @classmethod
@@ -346,11 +350,36 @@ class AconMeshProperty(bpy.types.PropertyGroup):
     )
 
 
+class AconObjectGroupProperty(bpy.types.PropertyGroup):
+
+    name : bpy.props.StringProperty(
+        name="Group",
+        description="Group",
+        default=""
+    )
+
+
+class AconObjectProperty(bpy.types.PropertyGroup):
+    @classmethod
+    def register(cls):
+        bpy.types.Object.ACON_prop = bpy.props.PointerProperty(type=AconObjectProperty)
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Object.ACON_prop
+
+    group : bpy.props.CollectionProperty(
+            type=AconObjectGroupProperty
+        )
+
+
 classes = (
     CollectionLayerExcludeProperties,
     AconSceneProperty,
     AconMaterialProperty,
     AconMeshProperty,
+    AconObjectGroupProperty,
+    AconObjectProperty,
 )
 
 
