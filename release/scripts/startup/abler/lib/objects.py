@@ -21,11 +21,11 @@ def setConstraintToCameraByObject(obj, context=None):
         if not const:
             const = obj.constraints.new(type="COPY_ROTATION")
             const.name = "ACON_const_copyRotation"
-            const.target = context.scene.camera
             const.use_x = False
             const.use_y = False
             const.use_z = True
 
+        const.target = context.scene.camera
         const.mute = False
 
     elif const:
