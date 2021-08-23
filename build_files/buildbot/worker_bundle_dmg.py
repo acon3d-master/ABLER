@@ -332,7 +332,7 @@ def run_applescript(applescript: Path,
                         line = re.sub('to file ".*"',
                                       f'to file "{background_image_short}"',
                                       line)
-                line = line.replace('blender.app', main_app_bundle.name)
+                line = line.replace('abler.app', main_app_bundle.name)
                 temp_applescript.write(line)
 
         temp_applescript.flush()

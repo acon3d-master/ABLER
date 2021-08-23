@@ -1,22 +1,3 @@
-# ##### BEGIN GPL LICENSE BLOCK #####
-#
-#  This program is free software; you can redistribute it and/or
-#  modify it under the terms of the GNU General Public License
-#  as published by the Free Software Foundation; either version 2
-#  of the License, or (at your option) any later version.
-#
-#  This program is distributed in the hope that it will be useful,
-#  but WITHOUT ANY WARRANTY; without even the implied warranty of
-#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#  GNU General Public License for more details.
-#
-#  You should have received a copy of the GNU General Public License
-#  along with this program; if not, write to the Free Software Foundation,
-#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
-#
-# ##### END GPL LICENSE BLOCK #####
-
-
 import bpy
 
 
@@ -88,22 +69,22 @@ def setMaterialParametersByType(mat):
     if not toonNode: return
     
     if type == "Diffuse":
-        mat.blend_method = "CLIP"
-        mat.shadow_method = "CLIP"
+        mat.blend_method = "OPAQUE"
+        mat.shadow_method = "OPAQUE"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[3].default_value = 1
     
     if type == "Mirror":
         bpy.context.scene.eevee.use_ssr = True
-        mat.blend_method = "CLIP"
-        mat.shadow_method = "CLIP"
+        mat.blend_method = "OPAQUE"
+        mat.shadow_method = "OPAQUE"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 1
-        toonNode.inputs[3].default_value = 0.5
+        toonNode.inputs[3].default_value = 0
         
     if type == "Glow":
-        mat.blend_method = "CLIP"
-        mat.shadow_method = "CLIP"
+        mat.blend_method = "OPAQUE"
+        mat.shadow_method = "OPAQUE"
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 0
         toonNode.inputs[3].default_value = 0
@@ -133,16 +114,15 @@ def changeImageAdjustBrightness(self, context):
     node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
     if not node_group: return
 
-    bright = node_group.nodes.get('ACON_node_bright')
-    if not bright: return
+    brightContrast = node_group.nodes.get('ACON_node_brightContrast')
+    if not brightContrast: return
 
-    inputs = bright.inputs
+    inputs = brightContrast.inputs
 
     prop = context.scene.ACON_prop
     value = prop.image_adjust_brightness
 
     inputs[1].default_value = value
-    inputs[2].default_value = value
 
 
 def changeImageAdjustContrast(self, context):
@@ -150,15 +130,14 @@ def changeImageAdjustContrast(self, context):
     node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
     if not node_group: return
 
-    contrast = node_group.nodes.get('ACON_node_contrast')
-    if not contrast: return
+    brightContrast = node_group.nodes.get('ACON_node_brightContrast')
+    if not brightContrast: return
 
-    inputs = contrast.inputs
+    inputs = brightContrast.inputs
 
     prop = context.scene.ACON_prop
     value = prop.image_adjust_contrast
 
-    inputs[1].default_value = -0.1 * value
     inputs[2].default_value = value
 
 
@@ -249,4 +228,3 @@ def changeToonShadingBrightness(self, context):
 
     inputs[2].default_value = value_1
     inputs[3].default_value = value_2
-

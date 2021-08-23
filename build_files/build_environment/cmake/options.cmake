@@ -114,6 +114,7 @@ else()
   set(PATCH_CMD patch)
   set(LIBEXT ".a")
   set(LIBPREFIX "lib")
+  set(ARCHITECTURE "arm64")
 
   if(APPLE)
     # Let's get the current Xcode dir, to support xcode-select

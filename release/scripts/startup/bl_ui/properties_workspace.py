@@ -112,9 +112,9 @@ class WORKSPACE_PT_custom_props(WorkSpaceButtonsPanel, PropertyPanel, Panel):
 
 
 classes = (
-    # WORKSPACE_PT_main,
-    # WORKSPACE_PT_addons,
-    # WORKSPACE_PT_custom_props,
+    WORKSPACE_PT_main,
+    WORKSPACE_PT_addons,
+    WORKSPACE_PT_custom_props,
 )
 
 if __name__ == "__main__":  # only for live edit.

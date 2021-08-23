@@ -217,7 +217,6 @@ static void recent_files_menu_draw(const bContext *UNUSED(C), Menu *menu)
       uiItemFullO(layout, "WM_OT_open_mainfile", file, icon, NULL, WM_OP_INVOKE_DEFAULT, 0, &ptr);
       RNA_string_set(&ptr, "filepath", recent->filepath);
       RNA_boolean_set(&ptr, "display_file_selector", false);
-      RNA_boolean_set(&ptr, "load_ui", false);
     }
   }
   else {

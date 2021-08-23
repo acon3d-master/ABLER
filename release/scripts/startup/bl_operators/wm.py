@@ -2708,7 +2708,7 @@ class WM_MT_splash(Menu):
             if userInfo.ACON_prop.login_status == 'SUCCESS':
                 row.label(text="Welcome!")
                 row = layout.row()
-                row.label(text="Please click outside the popup box to start ABLER.")
+                row.label(text="Click out to start Abler.")
             
             elif userInfo.ACON_prop.login_status == 'LOADING':
                 row.label(text="Hold on...")
@@ -2718,7 +2718,7 @@ class WM_MT_splash(Menu):
                 if userInfo.ACON_prop.login_status == 'FAIL':
                     row.label(text="Login failed. Please try again.")
                 else: 
-                    row.label(text="Please login with your ACON3D account.")
+                    row.label(text="Please Login")
 
                 layout.separator()
 
@@ -2728,17 +2728,7 @@ class WM_MT_splash(Menu):
                 row = column.row()
                 row.prop(userInfo.ACON_prop, "username")
                 row = column.row()
-                if userInfo.ACON_prop.show_password:
-                    row.prop(userInfo.ACON_prop, "password_shown")
-                else:
-                    row.prop(userInfo.ACON_prop, "password")
-
-                column = row_outside.column()
-                column.separator()
-                column.separator()
-                column.separator()
-                row = column.row()
-                row.prop(userInfo.ACON_prop, "show_password", text="", icon="HIDE_OFF", emboss=False, invert_checkbox=True)
+                row.prop(userInfo.ACON_prop, "password")
 
                 column = row_outside.column()
                 column.scale_x = 0.5
@@ -2785,52 +2775,24 @@ class WM_MT_splash_about(Menu):
 
         col = split.column(align=True)
         col.scale_y = 0.8
-        col.label(text="Built on Blender version " + bpy.app.version_string, translate=False)
+        col.label(text=bpy.app.version_string, translate=False)
         col.separator(factor=2.5)
         col.label(text=iface_("Date: %s %s") % (bpy.app.build_commit_date.decode('utf-8', 'replace'),
                                                 bpy.app.build_commit_time.decode('utf-8', 'replace')), translate=False)
         col.label(text=iface_("Hash: %s") % bpy.app.build_hash.decode('ascii'), translate=False)
         col.label(text=iface_("Branch: %s") % bpy.app.build_branch.decode('utf-8', 'replace'), translate=False)
         col.separator(factor=2.0)
+        col.label(text="Blender is free software")
+        col.label(text="Licensed under the GNU General Public License")
 
         col = split.column(align=True)
         col.emboss = 'PULLDOWN_MENU'
         col.operator("wm.url_open_preset", text="Release Notes", icon='URL').type = 'RELEASE_NOTES'
         col.operator("wm.url_open_preset", text="Credits", icon='URL').type = 'CREDITS'
+        col.operator("wm.url_open", text="License", icon='URL').url = "https://www.blender.org/about/license/"
         col.operator("wm.url_open_preset", text="Blender Website", icon='URL').type = 'BLENDER'
         col.operator("wm.url_open", text="Blender Store", icon='URL').url = "https://store.blender.org"
         col.operator("wm.url_open_preset", text="Development Fund", icon='FUND').type = 'FUND'
-
-        layout.separator(factor=2.0)
-
-        layout.label(text="ABLER", translate=False)
-        
-        split = layout.split(factor=0.65)
-
-        col = split.column(align=True)
-        col.scale_y = 0.8
-        col.label(text="Beta Version", translate=False)
-        col.separator(factor=2.0)
-        col.label(text=iface_("Date: %s %s") % (bpy.app.build_commit_date.decode('utf-8', 'replace'),
-                                                bpy.app.build_commit_time.decode('utf-8', 'replace')), translate=False)
-        
-        col = split.column(align=True)
-        col.emboss = 'PULLDOWN_MENU'
-        anchor = col.operator("acon3d.anchor", text="ABLER Source Code", icon='URL')
-        anchor.href = 'https://github.com/acon3d/ABLER'
-        anchor = col.operator("acon3d.anchor", text="ACON3D Website", icon='URL')
-        anchor.href = 'https://acon3d.com'
-
-        layout.separator(factor=5.0)
-        split = layout.split(factor=0.65)
-        col = split.column(align=True)
-        col.scale_y = 0.8
-        col.label(text="ABLER is built on Blender, a free software", translate=False)
-        col.label(text="Licensed under the GNU General Public License")
-
-        col = split.column(align=True)
-        col.emboss = 'PULLDOWN_MENU'
-        col.operator("wm.url_open", text="License", icon='URL').url = "https://www.blender.org/about/license/"
 
 
 class WM_OT_drop_blend_file(Operator):
@@ -2852,7 +2814,6 @@ class WM_OT_drop_blend_file(Operator):
         props = col.operator("wm.open_mainfile", text="Open", icon='FILE_FOLDER')
         props.filepath = self.filepath
         props.display_file_selector = False
-        props.load_ui = False
 
         layout.separator()
         col = layout.column()
