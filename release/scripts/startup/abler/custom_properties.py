@@ -305,6 +305,24 @@ class AconMaterialProperty(bpy.types.PropertyGroup):
         update=materials_handler.changeMaterialType
     )
 
+    toggle_shadow : bpy.props.BoolProperty(
+        name="Shadow",
+        default=True,
+        update=materials_handler.toggleEachShadow
+    )
+
+    toggle_shading : bpy.props.BoolProperty(
+        name="Shading",
+        default=True,
+        update=materials_handler.toggleEachShading
+    )
+
+    toggle_edge : bpy.props.BoolProperty(
+        name="Edges",
+        default=True,
+        update=materials_handler.toggleEachEdge
+    )
+
 
 class AconMeshProperty(bpy.types.PropertyGroup):
     @classmethod

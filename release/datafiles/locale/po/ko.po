@@ -972,7 +972,7 @@ msgstr "포인트"
 
 
 msgid "Edge"
-msgstr "에지"
+msgstr "모서리"
 
 
 msgid "Face"
@@ -18909,7 +18909,7 @@ msgstr "스무스로 간주되는 페이스 노멀 사이의 최대 각도 (커�
 
 
 msgid "Edges"
-msgstr "에지"
+msgstr "모서리"
 
 
 msgid "Edges of the mesh"
@@ -82093,7 +82093,7 @@ msgstr "버텍스"
 
 msgctxt "Operator"
 msgid "Edge"
-msgstr "에지"
+msgstr "모서리"
 
 
 msgctxt "Operator"

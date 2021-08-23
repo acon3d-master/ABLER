@@ -108,9 +108,19 @@ class MaterialPanel(bpy.types.Panel):
                 "active_material_index",
                 rows=2,
             )
-            
-            row = layout.row()
-            row.template_ID(obj, "active_material", new="acon3d.clone_material", unlink="")
+            mat = obj.active_material
+
+            if mat:
+                box = layout.box()
+                row = box.row()
+                row.template_ID(obj, "active_material", new="acon3d.clone_material", unlink="")
+                row = box.row()
+                row.prop(mat.ACON_prop, "toggle_shadow")
+                row = box.row()
+                row.prop(mat.ACON_prop, "toggle_shading")
+                row = box.row()
+                row.prop(mat.ACON_prop, "toggle_edge")
+
 
 
 class Acon3dFacePanel(bpy.types.Panel):
