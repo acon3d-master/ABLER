@@ -116,18 +116,15 @@ class Acon3dModalOperator(bpy.types.Operator):
 
 
 def requestLogin():
+
     userInfo = bpy.data.meshes.get("ACON_userInfo")
     prop = userInfo.ACON_prop
+
     try:
-        window = bpy.context.window
-        width = window.width
-        height = window.height
-        window.cursor_warp(width / 2, (height / 2))
 
         path = bpy.utils.resource_path("USER")
         path_cookiesFolder = os.path.join(path, 'cookies')
         path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
-
 
         if prop.show_password:
             prop.password = prop.password_shown
@@ -188,36 +185,28 @@ def requestLogin():
 
             prop.login_status = 'FAIL'
 
-            bpy.ops.acon3d.alert(
-                'INVOKE_DEFAULT',
-                title="Login failed",
-                message_1="When logging into ABLER, some letters may not be",
-                message_2="entered properly. Please copy & paste your password",
-                message_3="or type slowly when logging in."
-            )
-        
-        bpy.app.timers.register(moveMouse, first_interval=0.1)
-
     except Exception as e:
-        if prop.login_status != 'SUCCESS':
-            print("Login request has failed.")
-            print(e)
-            bpy.ops.acon3d.alert(
-                'INVOKE_DEFAULT',
-                title="Login failed",
-                message_1="When logging into ABLER, some letters may not be",
-                message_2="entered properly. Please copy & paste your password",
-                message_3="or type slowly when logging in."
-            )
 
-    bpy.context.window.cursor_set("DEFAULT")
+        print("Login request has failed.")
+        print(e)
 
-
-def moveMouse():
     window = bpy.context.window
     width = window.width
     height = window.height
-    window.cursor_warp(width / 2, (height / 2) - 150)
+    window.cursor_warp(width / 2, height / 2)
+    
+    if prop.login_status != 'SUCCESS':
+        bpy.ops.acon3d.alert(
+            'INVOKE_DEFAULT',
+            title="Login failed",
+            message_1="If this happens continuously, please contact us",
+            message_2="by sending email to \"cs@acon3d.com\"."
+        )
+        
+    def moveMouse(): window.cursor_warp(width / 2, (height / 2) - 150)
+
+    bpy.app.timers.register(moveMouse, first_interval=0.1)
+    bpy.context.window.cursor_set("DEFAULT")
 
 
 class Acon3dLoginOperator(bpy.types.Operator):
@@ -285,10 +274,12 @@ def open_credential_modal(dummy):
 
     if userInfo.ACON_prop.login_status != 'SUCCESS':
         bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
-    
+
+
 @persistent
 def hide_header(dummy):
     bpy.data.screens['ACON3D'].areas[0].spaces[0].show_region_header = False
+
 
 classes = (
     Acon3dAlertOperator,
