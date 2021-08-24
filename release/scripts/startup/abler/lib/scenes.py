@@ -18,7 +18,7 @@
 
 
 import bpy
-from . import shadow, layers
+from . import shadow, layers, objects
 from .materials import materials_handler
 from types import SimpleNamespace
 from math import radians
@@ -73,6 +73,7 @@ def loadScene(self, context):
     materials_handler.changeImageAdjustHue(self, override)
     materials_handler.changeImageAdjustSaturation(self, override)
     layers.handleLayerVisibilityOnSceneChange(current_scene, target_scene)
+    for obj in bpy.data.objects: objects.setConstraintToCameraByObject(obj, override)
     
     context.window.scene = target_scene
 

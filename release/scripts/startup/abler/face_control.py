@@ -99,6 +99,8 @@ class MaterialPanel(bpy.types.Panel):
         row = layout.row()
 
         if obj:
+            row.prop(obj.ACON_prop, "constraint_to_camera_rotation_z")
+            row = layout.row()
             row.template_list(
                 "MATERIAL_UL_List",
                 "",
