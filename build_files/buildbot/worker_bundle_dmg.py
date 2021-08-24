@@ -332,7 +332,7 @@ def run_applescript(applescript: Path,
                         line = re.sub('to file ".*"',
                                       f'to file "{background_image_short}"',
                                       line)
-                line = line.replace('blender.app', main_app_bundle.name)
+                line = line.replace('abler.app', main_app_bundle.name)
                 temp_applescript.write(line)
 
         temp_applescript.flush()
@@ -492,7 +492,7 @@ def get_applescript(requested_applescript: Path) -> Path:
     if requested_applescript:
         return requested_applescript.absolute()
 
-    return DARWIN_DIRECTORY / 'blender.applescript'
+    return DARWIN_DIRECTORY / 'abler.applescript'
 
 
 def get_volume_name_from_dmg_filepath(dmg_filepath: Path) -> str:

@@ -123,7 +123,7 @@ echo "Renaming Applications to empty string."
 mv ${_mount_dir}/Applications "${_mount_dir}/ "
 
 echo "Running applescript to set folder looks ..."
-cat "${_script_dir}/blender.applescript" | osascript
+cat "${_script_dir}/abler.applescript" | osascript
 
 echo "Waiting after applescript ..."
 sleep 5
