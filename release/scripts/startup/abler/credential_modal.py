@@ -22,7 +22,7 @@ import ctypes
 import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
-
+from appscript import *
 
 class Acon3dAlertOperator(bpy.types.Operator):
     bl_idname = "acon3d.alert"
@@ -104,7 +104,12 @@ class Acon3dModalOperator(bpy.types.Operator):
                 else:
                     ctypes.windll.user32.keybd_event(char2key(event.unicode))
             elif platform.system() == 'Darwin':
-                print("macOS")
+                if event.type == 'BACK_SPACE':
+                    app('System Events').key_code(51)
+                else:
+                    # should add tell applescript to make application to be awake
+                    app('System Events').keystroke(event.unicode)
+                print(event.unicode)
             elif platform.system() == 'Linux':
                 print("Linux")
 
