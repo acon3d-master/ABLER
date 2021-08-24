@@ -158,7 +158,7 @@ class Acon3dImportPanel(bpy.types.Panel):
         
         row = layout.row()
         row.scale_y = 1.0
-        row.operator("wm.open_mainfile", text="File Open").load_ui = False
+        row.operator("wm.open_mainfile", text="File Open", text_ctxt="*").load_ui = False
         row.operator("acon3d.import_blend", text="Import")
         
         row = layout.row()
