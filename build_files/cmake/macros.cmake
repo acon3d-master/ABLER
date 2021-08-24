@@ -401,7 +401,7 @@ function(blender_add_test_suite)
   # Figure out the release dir, as some tests need files from there.
   GET_BLENDER_TEST_INSTALL_DIR(TEST_INSTALL_DIR)
   if(APPLE)
-    set(_test_release_dir ${TEST_INSTALL_DIR}/Blender.app/Contents/Resources/${BLENDER_VERSION})
+    set(_test_release_dir ${TEST_INSTALL_DIR}/ABLER.app/Contents/Resources/${BLENDER_VERSION})
   else()
     if(WIN32 OR WITH_INSTALL_PORTABLE)
       set(_test_release_dir ${TEST_INSTALL_DIR}/${BLENDER_VERSION})

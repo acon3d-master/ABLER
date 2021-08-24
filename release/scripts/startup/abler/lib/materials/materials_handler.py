@@ -29,7 +29,18 @@ def toggleToonEdge(self, context):
         toonEdgeFactorValue = 1
 
     node = node_group.nodes.get('ACON_node_toonEdgeFactor')
-    if node: node.inputs[0].default_value = toonEdgeFactorValue
+    if node: node.outputs[0].default_value = toonEdgeFactorValue
+
+
+def toggleEachEdge(self, context):
+    mat = context.object.active_material
+    toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+
+    toonEdgeFactorValue = 0
+    if mat.ACON_prop.toggle_edge:
+        toonEdgeFactorValue = 1
+
+    toonNode.inputs[9].default_value = toonEdgeFactorValue
 
 
 def toggleToonFace(self, context):
@@ -60,12 +71,32 @@ def toggleShading(self, context):
     node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
     if not node_group: return
 
-    shadingFactorValue = 1
+    shadingFactorValue = 0
     if context.scene.ACON_prop.toggle_shading:
-        shadingFactorValue = 0
+        shadingFactorValue = 1
 
     node = node_group.nodes.get('ACON_node_shadeMixFactor')
-    if node: node.inputs[0].default_value = shadingFactorValue
+    if node: node.outputs[0].default_value = shadingFactorValue
+
+
+def toggleEachShading(self, context):
+    mat = context.object.active_material
+    toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+
+    shadingFactorValue = 0
+    if mat.ACON_prop.toggle_shading:
+        shadingFactorValue = 1
+
+    toonNode.inputs[4].default_value = shadingFactorValue
+
+
+def toggleEachShadow(self, context):
+    mat = context.object.active_material
+
+    if mat.ACON_prop.toggle_shadow:
+        mat.shadow_method = "CLIP"
+    else:
+        mat.shadow_method = "NONE"
 
 
 def changeToonDepth(self, context):
@@ -89,28 +120,28 @@ def setMaterialParametersByType(mat):
     
     if type == "Diffuse":
         mat.blend_method = "CLIP"
-        mat.shadow_method = "CLIP"
+        mat.ACON_prop.toggle_shadow = True
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[3].default_value = 1
     
     if type == "Mirror":
         bpy.context.scene.eevee.use_ssr = True
         mat.blend_method = "CLIP"
-        mat.shadow_method = "CLIP"
+        mat.ACON_prop.toggle_shadow = True
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 1
         toonNode.inputs[3].default_value = 0.5
         
     if type == "Glow":
         mat.blend_method = "CLIP"
-        mat.shadow_method = "CLIP"
+        mat.ACON_prop.toggle_shadow = True
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 0
         toonNode.inputs[3].default_value = 0
         
     if type == "Clear":
         mat.blend_method = "BLEND"
-        mat.shadow_method = "NONE"
+        mat.ACON_prop.toggle_shadow = False
         toonNode.inputs[1].default_value = 1
         toonNode.inputs[3].default_value = 1
 

@@ -177,7 +177,6 @@ def submodules_update(args, release_version, branch):
     submodules = [
         ("release/scripts/addons", branch),
         ("release/scripts/addons_contrib", branch),
-        ("release/datafiles/locale", branch),
         ("source/tools", branch),
     ]
 

@@ -19,7 +19,7 @@
 
 import bpy
 from math import radians
-from .lib import cameras, shadow, scenes
+from .lib import cameras, shadow, scenes, objects
 from .lib.materials import materials_handler
 
 
@@ -40,12 +40,23 @@ class CollectionLayerExcludeProperties(bpy.types.PropertyGroup):
             objs.hide_viewport = not(self.value)
             objs.hide_render = not(self.value)
 
+    def updateLayerLock(self, context):
+        target_layer = bpy.data.collections[self.name]
+        for objs in target_layer.objects:
+            objs.hide_select = self.lock
+
     name: bpy.props.StringProperty(name="Layer Name", default="")
     
     value: bpy.props.BoolProperty(
         name="Layer Exclude",
         default=True,
         update=updateLayerVis
+    )
+    
+    lock: bpy.props.BoolProperty(
+        name="Layer Lock",
+        default=False,
+        update=updateLayerLock
     )
 
 
@@ -279,6 +290,10 @@ class AconSceneProperty(bpy.types.PropertyGroup):
         update=materials_handler.changeImageAdjustSaturation
     )
 
+    selected_objects_str : bpy.props.StringProperty(
+        name="Selected Objects"
+    )
+
 
 class AconMaterialProperty(bpy.types.PropertyGroup):
     @classmethod
@@ -299,6 +314,24 @@ class AconMaterialProperty(bpy.types.PropertyGroup):
             ("Clear", "Transparent", "")
         ],
         update=materials_handler.changeMaterialType
+    )
+
+    toggle_shadow : bpy.props.BoolProperty(
+        name="Shadow",
+        default=True,
+        update=materials_handler.toggleEachShadow
+    )
+
+    toggle_shading : bpy.props.BoolProperty(
+        name="Shading",
+        default=True,
+        update=materials_handler.toggleEachShading
+    )
+
+    toggle_edge : bpy.props.BoolProperty(
+        name="Edges",
+        default=True,
+        update=materials_handler.toggleEachEdge
     )
 
 
@@ -346,11 +379,42 @@ class AconMeshProperty(bpy.types.PropertyGroup):
     )
 
 
+class AconObjectGroupProperty(bpy.types.PropertyGroup):
+
+    name : bpy.props.StringProperty(
+        name="Group",
+        description="Group",
+        default=""
+    )
+
+
+class AconObjectProperty(bpy.types.PropertyGroup):
+    @classmethod
+    def register(cls):
+        bpy.types.Object.ACON_prop = bpy.props.PointerProperty(type=AconObjectProperty)
+
+    @classmethod
+    def unregister(cls):
+        del bpy.types.Object.ACON_prop
+
+    group : bpy.props.CollectionProperty(
+            type=AconObjectGroupProperty
+    )
+
+    constraint_to_camera_rotation_z : bpy.props.BoolProperty(
+        name="Look at me",
+        default=False,
+        update=objects.toggleConstraintToCamera
+    )
+
+
 classes = (
     CollectionLayerExcludeProperties,
     AconSceneProperty,
     AconMaterialProperty,
     AconMeshProperty,
+    AconObjectGroupProperty,
+    AconObjectProperty,
 )
 
 
