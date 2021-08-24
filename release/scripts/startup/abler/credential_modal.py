@@ -199,8 +199,8 @@ def requestLogin():
         bpy.ops.acon3d.alert(
             'INVOKE_DEFAULT',
             title="Login failed",
-            message_1="If this happens continuously, please contact us",
-            message_2="by sending email to \"cs@acon3d.com\"."
+            message_1="If this happens continuously",
+            message_2="please contact us at \"cs@acon3d.com\"."
         )
         
     def moveMouse(): window.cursor_warp(width / 2, (height / 2) - 150)
