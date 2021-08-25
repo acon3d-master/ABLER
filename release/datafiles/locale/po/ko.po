@@ -93274,5 +93274,5 @@ msgstr "현재 씬 설정을 그대로 사용"
 
 
 msgid "Look at me"
-msgstr "나만 쳐다보기"
+msgstr "나만 바라보기"
 
