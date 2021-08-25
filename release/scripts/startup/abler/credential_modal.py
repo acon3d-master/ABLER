@@ -104,10 +104,13 @@ class Acon3dModalOperator(bpy.types.Operator):
                 else:
                     ctypes.windll.user32.keybd_event(char2key(event.unicode))
             elif platform.system() == 'Darwin':
-                if event.type == 'BACK_SPACE':
-                    keyboard.write('\b')
-                else:
-                    keyboard.write(event.unicode)
+                try:
+                    if event.type == 'BACK_SPACE':
+                        keyboard.send('delete')
+                    else:
+                        keyboard.write(event.unicode)
+                except Exception as e:
+                    print(e)
                 # print(event.unicode)
             elif platform.system() == 'Linux':
                 print("Linux")
