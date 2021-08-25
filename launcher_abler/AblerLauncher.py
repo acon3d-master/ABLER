@@ -630,6 +630,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         os.system("chmod +x " + BlenderOSXPath)
         _ = subprocess.Popen(BlenderOSXPath)
         logger.info(f"Executing {BlenderOSXPath}")
+        QtCore.QCoreApplication.instance().quit()
+
 
     def exec_linux(self):
         _ = subprocess.Popen(os.path.join(f"{dir_}/blender"))

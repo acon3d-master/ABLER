@@ -5460,8 +5460,9 @@ def km_view3d_walk_modal(_params):
     )
 
     items.extend([
-        ("CANCEL", {"type": 'RIGHTMOUSE', "value": 'ANY', "any": True}, None),
-        ("CANCEL", {"type": 'ESC', "value": 'PRESS', "any": True}, None),
+        ("CONFIRM", {"type": 'RIGHTMOUSE', "value": 'ANY', "any": True}, None),
+        ("CONFIRM", {"type": 'ESC', "value": 'PRESS', "any": True}, None),
+        ("CANCEL", {"type": 'ESC', "value": 'PRESS', "ctrl": True}, None),
         ("CONFIRM", {"type": 'LEFTMOUSE', "value": 'ANY', "any": True}, None),
         ("CONFIRM", {"type": 'RET', "value": 'PRESS', "any": True}, None),
         ("CONFIRM", {"type": 'NUMPAD_ENTER', "value": 'PRESS', "any": True}, None),
