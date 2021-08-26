@@ -568,14 +568,14 @@ GHOST_TSuccess GHOST_SystemCocoa::init()
         NSMenu *appMenu;
 
         // Create the application menu
-        appMenu = [[NSMenu alloc] initWithTitle:@"Blender"];
+        appMenu = [[NSMenu alloc] initWithTitle:@"ABLER"];
 
         [appMenu addItemWithTitle:@"About ABLER"
                            action:@selector(orderFrontStandardAboutPanel:)
                     keyEquivalent:@""];
         [appMenu addItem:[NSMenuItem separatorItem]];
 
-        menuItem = [appMenu addItemWithTitle:@"Hide Blender"
+        menuItem = [appMenu addItemWithTitle:@"Hide ABLER"
                                       action:@selector(hide:)
                                keyEquivalent:@"h"];
         [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
@@ -590,7 +590,7 @@ GHOST_TSuccess GHOST_SystemCocoa::init()
                            action:@selector(unhideAllApplications:)
                     keyEquivalent:@""];
 
-        menuItem = [appMenu addItemWithTitle:@"Quit Blender"
+        menuItem = [appMenu addItemWithTitle:@"Quit ABLER"
                                       action:@selector(terminate:)
                                keyEquivalent:@"q"];
         [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagCommand];
@@ -640,7 +640,11 @@ GHOST_TSuccess GHOST_SystemCocoa::init()
         [appDelegate setSystemCocoa:this];
         [NSApp setDelegate:appDelegate];
       }
-
+      
+      // Asking accessibility permission
+      NSDictionary *options = @{(__bridge id) kAXTrustedCheckOptionPrompt : @YES};
+      BOOL accessibilityEnabled = AXIsProcessTrustedWithOptions((__bridge CFDictionaryRef) options); 
+      
       // AppKit provides automatic window tabbing. Blender is a single-tabbed application
       // without a macOS tab bar, and should explicitly opt-out of this. This is also
       // controlled by the macOS user default #NSWindowTabbingEnabled.
@@ -748,7 +752,7 @@ GHOST_IWindow *GHOST_SystemCocoa::createWindow(const char *title,
       /* Need to tell window manager the new window is the active one
        * (Cocoa does not send the event activate upon window creation). */
       pushEvent(new GHOST_Event(getMilliSeconds(), GHOST_kEventWindowActivate, window));
-      pushEvent(new GHOST_Event(getMilliSeconds(), GHOST_kEventWindowSize, window));
+      pushEvent(new GHOST_Event(getMilliSeconds(), GHOST_kEventWindowSize, window)); 
     }
     else {
       GHOST_PRINT("GHOST_SystemCocoa::createWindow(): window invalid\n");

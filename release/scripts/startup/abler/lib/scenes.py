@@ -90,7 +90,7 @@ def createScene(old_scene, type, name):
     new_scene.collection.objects.link(new_scene.camera)
 
     try: new_scene.collection.objects.unlink(old_scene.camera)
-    except: print("Failed to unlink camera from old scene.")\
+    except: print("Failed to unlink camera from old scene.")
 
     prop = new_scene.ACON_prop
 
@@ -125,7 +125,6 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_color = (1, 1, 1)
         new_scene.eevee.bloom_intensity = 0.1
         new_scene.eevee.bloom_clamp = 0
-        new_scene.camera.data.lens = 25
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
     
@@ -160,7 +159,6 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_color = (1, 1, 1)
         new_scene.eevee.bloom_intensity = 0.5
         new_scene.eevee.bloom_clamp = 0
-        new_scene.camera.data.lens = 25
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
     
@@ -195,7 +193,6 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_color = (0.9, 0.9, 1)
         new_scene.eevee.bloom_intensity = 0.5
         new_scene.eevee.bloom_clamp = 0
-        new_scene.camera.data.lens = 25
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
     
@@ -230,7 +227,6 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_color = (1, 1, 1)
         new_scene.eevee.bloom_intensity = 0.1
         new_scene.eevee.bloom_clamp = 0
-        new_scene.camera.data.lens = 35
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
     
@@ -265,7 +261,6 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_color = (1, 0.9, 0.8)
         new_scene.eevee.bloom_intensity = 0.5
         new_scene.eevee.bloom_clamp = 0
-        new_scene.camera.data.lens = 35
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
     
@@ -300,7 +295,6 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_color = (1, 1, 1)
         new_scene.eevee.bloom_intensity = 1
         new_scene.eevee.bloom_clamp = 0
-        new_scene.camera.data.lens = 35
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
 
