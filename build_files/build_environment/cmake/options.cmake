@@ -127,9 +127,16 @@ else()
 
     if(NOT CMAKE_OSX_ARCHITECTURES)
       execute_process(COMMAND uname -m OUTPUT_VARIABLE ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
+      execute_process(COMMAND sysctl -q hw.optional.arm64
+            OUTPUT_VARIABLE _sysctl_stdout
+            ERROR_VARIABLE _sysctl_stderr
+            RESULT_VARIABLE _sysctl_result
+            )
+      if(_sysctl_result EQUAL 0 AND _sysctl_stdout MATCHES "hw.optional.arm64: 1")
+        set(ARCHITECTURE "arm64")
+      endif()
       message(STATUS "Detected native architecture ${ARCHITECTURE}.")
-      # set(CMAKE_OSX_ARCHITECTURES "${ARCHITECTURE}")
-      set(CMAKE_OSX_ARCHITECTURES "arm64")
+      set(CMAKE_OSX_ARCHITECTURES "${ARCHITECTURE}")
     endif()
     if("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
       set(OSX_DEPLOYMENT_TARGET 10.13)
