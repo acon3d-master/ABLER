@@ -19,7 +19,7 @@
 
 import bpy
 from math import radians
-from .lib import cameras, shadow, scenes
+from .lib import cameras, shadow, scenes, objects
 from .lib.materials import materials_handler
 
 
@@ -399,7 +399,13 @@ class AconObjectProperty(bpy.types.PropertyGroup):
 
     group : bpy.props.CollectionProperty(
             type=AconObjectGroupProperty
-        )
+    )
+
+    constraint_to_camera_rotation_z : bpy.props.BoolProperty(
+        name="Look at me",
+        default=False,
+        update=objects.toggleConstraintToCamera
+    )
 
 
 classes = (

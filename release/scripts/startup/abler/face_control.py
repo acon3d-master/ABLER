@@ -99,6 +99,14 @@ class MaterialPanel(bpy.types.Panel):
         row = layout.row()
 
         if obj:
+            col = row.column()
+            col.scale_x = 3
+            col.separator()
+            col = row.column()
+            col.prop(obj.ACON_prop, "constraint_to_camera_rotation_z")
+            row = col.row()
+            row.separator()
+            row = col.row()
             row.template_list(
                 "MATERIAL_UL_List",
                 "",
@@ -111,7 +119,7 @@ class MaterialPanel(bpy.types.Panel):
             mat = obj.active_material
 
             if mat:
-                box = layout.box()
+                box = col.box()
                 row = box.row()
                 row.template_ID(obj, "active_material", new="acon3d.clone_material", unlink="")
                 row = box.row()
@@ -138,7 +146,13 @@ class Acon3dFacePanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row = layout.row()
+        col = row.column()
+        col.scale_x = 3
+        col.separator()
+        col = row.column()
+        row = col.row()
         row.prop(context.scene.ACON_prop, "toggle_texture")
+        row = col.row()
         row.prop(context.scene.ACON_prop, "toggle_shading")
         return
 
