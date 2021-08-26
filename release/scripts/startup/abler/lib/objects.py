@@ -21,6 +21,7 @@ def setConstraintToCameraByObject(obj, context=None):
         if not const:
             const = obj.constraints.new(type="COPY_ROTATION")
             const.name = "ACON_const_copyRotation"
+            const.mix_mode = 'BEFORE'
             const.use_x = False
             const.use_y = False
             const.use_z = True
