@@ -17,6 +17,9 @@
 # ##### END GPL LICENSE BLOCK #####
 
 
+from .lib.materials import materials_handler
+from .lib import render, cameras
+import bpy
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -29,11 +32,6 @@ bl_info = {
     "tracker_url": "",
     "category": "ACON3D"
 }
-
-
-import bpy
-from .lib import render, cameras
-from .lib.materials import materials_handler
 
 
 class Acon3dCameraViewOperator(bpy.types.Operator):
@@ -88,7 +86,8 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+                toonNode = mat.node_tree.nodes.get(
+                    "ACON_nodeGroup_combinedToon")
                 if toonNode:
                     toonNode.inputs[1].default_value = 0
                     toonNode.inputs[3].default_value = 1
@@ -101,15 +100,15 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             prop.toggle_toon_edge = toggleToonEdge
             scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
-            
+
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
-            
+
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
-        
+
         render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
@@ -133,7 +132,8 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         render.clearCompositor()
 
         node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-        if not node_group: return
+        if not node_group:
+            return
 
         def setTempMaterialSettings(dummy):
             prop.toggle_texture = False
@@ -145,7 +145,8 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+                toonNode = mat.node_tree.nodes.get(
+                    "ACON_nodeGroup_combinedToon")
                 if toonNode:
                     toonNode.inputs[1].default_value = 0
                     toonNode.inputs[3].default_value = 1
@@ -158,10 +159,10 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             prop.toggle_toon_edge = toggleToonEdge
             scene.eevee.use_bloom = useBloom
             scene.render.use_lock_interface = use_lock_interface
-            
+
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
-            
+
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
@@ -170,6 +171,20 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         render.matchObjectVisibility()
         bpy.ops.render.render('INVOKE_DEFAULT')
 
+        return {'FINISHED'}
+
+
+class Acon3dRenderQuickOperator(bpy.types.Operator):
+    """Quick render with deselect_all"""
+    bl_idname = "acon3d.render_quick"
+    bl_label = "Quick Render"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        ops = bpy.ops
+        if ops.object.select_all.poll():
+            ops.object.select_all(action="DESELECT")
+        ops.render.opengl('INVOKE_DEFAULT')
         return {'FINISHED'}
 
 
@@ -182,7 +197,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
     bl_region_type = 'UI'
     bl_options = {'DEFAULT_CLOSED'}
     COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
-    
+
     def draw_header(self, context):
         layout = self.layout
         layout.label(icon="RENDER_STILL")
@@ -203,12 +218,15 @@ class Acon3dRenderPanel(bpy.types.Panel):
         col.prop(scene.render, "resolution_x", text="Resolution X")
         col.prop(scene.render, "resolution_y", text="Y")
         row = layout.row()
-        row.operator("acon3d.camera_view", text="Camera View", icon="RESTRICT_VIEW_OFF")
+        row.operator("acon3d.camera_view", text="Camera View",
+                     icon="RESTRICT_VIEW_OFF")
         row = layout.row()
-        row.operator("render.opengl", text="Quick Render", text_ctxt="*")
+#        row.operator("render.opengl", text="Quick Render", text_ctxt="*")
+        row.operator("acon3d.render_quick", text="Quick Render", text_ctxt="*")
+
         if is_camera:
             row.operator("acon3d.render_full", text="Full Render")
-        
+
         row = layout.row()
         row.operator("acon3d.render_line", text="Line Render")
         row.operator("acon3d.render_shadow", text="Shadow Render")
@@ -219,6 +237,7 @@ classes = (
     Acon3dRenderFullOperator,
     Acon3dRenderLineOperator,
     Acon3dRenderShadowOperator,
+    Acon3dRenderQuickOperator,
     Acon3dRenderPanel,
 )
 
@@ -233,4 +252,3 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
-
