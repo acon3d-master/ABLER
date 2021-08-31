@@ -172,6 +172,18 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
 
         return {'FINISHED'}
 
+class Acon3dRenderQuickOperator(bpy.types.Operator):
+    """Quick render with deselect_all"""
+    bl_idname = "acon3d.render_quick"
+    bl_label = "Quick Render"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+        ops = bpy.ops
+        if ops.object.select_all.poll():
+            ops.object.select_all(action="DESELCT")
+        ops.render.opengl('INVOKE_DEFAULT')
+        return {'FINISHED'}
 
 class Acon3dRenderPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
@@ -205,7 +217,9 @@ class Acon3dRenderPanel(bpy.types.Panel):
         row = layout.row()
         row.operator("acon3d.camera_view", text="Camera View", icon="RESTRICT_VIEW_OFF")
         row = layout.row()
-        row.operator("render.opengl", text="Quick Render", text_ctxt="*")
+#        row.operator("render.opengl", text="Quick Render", text_ctxt="*")
+        row.operator("acon3d.render_quick", text="Quick Render", text_ctxt="*")
+        
         if is_camera:
             row.operator("acon3d.render_full", text="Full Render")
         
@@ -219,6 +233,7 @@ classes = (
     Acon3dRenderFullOperator,
     Acon3dRenderLineOperator,
     Acon3dRenderShadowOperator,
+    Acon3dRenderQuickOperator,
     Acon3dRenderPanel,
 )
 
