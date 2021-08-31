@@ -14,6 +14,8 @@ def setConstraintToCameraByObject(obj, context=None):
 
     if not context: context = bpy.context
 
+    camera = context.scene.camera
+    camera.rotation_mode == "XYZ"
     const = obj.constraints.get("ACON_const_copyRotation")
     
     if obj.ACON_prop.constraint_to_camera_rotation_z:
@@ -28,7 +30,10 @@ def setConstraintToCameraByObject(obj, context=None):
 
         const.target = context.scene.camera
         const.mute = False
+        obj.rotation_mode == "XYZ"
+        obj.rotation_euler.z = 0
 
     elif const:
 
+        obj.rotation_euler.z = camera.rotation_euler.z
         const.mute = True
