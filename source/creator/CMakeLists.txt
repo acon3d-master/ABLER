@@ -1032,6 +1032,11 @@ elseif(APPLE)
       FILES ${LIBDIR}/openmp/lib/libomp.dylib
       DESTINATION ABLER.app/Contents/Resources/lib
     )
+    if(APPLE)
+      add_custom_command(TARGET blender POST_BUILD
+        COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:blender>"
+      )
+    endif()
     if(WITH_PYTHON_MODULE)
       # Move the dylib in a Blender version folder to keep the corresponding OpenMP version.
       install(

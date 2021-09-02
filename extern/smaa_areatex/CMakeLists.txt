@@ -24,3 +24,8 @@
 # ***** END GPL LICENSE BLOCK *****
 
 add_executable(smaa_areatex smaa_areatex.cpp)
+if(APPLE)
+    add_custom_command(TARGET smaa_areatex POST_BUILD
+        COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:smaa_areatex>"
+    )
+endif()

@@ -39,6 +39,11 @@ endif()
 
 add_executable(msgfmt ${SRC})
 setup_platform_linker_flags(msgfmt)
+if(APPLE)
+  add_custom_command(TARGET msgfmt POST_BUILD
+      COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:msgfmt>"
+  )
+endif()
 
 target_link_libraries(msgfmt bf_blenlib)
 target_link_libraries(msgfmt bf_intern_guardedalloc)
