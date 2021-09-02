@@ -24,6 +24,11 @@ set(SRC
 
 # SRC_DNA_INC is defined in the parent dir
 add_executable(datatoc ${SRC})
+if(APPLE)
+  add_custom_command(TARGET datatoc POST_BUILD
+    COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:datatoc>"
+  )
+endif()
 
 
 # -----------------------------------------------------------------------------
@@ -61,6 +66,11 @@ if(NOT WITH_HEADLESS)
   setup_platform_linker_flags(datatoc_icon)
 
   target_link_libraries(datatoc_icon ${PNG_LIBRARIES} ${ZLIB_LIBRARIES})
+  if(APPLE)
+    add_custom_command(TARGET datatoc_icon POST_BUILD
+      COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:datatoc_icon>"
+    )
+  endif()
   # PNG library uses pow() and floow(), so seems -lm is required for proper
   # working binary.
   if(UNIX AND NOT APPLE)
