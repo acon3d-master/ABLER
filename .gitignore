@@ -58,3 +58,7 @@ update.xml
 /launch_abler/config.ini
 
 .DS_STORE
+
+# CMake Cache
+CmakeCache.txt
+CmakeFiles/
