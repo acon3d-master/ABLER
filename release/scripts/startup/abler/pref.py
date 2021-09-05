@@ -1,5 +1,7 @@
 import bpy
 from bpy.app.handlers import persistent
+from .lib import cameras, shadow, render
+from .lib.materials import materials_setup
 
 
 @persistent
@@ -33,11 +35,23 @@ def init_setting(dummy):
     prefs_paths.use_load_ui = False
 
 
+@persistent
+def load_handler(dummy):
+    cameras.makeSureCameraExists()
+    cameras.switchToRendredView()
+    cameras.turnOnCameraView(False)
+    shadow.setupSharpShadow()
+    render.setupBackgroundImagesCompositor()
+    materials_setup.applyAconToonStyle()
+
+
 def register():
     bpy.app.handlers.load_factory_startup_post.append(init_setting)
     bpy.app.handlers.load_post.append(init_setting)
+    bpy.app.handlers.load_post.append(load_handler)
 
 
 def unregister():
+    bpy.app.handlers.load_post.remove(load_handler)
     bpy.app.handlers.load_post.remove(init_setting)
     bpy.app.handlers.load_factory_startup_post.remove(init_setting)

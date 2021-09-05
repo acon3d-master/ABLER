@@ -1426,7 +1426,6 @@ class USERPREF_PT_saveload_blend(SaveLoadPanel, CenterAlignMixIn, Panel):
         col = layout.column(heading="Default To")
         col.prop(paths, "use_relative_paths")
         col.prop(paths, "use_file_compression")
-        col.prop(paths, "use_load_ui")
 
         col = layout.column(heading="Text Files")
         col.prop(paths, "use_tabs_as_spaces")
