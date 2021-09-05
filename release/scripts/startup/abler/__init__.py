@@ -34,18 +34,18 @@ bl_info = {
 # Main imports
 import bpy
 
-from . import pref
-from . import render_control
-from . import layer_control
-from . import view_control
-from . import shadow_control
-from . import image_adjustment
-from . import face_control
-from . import edge_control
-from . import scene_control
-from . import general
-from . import credential_modal
 from . import custom_properties
+from . import credential_modal
+from . import general
+from . import scene_control
+from . import edge_control
+from . import face_control
+from . import image_adjustment
+from . import shadow_control
+from . import view_control
+from . import layer_control
+from . import render_control
+from . import pref
 
 
 # =========================================================================
