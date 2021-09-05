@@ -69,7 +69,7 @@ def register():
 
 
 def unregister():
-    pref.register()
+    pref.unregister()
     render_control.unregister()
     layer_control.unregister()
     view_control.unregister()

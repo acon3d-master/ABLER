@@ -4,7 +4,6 @@ from .lib import cameras, shadow, render
 from .lib.materials import materials_setup
 
 
-@persistent
 def init_setting(dummy):
 
     prefs = bpy.context.preferences
