@@ -37,6 +37,7 @@ def init_setting(dummy):
 
 @persistent
 def load_handler(dummy):
+    init_setting()
     cameras.makeSureCameraExists()
     cameras.switchToRendredView()
     cameras.turnOnCameraView(False)
@@ -47,11 +48,9 @@ def load_handler(dummy):
 
 def register():
     bpy.app.handlers.load_factory_startup_post.append(init_setting)
-    bpy.app.handlers.load_post.append(init_setting)
     bpy.app.handlers.load_post.append(load_handler)
 
 
 def unregister():
     bpy.app.handlers.load_post.remove(load_handler)
-    bpy.app.handlers.load_post.remove(init_setting)
     bpy.app.handlers.load_factory_startup_post.remove(init_setting)
