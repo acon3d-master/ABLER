@@ -54,6 +54,11 @@ add_cc_flags_custom_test(makesdna)
 
 add_executable(makesdna ${SRC} ${SRC_DNA_INC})
 setup_platform_linker_flags(makesdna)
+if(APPLE)
+    add_custom_command(TARGET makesdna POST_BUILD
+        COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:makesdna>"
+    )
+endif()
 
 if(WIN32 AND NOT UNIX)
   target_link_libraries(makesdna ${PTHREADS_LIBRARIES})

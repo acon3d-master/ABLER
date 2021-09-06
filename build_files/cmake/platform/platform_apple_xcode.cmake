@@ -19,16 +19,22 @@
 # ***** END GPL LICENSE BLOCK *****
 
 # Xcode and system configuration for Apple.
-set(ARCHITECTURE "arm64")
-set(CMAKE_OSX_ARCHITECTURES "arm64")
-message(STATUS "${ARCHITECTURE}")
+# set(ARCHITECTURE "arm64")
+# set(CMAKE_OSX_ARCHITECTURES "arm64")
+# message(STATUS "${ARCHITECTURE}")
 # Detect processor architecture.
 # if(NOT CMAKE_OSX_ARCHITECTURES)
-# execute_process(COMMAND uname -m OUTPUT_VARIABLE ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND uname -m OUTPUT_VARIABLE ARCHITECTURE OUTPUT_STRIP_TRAILING_WHITESPACE)
+execute_process(COMMAND sysctl -q hw.optional.arm64
+            OUTPUT_VARIABLE _sysctl_stdout
+            ERROR_VARIABLE _sysctl_stderr
+            RESULT_VARIABLE _sysctl_result
+            )
+if(_sysctl_result EQUAL 0 AND _sysctl_stdout MATCHES "hw.optional.arm64: 1")
+  set(ARCHITECTURE "arm64")
+endif()
 message(STATUS "Detected native architecture ${ARCHITECTURE}.")
-# set(CMAKE_OSX_ARCHITECTURES ${ARCHITECTURE} CACHE STRING
-#   "Choose the architecture you want to build Blender for: arm64 or x86_64"
-#   FORCE)
+set(CMAKE_OSX_ARCHITECTURES ${ARCHITECTURE})
 # endif()
 
 # Detect developer directory. Depending on configuration this may be either
