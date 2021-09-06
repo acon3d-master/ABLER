@@ -404,6 +404,11 @@ add_cc_flags_custom_test(makesrna)
 
 add_executable(makesrna ${SRC} ${SRC_RNA_INC} ${SRC_DNA_INC})
 setup_platform_linker_flags(makesrna)
+if(APPLE)
+  add_custom_command(TARGET makesrna POST_BUILD
+      COMMAND xcrun install_name_tool -add_rpath "@loader_path/../Resources/lib" "$<TARGET_FILE:makesrna>"
+  )
+endif()
 
 target_link_libraries(makesrna bf_dna)
 target_link_libraries(makesrna bf_dna_blenlib)

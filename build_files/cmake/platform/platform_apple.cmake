@@ -69,7 +69,7 @@ endif()
 
 if(NOT DEFINED LIBDIR)
   if("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "x86_64")
-    set(LIBDIR ${CMAKE_SOURCE_DIR}/../lib/darwin_arm64)
+    set(LIBDIR ${CMAKE_SOURCE_DIR}/../lib/darwin)
   else()
     set(LIBDIR ${CMAKE_SOURCE_DIR}/../lib/darwin_arm64)
   endif()
