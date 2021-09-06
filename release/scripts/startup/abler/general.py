@@ -33,19 +33,7 @@ bl_info = {
 
 import bpy
 from bpy_extras.io_utils import ImportHelper
-from bpy.app.handlers import persistent
-from .lib import cameras, shadow, render, scenes
 from .lib.materials import materials_setup
-
-
-@persistent
-def load_handler(dummy):
-    cameras.makeSureCameraExists()
-    cameras.switchToRendredView()
-    cameras.turnOnCameraView(False)
-    shadow.setupSharpShadow()
-    render.setupBackgroundImagesCompositor()
-    materials_setup.applyAconToonStyle()
 
 
 class ImportOperator(bpy.types.Operator, ImportHelper):
@@ -64,7 +52,6 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
             obj.select_set(False)
 
         FILEPATH = self.filepath
-        
 
         col_imported = bpy.data.collections.new("Imported")
         context.scene.collection.children.link(col_imported)
@@ -111,8 +98,6 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
             else: data_to.objects.remove(obj)
         
         materials_setup.applyAconToonStyle()
-        cameras.switchToRendredView()
-        cameras.turnOnCameraView()
 
         for area in context.screen.areas:
             if area.type == 'VIEW_3D':
@@ -186,14 +171,9 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.app.handlers.load_post.append(load_handler)
-
 
 def unregister():
     from bpy.utils import unregister_class
 
     for cls in reversed(classes):
         unregister_class(cls)
-    
-    bpy.app.handlers.load_post.remove(load_handler)
-

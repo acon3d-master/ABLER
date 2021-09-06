@@ -45,6 +45,8 @@ from . import shadow_control
 from . import view_control
 from . import layer_control
 from . import render_control
+from . import pref
+
 
 # =========================================================================
 # Registration:
@@ -63,9 +65,11 @@ def register():
     view_control.register()
     layer_control.register()
     render_control.register()
+    pref.register()
 
 
 def unregister():
+    pref.unregister()
     render_control.unregister()
     layer_control.unregister()
     view_control.unregister()
@@ -81,4 +85,3 @@ def unregister():
 
 if __name__ == "__main__":
     register()
-
