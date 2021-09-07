@@ -36,7 +36,7 @@ def init_setting(dummy):
 
 @persistent
 def load_handler(dummy):
-    init_setting()
+    init_setting(None)
     cameras.makeSureCameraExists()
     cameras.switchToRendredView()
     cameras.turnOnCameraView(False)
