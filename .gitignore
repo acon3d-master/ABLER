@@ -1,5 +1,6 @@
 # generic files to ignore
 # .*
+.gitignore
 
 # python temp paths
 __pycache__/
@@ -61,4 +62,7 @@ update.xml
 
 # CMake Cache
 CmakeCache.txt
-CmakeFiles/ 
+CmakeFiles/
+
+build/AblerLauncher
+dist

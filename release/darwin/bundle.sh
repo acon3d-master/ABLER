@@ -183,7 +183,7 @@ rm -rf "${_tmp_dir}"
 rm "${_tmp_dmg}"
 
 # Notarize
-if [ ! -z "${N_USERNAME}" ] && [ ! -z "${N_PASSWORD}" ] && [ ! -z "${N_BUNDLE_ID}" ] && ["$testing" = false ]; then
+if [ ! -z "${N_USERNAME}" ] && [ ! -z "${N_PASSWORD}" ] && [ ! -z "${N_BUNDLE_ID}" ] && ["${testing}" = false ]; then
     # Send to Apple
     echo "Sending ${DEST_DMG} for notarization..."
     _tmpout=$(mktemp)

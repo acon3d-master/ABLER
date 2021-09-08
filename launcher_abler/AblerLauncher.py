@@ -65,9 +65,12 @@ def get_datadir() -> pathlib.Path:
 
 
 appversion = "1.9.8"
-dir_ = "C:/Program Files (x86)/ABLER"
-if sys.platform == "darwin":
+dir_ = ""
+if sys.platform == "win32":
+    dir_ = "C:/Program Files (x86)/ABLER"
+elif sys.platform == "darwin":
     dir_ = "/Applications"
+
 launcherdir_ = get_datadir() / "Blender/2.96/updater"
 config = configparser.ConfigParser()
 btn = {}
@@ -201,8 +204,8 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         global config
         global installedversion
         global launcher_installed
-        print(get_datadir() / "Blender/2.96/updater/config.ini")
-        print(os.path.isfile(get_datadir() / "Blender/2.96/updater/config.ini"))
+        # print(get_datadir() / "Blender/2.96/updater/config.ini")
+        # print(os.path.isfile(get_datadir() / "Blender/2.96/updater/config.ini"))
         if os.path.isfile(get_datadir() / "Blender/2.96/updater/AblerLauncher.bak"):
             os.remove(
                 get_datadir() / "Blender/2.96/updater/AblerLauncher.bak")
@@ -355,7 +358,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             self.btn_update_launcher.hide()
             self.btn_execute.show()
             opsys = platform.system()
-            print(opsys)
+            # print(opsys)
             if opsys == "Windows":
                 self.btn_execute.clicked.connect(self.exec_windows)
             if opsys == "Darwin":
@@ -669,23 +672,25 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                 QtCore.QCoreApplication.instance().quit()
 
     def exec_windows(self):
-        _ = subprocess.Popen(os.path.join('"' + dir_ + "/blender.exe" + '"'))
-        logger.info(f"Executing {dir_}blender.exe")
-        QtCore.QCoreApplication.instance().quit()
+        try:
+            _ = subprocess.Popen(os.path.join(
+                '"' + dir_ + "/blender.exe" + '"'))
+            logger.info(f"Executing {dir_}blender.exe")
+            QtCore.QCoreApplication.instance().quit()
+        except Exception as e:
+            logger.error(e)
 
     def exec_osx(self):
         try:
             BlenderOSXPath = os.path.join(
                 dir_ + "/ABLER.app/Contents/MacOS/ABLER"
             )
-            print("hihihihihi")
-            print(BlenderOSXPath)
             os.system("chmod +x " + BlenderOSXPath)
             _ = subprocess.Popen(BlenderOSXPath)
             logger.info(f"Executing {BlenderOSXPath}")
             QtCore.QCoreApplication.instance().quit()
         except Exception as e:
-            print(e)
+            logger.error(e)
 
     def exec_linux(self):
         _ = subprocess.Popen(os.path.join(f"{dir_}/blender"))

@@ -1,3 +1,0 @@
-([('AblerLauncher',
-   '/Users/seonggukim/Desktop/ACON3D/RND_aconBlender/dist/AblerLauncher',
-   'EXECUTABLE')],)
