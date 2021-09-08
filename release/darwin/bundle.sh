@@ -19,7 +19,7 @@ _tmp_dmg="/tmp/abler-tmp.dmg"
 _background_image="${_script_dir}/background.tif"
 _mount_dir="/Volumes/${_volume_name}"
 _entitlements="${_script_dir}/entitlements.plist"
-
+testing=false
 # Handle arguments.
 while [[ $# -gt 0 ]]; do
     key=$1
@@ -59,6 +59,11 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        -t|--test)
+            testing=true
+            shift
+            shift
+            ;;
         -h|--help)
             echo "Usage:"
             echo " $(basename "$0") --source DIR --dmg IMAGENAME "
@@ -93,7 +98,7 @@ if [ -d "${_mount_dir}" ]; then
 fi
 
 # Copy dmg contents.
-echo -n "Copying ALBER.app..."
+echo -n "Copying ABLER.app..."
 cp -r "${SRC_DIR}/ABLER.app" "${_tmp_dir}/" || exit 1
 echo
 
@@ -142,6 +147,12 @@ if [ ! -z "${C_CERT}" ]; then
         codesign --remove-signature "${f}"
         codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${f}"
     done
+
+    echo ; echo -n "Codesigning ABLER"
+    codesign --remove-signature "${_mount_dir}/ABLER.app/Contents/macOS/ABLER"
+    codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${_mount_dir}/ABLER.app/Contents/macOS/ABLER"
+    echo
+
     echo ; echo -n "Codesigning ABLER.app"
     codesign --remove-signature "${_mount_dir}/ABLER.app"
     codesign --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${_mount_dir}/ABLER.app"
@@ -172,7 +183,7 @@ rm -rf "${_tmp_dir}"
 rm "${_tmp_dmg}"
 
 # Notarize
-if [ ! -z "${N_USERNAME}" ] && [ ! -z "${N_PASSWORD}" ] && [ ! -z "${N_BUNDLE_ID}" ]; then
+if [ ! -z "${N_USERNAME}" ] && [ ! -z "${N_PASSWORD}" ] && [ ! -z "${N_BUNDLE_ID}" ] && ["${testing}" = false ]; then
     # Send to Apple
     echo "Sending ${DEST_DMG} for notarization..."
     _tmpout=$(mktemp)
