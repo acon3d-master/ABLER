@@ -13,6 +13,7 @@ def init_setting(dummy):
 
     try:
         init_screen = bpy.data.screens['ACON3D'].areas[0].spaces[0]
+        init_screen.shading.type = 'RENDERED'
         init_screen.show_region_header = False
         init_screen.show_region_tool_header = False
         init_screen.show_gizmo = True
@@ -36,7 +37,7 @@ def init_setting(dummy):
 
 @persistent
 def load_handler(dummy):
-    init_setting()
+    init_setting(None)
     cameras.makeSureCameraExists()
     cameras.switchToRendredView()
     cameras.turnOnCameraView(False)
