@@ -556,8 +556,8 @@ def applyAconToonStyle():
         override_object = SimpleNamespace()
         override.object = override_object
         override_object.active_material = mat
-        materials_handler.toggleEachEdge(None, override)
-        materials_handler.toggleEachShading(None, override)
+        # materials_handler.toggleEachEdge(None, override)
+        # materials_handler.toggleEachShading(None, override)
         materials_handler.toggleEachShadow(None, override)
         
     cameras.switchToRendredView()
