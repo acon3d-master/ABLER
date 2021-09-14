@@ -36,11 +36,14 @@ def setupBackgroundImagesCompositor():
     node_composite = nodes.new("CompositorNodeComposite")
     node_rlayer = nodes.new("CompositorNodeRLayers")
 
-    background_images = scene.camera.data.background_images
+    cam = scene.camera.data
+    background_images = cam.background_images
 
     node_entry_left_out = node_rlayer.outputs[0]
     node_entry_right_in = node_composite.inputs[0]
     tree.links.new(node_entry_left_out, node_entry_right_in)
+    
+    if not cam.show_background_images: return
 
     for background_image in reversed(background_images):
         
