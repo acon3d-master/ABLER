@@ -59,20 +59,85 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         default='', options={'HIDDEN'}
     )
 
+    cancelRender = None
+    rendering = None
+    renderQueue = None
+    timerEvent = None
+    initial_scene = None
+    initial_display_type = None
+
+    def pre_render(self, dummy, dum):
+        self.rendering = True
+
+    def post_render(self, dummy, dum):
+        self.renderQueue.pop(0)
+        self.rendering = False
+
+    def on_render_cancel(self, dummy, dum):
+        self.cancelRender = True
+
     def execute(self, context):
 
-        current_scene = context.scene
+        self.cancelRender = False
+        self.rendering = False
+        self.renderQueue = []
+        self.initial_scene = context.scene
+        self.initial_display_type = context.preferences.view.render_display_type
+        
+        context.preferences.view.render_display_type = "NONE"
 
         for scene in bpy.data.scenes:
-            context.window.scene = scene
-            scene.render.filepath = self.filepath
-            render.setupBackgroundImagesCompositor(save=True, scene=scene)
-            render.matchObjectVisibility()
-            bpy.ops.render.render('INVOKE_DEFAULT')
+            scene.render.filepath = self.filepath + "\\" + scene.name
+            self.renderQueue.append(scene)
 
-        context.window.scene = current_scene
+        bpy.app.handlers.render_pre.append(self.pre_render)
+        bpy.app.handlers.render_post.append(self.post_render)
+        bpy.app.handlers.render_cancel.append(self.on_render_cancel)
 
-        return {'FINISHED'}
+        self.timerEvent = context.window_manager.event_timer_add(0.2, window=context.window)
+
+        context.window_manager.modal_handler_add(self)
+
+        return {"RUNNING_MODAL"}
+
+    def modal(self, context, event):
+
+        if event.type == 'TIMER':
+
+            if not self.renderQueue or self.cancelRender is True:
+             
+                bpy.app.handlers.render_pre.remove(self.pre_render)
+                bpy.app.handlers.render_post.remove(self.post_render)
+                bpy.app.handlers.render_cancel.remove(self.on_render_cancel)
+
+                context.window_manager.event_timer_remove(self.timerEvent)
+                context.scene.ACON_prop.scene = self.initial_scene.name
+
+                context.preferences.view.render_display_type = self.initial_display_type
+
+                self.report({"INFO"},"RENDER QUEUE FINISHED")
+
+                bpy.ops.acon3d.alert(
+                    'INVOKE_DEFAULT',
+                    title="Render Queue Finished",
+                    message_1="Rendered images are saved in:",
+                    message_2=self.filepath
+                )
+
+                return {"FINISHED"}
+
+            elif self.rendering is False:
+
+                scene = context.scene
+                qitem = self.renderQueue[0]
+
+                scene.ACON_prop.scene = qitem.name
+                render.setupBackgroundImagesCompositor(scene=scene)
+                render.matchObjectVisibility()
+
+                bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+
+        return {"PASS_THROUGH"}
 
 
 class Acon3dRenderFullOperator(bpy.types.Operator):
@@ -250,7 +315,6 @@ class Acon3dRenderPanel(bpy.types.Panel):
         row.operator("acon3d.camera_view", text="Camera View",
                      icon="RESTRICT_VIEW_OFF")
         row = layout.row()
-#        row.operator("render.opengl", text="Quick Render", text_ctxt="*")
         row.operator("acon3d.render_quick", text="Quick Render", text_ctxt="*")
 
         if is_camera:
@@ -260,8 +324,6 @@ class Acon3dRenderPanel(bpy.types.Panel):
             row.operator("acon3d.render_shadow", text="Shadow Render")
             row = layout.row()
             row.operator("acon3d.render_all", text="Render All Scenes")
-            
-
 
 
 classes = (

@@ -93276,3 +93276,15 @@ msgstr "현재 씬 설정을 그대로 사용"
 msgid "Look at me"
 msgstr "나만 바라보기"
 
+
+msgid "Render Queue Finished"
+msgstr "예약된 렌더작업이 모두 완료되었습니다."
+
+
+msgid "Rendered images are saved in:"
+msgstr "다음 경로에 저장되었습니다."
+
+
+msgid "Render All Scenes"
+msgstr "씬 연속 렌더"
+
