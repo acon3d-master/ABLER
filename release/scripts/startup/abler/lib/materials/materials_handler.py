@@ -33,6 +33,8 @@ def toggleToonEdge(self, context):
 
 
 def toggleEachEdge(self, context):
+    if "object" not in dir(context): return
+    
     obj = context.object
     if obj == None: return
 
@@ -83,6 +85,8 @@ def toggleShading(self, context):
 
 
 def toggleEachShading(self, context):
+    if "object" not in dir(context): return
+
     obj = context.object
     if obj == None: return
 
@@ -97,6 +101,8 @@ def toggleEachShading(self, context):
 
 
 def toggleEachShadow(self, context):
+    if "object" not in dir(context): return
+
     obj = context.object
     if obj == None: return
 
