@@ -17,9 +17,6 @@
 # ##### END GPL LICENSE BLOCK #####
 
 
-from .lib.materials import materials_handler
-from .lib import render, cameras
-import bpy
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -34,6 +31,12 @@ bl_info = {
 }
 
 
+from .lib.materials import materials_handler
+from .lib import render, cameras
+import bpy
+from bpy_extras.io_utils import ImportHelper
+
+
 class Acon3dCameraViewOperator(bpy.types.Operator):
     """Fit Camera Region to Viewport"""
     bl_idname = "acon3d.camera_view"
@@ -42,6 +45,32 @@ class Acon3dCameraViewOperator(bpy.types.Operator):
 
     def execute(self, context):
         cameras.turnOnCameraView()
+
+        return {'FINISHED'}
+
+
+class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
+    """Render all scenes with full render settings"""
+    bl_idname = "acon3d.render_all"
+    bl_label = "Save"
+    bl_translation_context = "*"
+
+    filter_glob: bpy.props.StringProperty(
+        default='', options={'HIDDEN'}
+    )
+
+    def execute(self, context):
+
+        current_scene = context.scene
+
+        for scene in bpy.data.scenes:
+            context.window.scene = scene
+            scene.render.filepath = self.filepath
+            render.setupBackgroundImagesCompositor(save=True, scene=scene)
+            render.matchObjectVisibility()
+            bpy.ops.render.render('INVOKE_DEFAULT')
+
+        context.window.scene = current_scene
 
         return {'FINISHED'}
 
@@ -226,10 +255,13 @@ class Acon3dRenderPanel(bpy.types.Panel):
 
         if is_camera:
             row.operator("acon3d.render_full", text="Full Render")
+            row = layout.row()
+            row.operator("acon3d.render_line", text="Line Render")
+            row.operator("acon3d.render_shadow", text="Shadow Render")
+            row = layout.row()
+            row.operator("acon3d.render_all", text="Render All Scenes")
+            
 
-        row = layout.row()
-        row.operator("acon3d.render_line", text="Line Render")
-        row.operator("acon3d.render_shadow", text="Shadow Render")
 
 
 classes = (
@@ -238,6 +270,7 @@ classes = (
     Acon3dRenderLineOperator,
     Acon3dRenderShadowOperator,
     Acon3dRenderQuickOperator,
+    Acon3dRenderAllOperator,
     Acon3dRenderPanel,
 )
 

@@ -20,10 +20,11 @@
 import bpy
 
 
-def setupBackgroundImagesCompositor():
+def setupBackgroundImagesCompositor(save=False, scene=None):
 
     context = bpy.context
-    scene = context.scene
+
+    if not scene: scene = context.scene
 
     scene.render.film_transparent = True
     scene.use_nodes = True
@@ -41,6 +42,13 @@ def setupBackgroundImagesCompositor():
     node_entry_left_out = node_rlayer.outputs[0]
     node_entry_right_in = node_composite.inputs[0]
     tree.links.new(node_entry_left_out, node_entry_right_in)
+
+    node_entry_right_in_2 = None
+    if save:
+        node_output = nodes.new("CompositorNodeOutputFile")
+        node_output.file_slots[0].path = scene.name + "_##"
+        node_entry_right_in_2 = node_output.inputs[0]
+        tree.links.new(node_entry_left_out, node_entry_right_in_2)
 
     for background_image in reversed(background_images):
         
@@ -82,6 +90,9 @@ def setupBackgroundImagesCompositor():
         
         node_alphaOver = nodes.new("CompositorNodeAlphaOver")
         tree.links.new(node_alphaOver.outputs[0], node_entry_right_in)
+
+        if node_entry_right_in_2:
+            tree.links.new(node_alphaOver.outputs[0], node_entry_right_in_2)
         
         if background_image.display_depth == "BACK":
             tree.links.new(node_transform.outputs[0], node_alphaOver.inputs[1])
@@ -91,6 +102,7 @@ def setupBackgroundImagesCompositor():
             tree.links.new(node_transform.outputs[0], node_alphaOver.inputs[2])
             tree.links.new(node_entry_left_out, node_alphaOver.inputs[1])
             node_entry_right_in = node_alphaOver.inputs[1]
+            node_entry_right_in_2 = None
 
 
 def clearCompositor():
