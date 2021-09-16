@@ -41,6 +41,7 @@ from . import general
 from . import scene_control
 from . import edge_control
 from . import face_control
+from . import object_control
 from . import image_adjustment
 from . import shadow_control
 from . import view_control
@@ -60,6 +61,7 @@ importedLibrary = [
     scene_control,
     edge_control,
     face_control,
+    object_control,
     image_adjustment,
     shadow_control,
     view_control,

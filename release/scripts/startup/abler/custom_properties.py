@@ -361,6 +361,17 @@ class AconObjectGroupProperty(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Group", description="Group", default="")
 
 
+class AconObjectStateProperty(bpy.types.PropertyGroup):
+
+    location: bpy.props.FloatVectorProperty(
+        name="location", description="location", subtype="TRANSLATION", unit="LENGTH"
+    )
+    rotation: bpy.props.FloatVectorProperty(
+        name="rotation", description="rotation", subtype="EULER", unit="ROTATION"
+    )
+    scale: bpy.props.FloatVectorProperty(name="scale", description="scale")
+
+
 class AconObjectProperty(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
@@ -375,6 +386,10 @@ class AconObjectProperty(bpy.types.PropertyGroup):
     constraint_to_camera_rotation_z: bpy.props.BoolProperty(
         name="Look at me", default=False, update=objects.toggleConstraintToCamera
     )
+
+    state_begin: bpy.props.CollectionProperty(type=AconObjectStateProperty)
+
+    state_end: bpy.props.CollectionProperty(type=AconObjectStateProperty)
 
 
 classes = (
