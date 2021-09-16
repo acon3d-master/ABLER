@@ -22,7 +22,7 @@ import bpy
 
 def add_view_items_from_collection(self, context):
     items = []
-    collection = bpy.data.collections.get('ACON_col_cameras')
+    collection = bpy.data.collections.get("ACON_col_cameras")
 
     if collection:
         for item in collection.objects:
@@ -82,12 +82,12 @@ def turnOnCameraView(center_camera=True):
     # turn on camera view in the selected context(view pane)
     for screen in bpy.data.screens:
         for area in screen.areas:
-            if area.type == 'VIEW_3D':
-                area.spaces[0].region_3d.view_perspective = 'CAMERA'
+            if area.type == "VIEW_3D":
+                area.spaces[0].region_3d.view_perspective = "CAMERA"
                 area.spaces[0].lock_camera = True
                 if center_camera:
                     override = {}
-                    override['area'] = area
+                    override["area"] = area
                     bpy.ops.view3d.view_center_camera(override)
                 break
 
@@ -95,16 +95,15 @@ def turnOnCameraView(center_camera=True):
 def turnOffCameraView():
     # turn onff camera view in the selected context(view pane)
     for area in bpy.context.screen.areas:
-        if area.type == 'VIEW_3D':
-            area.spaces[0].region_3d.view_perspective = 'PERSP'
+        if area.type == "VIEW_3D":
+            area.spaces[0].region_3d.view_perspective = "PERSP"
             break
 
 
 def switchToRendredView():
     bpy.context.scene.render.engine = "BLENDER_EEVEE"
-    for area in bpy.context.screen.areas: 
-        if area.type == 'VIEW_3D':
-            for space in area.spaces: 
-                if space.type == 'VIEW_3D':
-                    space.shading.type = 'RENDERED'
-
+    for area in bpy.context.screen.areas:
+        if area.type == "VIEW_3D":
+            for space in area.spaces:
+                if space.type == "VIEW_3D":
+                    space.shading.type = "RENDERED"

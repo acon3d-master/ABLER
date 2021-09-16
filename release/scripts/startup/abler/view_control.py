@@ -27,7 +27,7 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
@@ -39,7 +39,7 @@ def genCameraName(name, i=1):
     found = None
     combinedName = name + str(i)
 
-    collection = bpy.data.collections.get('ACON_col_cameras')
+    collection = bpy.data.collections.get("ACON_col_cameras")
 
     if collection:
         for object in collection.objects:
@@ -47,9 +47,10 @@ def genCameraName(name, i=1):
                 found = True
                 break
 
-    if found: return genCameraName(name, i+1)
-    else: return name + str(i)
-
+    if found:
+        return genCameraName(name, i + 1)
+    else:
+        return name + str(i)
 
 
 class CreateCameraOperator(bpy.types.Operator):
@@ -59,7 +60,7 @@ class CreateCameraOperator(bpy.types.Operator):
 
     def execute(self, context):
         cameras.makeSureCameraExists()
-        
+
         cameraName = genCameraName("ACON_Camera_")
 
         # duplicate camera
@@ -67,7 +68,7 @@ class CreateCameraOperator(bpy.types.Operator):
         camera_object = viewCameraObject.copy()
         camera_object.name = cameraName
         camera_object.hide_viewport = True
-        
+
         # add camera to designated collection (create one if not exists)
         collection = bpy.data.collections.get("ACON_col_cameras")
         if not collection:
@@ -79,7 +80,7 @@ class CreateCameraOperator(bpy.types.Operator):
 
         # select created camera in custom view ui
         context.scene.ACON_prop.view = camera_object.name
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class UpdateCustomCameraOperator(bpy.types.Operator):
@@ -101,7 +102,7 @@ class UpdateCustomCameraOperator(bpy.types.Operator):
         targetCamera.scale[0] = viewCamera.scale[0]
         targetCamera.scale[1] = viewCamera.scale[1]
         targetCamera.scale[2] = viewCamera.scale[2]
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class DeleteCameraOperator(bpy.types.Operator):
@@ -113,37 +114,39 @@ class DeleteCameraOperator(bpy.types.Operator):
         currentCameraName = context.scene.ACON_prop.view
         camera = bpy.data.objects[currentCameraName]
         bpy.data.objects.remove(camera)
-        
-        return {'FINISHED'}
+
+        return {"FINISHED"}
 
 
 class Acon3dViewPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
+
     bl_idname = "ACON3D_PT_view"
     bl_label = "Camera Control"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw_header(self, context):
         layout = self.layout
         layout.label(icon="CAMERA_DATA")
 
     def draw(self, context):
         layout = self.layout
-        layout.operator('view3d.walk', text='Fly (shift + `)', text_ctxt="*")
+        layout.operator("view3d.walk", text="Fly (shift + `)", text_ctxt="*")
         return
 
 
 class Acon3dCameraPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
+
     bl_parent_id = "ACON3D_PT_view"
     bl_idname = "ACON3D_PT_camera"
     bl_label = "Cameras"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
 
     def draw(self, context):
         layout = self.layout
@@ -155,8 +158,8 @@ class Acon3dCameraPanel(bpy.types.Panel):
         row.operator("acon3d.create_camera", text="Create New Camera")
 
         scene = context.scene
-        collection = bpy.data.collections.get('ACON_col_cameras')
-        
+        collection = bpy.data.collections.get("ACON_col_cameras")
+
         if collection is not None and len(collection.objects):
             row = layout.row()
             row.prop(scene.ACON_prop, "view")
@@ -164,7 +167,7 @@ class Acon3dCameraPanel(bpy.types.Panel):
             row = layout.row()
             row.operator("acon3d.update_custom_camera", text="Update")
             row.operator("acon3d.delete_camera", text="Delete")
-        
+
         if bpy.context.scene.camera is not None:
             cam = bpy.context.scene.camera.data
             row = layout.row()
@@ -172,19 +175,20 @@ class Acon3dCameraPanel(bpy.types.Panel):
 
 
 def scene_mychosenobject_poll(self, object):
-    return object.type == 'CAMERA'
+    return object.type == "CAMERA"
 
 
 class Acon3dDOFPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
+
     bl_parent_id = "ACON3D_PT_view"
     bl_idname = "ACON3D_PT_dof"
     bl_label = "Depth of Field"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+    COMPAT_ENGINES = {"BLENDER_EEVEE", "BLENDER_WORKBENCH"}
 
     def draw_header(self, context):
         if bpy.context.scene.camera is not None:
@@ -207,7 +211,7 @@ class Acon3dDOFPanel(bpy.types.Panel):
             col = layout.column()
             col.prop(dof, "focus_object", text="Focus on Object")
             sub = col.column()
-            sub.active = (dof.focus_object is None)
+            sub.active = dof.focus_object is None
             sub.prop(dof, "focus_distance", text="Focus Distance")
             sub = col.column()
             sub.active = True
@@ -219,16 +223,13 @@ class RemoveBackgroundOperator(bpy.types.Operator):
     bl_label = "Remove Background Image"
     bl_translation_context = "*"
 
-    index: bpy.props.IntProperty(
-        name = 'Index',
-        default = 0
-        )
+    index: bpy.props.IntProperty(name="Index", default=0)
 
     def execute(self, context):
         image = context.scene.camera.data.background_images[self.index]
         image.image = None
         bpy.context.scene.camera.data.background_images.remove(image)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dBackgroundPanel(bpy.types.Panel):
@@ -236,9 +237,9 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
     bl_idname = "ACON3D_PT_background"
     bl_label = "Background Images"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
 
     def draw_header(self, context):
         if context.scene.camera is not None:
@@ -249,7 +250,7 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        layout.operator('view3d.background_image_add', text="Add Image", text_ctxt="*")
+        layout.operator("view3d.background_image_add", text="Add Image", text_ctxt="*")
 
         camObj = context.scene.camera
         active = camObj and camObj.data.show_background_images
@@ -257,25 +258,27 @@ class Acon3dBackgroundPanel(bpy.types.Panel):
         layout.active = active
         layout.use_property_split = True
         layout.use_property_decorate = False
-        
+
         if context.scene.camera is not None:
             cam = context.scene.camera.data
-            
+
             for i, bg in enumerate(cam.background_images):
                 box = layout.box()
                 row = box.row(align=True)
                 row.prop(bg, "show_expanded", text="", emboss=False)
-                
-                if bg.source == 'IMAGE' and bg.image:
+
+                if bg.source == "IMAGE" and bg.image:
                     row.prop(bg.image, "name", text="", emboss=False)
-                elif bg.source == 'MOVIE_CLIP' and bg.clip:
+                elif bg.source == "MOVIE_CLIP" and bg.clip:
                     row.prop(bg.clip, "name", text="", emboss=False)
                 elif bg.source and bg.use_camera_clip:
                     row.label(text="Active Clip")
                 else:
                     row.label(text="Not Set")
-                    
-                row.operator("acon3d.background_image_remove", text="", emboss=False, icon='X').index = i
+
+                row.operator(
+                    "acon3d.background_image_remove", text="", emboss=False, icon="X"
+                ).index = i
 
                 if bg.show_expanded:
                     row = box.row()
@@ -313,12 +316,13 @@ classes = (
 
 def register():
     from bpy.utils import register_class
+
     for cls in classes:
         register_class(cls)
 
 
 def unregister():
     from bpy.utils import unregister_class
+
     for cls in reversed(classes):
         unregister_class(cls)
-

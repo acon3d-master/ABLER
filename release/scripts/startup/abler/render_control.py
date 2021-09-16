@@ -21,6 +21,7 @@ from bpy_extras.io_utils import ImportHelper
 import bpy
 from .lib import render, cameras
 from .lib.materials import materials_handler
+
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -31,12 +32,13 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
 class Acon3dCameraViewOperator(bpy.types.Operator):
     """Fit Camera Region to Viewport"""
+
     bl_idname = "acon3d.camera_view"
     bl_label = "Camera View"
     bl_translation_context = "*"
@@ -44,18 +46,17 @@ class Acon3dCameraViewOperator(bpy.types.Operator):
     def execute(self, context):
         cameras.turnOnCameraView()
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
     """Render all scenes with full render settings"""
+
     bl_idname = "acon3d.render_all"
     bl_label = "Save"
     bl_translation_context = "*"
 
-    filter_glob: bpy.props.StringProperty(
-        default='', options={'HIDDEN'}
-    )
+    filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
 
     cancelRender = None
     rendering = None
@@ -92,7 +93,8 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         bpy.app.handlers.render_cancel.append(self.on_render_cancel)
 
         self.timerEvent = context.window_manager.event_timer_add(
-            0.2, window=context.window)
+            0.2, window=context.window
+        )
 
         context.window_manager.modal_handler_add(self)
 
@@ -100,7 +102,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
     def modal(self, context, event):
 
-        if event.type == 'TIMER':
+        if event.type == "TIMER":
 
             if not self.renderQueue or self.cancelRender is True:
 
@@ -116,10 +118,10 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
                 self.report({"INFO"}, "RENDER QUEUE FINISHED")
 
                 bpy.ops.acon3d.alert(
-                    'INVOKE_DEFAULT',
+                    "INVOKE_DEFAULT",
                     title="Render Queue Finished",
                     message_1="Rendered images are saved in:",
-                    message_2=self.filepath
+                    message_2=self.filepath,
                 )
 
                 return {"FINISHED"}
@@ -140,6 +142,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
 class Acon3dRenderFullOperator(bpy.types.Operator):
     """Render according to the set pixel"""
+
     bl_idname = "acon3d.render_full"
     bl_label = "Full Render"
     bl_translation_context = "*"
@@ -147,13 +150,14 @@ class Acon3dRenderFullOperator(bpy.types.Operator):
     def execute(self, context):
         render.setupBackgroundImagesCompositor()
         render.matchObjectVisibility()
-        bpy.ops.render.render('INVOKE_DEFAULT')
+        bpy.ops.render.render("INVOKE_DEFAULT")
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dRenderLineOperator(bpy.types.Operator):
     """Renders only lines according to the set pixel"""
+
     bl_idname = "acon3d.render_line"
     bl_label = "Line Render"
     bl_translation_context = "*"
@@ -178,8 +182,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes.get(
-                    "ACON_nodeGroup_combinedToon")
+                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
                 if toonNode:
                     toonNode.inputs[1].default_value = 0
                     toonNode.inputs[3].default_value = 1
@@ -202,13 +205,14 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
 
         render.matchObjectVisibility()
-        bpy.ops.render.render('INVOKE_DEFAULT')
+        bpy.ops.render.render("INVOKE_DEFAULT")
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dRenderShadowOperator(bpy.types.Operator):
     """Renders only shadow according to the set pixel"""
+
     bl_idname = "acon3d.render_shadow"
     bl_label = "Shadow Render"
     bl_translation_context = "*"
@@ -223,7 +227,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         use_lock_interface = scene.render.use_lock_interface
         render.clearCompositor()
 
-        node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
+        node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
         if not node_group:
             return
 
@@ -237,8 +241,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
             for mat in bpy.data.materials:
                 mat.blend_method = "OPAQUE"
                 mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes.get(
-                    "ACON_nodeGroup_combinedToon")
+                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
                 if toonNode:
                     toonNode.inputs[1].default_value = 0
                     toonNode.inputs[3].default_value = 1
@@ -261,13 +264,14 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
 
         render.matchObjectVisibility()
-        bpy.ops.render.render('INVOKE_DEFAULT')
+        bpy.ops.render.render("INVOKE_DEFAULT")
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dRenderQuickOperator(bpy.types.Operator):
     """Quick render with deselect_all"""
+
     bl_idname = "acon3d.render_quick"
     bl_label = "Quick Render"
     bl_translation_context = "*"
@@ -276,19 +280,20 @@ class Acon3dRenderQuickOperator(bpy.types.Operator):
         ops = bpy.ops
         if ops.object.select_all.poll():
             ops.object.select_all(action="DESELECT")
-        ops.render.opengl('INVOKE_DEFAULT')
-        return {'FINISHED'}
+        ops.render.opengl("INVOKE_DEFAULT")
+        return {"FINISHED"}
 
 
 class Acon3dRenderPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
+
     bl_idname = "ACON3D_PT_render"
     bl_label = "Render"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {'BLENDER_RENDER', 'BLENDER_EEVEE', 'BLENDER_WORKBENCH'}
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+    COMPAT_ENGINES = {"BLENDER_RENDER", "BLENDER_EEVEE", "BLENDER_WORKBENCH"}
 
     def draw_header(self, context):
         layout = self.layout
@@ -301,7 +306,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
 
         is_camera = False
         for obj in bpy.data.objects:
-            if obj.type == 'CAMERA':
+            if obj.type == "CAMERA":
                 is_camera = True
                 break
 
@@ -310,8 +315,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
         col.prop(scene.render, "resolution_x", text="Resolution X")
         col.prop(scene.render, "resolution_y", text="Y")
         row = layout.row()
-        row.operator("acon3d.camera_view", text="Camera View",
-                     icon="RESTRICT_VIEW_OFF")
+        row.operator("acon3d.camera_view", text="Camera View", icon="RESTRICT_VIEW_OFF")
         row = layout.row()
         row.operator("acon3d.render_quick", text="Quick Render", text_ctxt="*")
 
@@ -337,11 +341,13 @@ classes = (
 
 def register():
     from bpy.utils import register_class
+
     for cls in classes:
         register_class(cls)
 
 
 def unregister():
     from bpy.utils import unregister_class
+
     for cls in reversed(classes):
         unregister_class(cls)

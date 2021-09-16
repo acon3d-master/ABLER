@@ -27,7 +27,7 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
@@ -37,6 +37,7 @@ from .lib import layers
 
 class Acon3dCreateGroupOperator(bpy.types.Operator):
     """Create Group"""
+
     bl_idname = "acon3d.create_group"
     bl_label = "Create Group"
     bl_translation_context = "*"
@@ -56,53 +57,52 @@ class Acon3dCreateGroupOperator(bpy.types.Operator):
             new_group_prop = obj.ACON_prop.group.add()
             new_group_prop.name = col_group.name
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dExplodeGroupOperator(bpy.types.Operator):
     """Explode Group"""
+
     bl_idname = "acon3d.explode_group"
     bl_label = "Explode Group"
     bl_translation_context = "*"
 
     def execute(self, context):
-        
+
         for selected_object in context.selected_objects:
-            
+
             group_props = selected_object.ACON_prop.group
 
-            if not len(group_props): continue
+            if not len(group_props):
+                continue
 
             last_group_prop = group_props[len(group_props) - 1]
-            
+
             selected_group = bpy.data.collections.get(last_group_prop.name)
-            if selected_group: bpy.data.collections.remove(selected_group)
+            if selected_group:
+                bpy.data.collections.remove(selected_group)
 
             group_props.remove(len(group_props) - 1)
-        
-        return {'FINISHED'}
+
+        return {"FINISHED"}
 
 
 class Acon3dLayerPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
+
     bl_idname = "ACON3D_PT_Layer"
     bl_label = "Layer"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw_header(self, context):
         layout = self.layout
         layout.label(icon="OUTLINER")
 
     def _draw_collection(
-        self,
-        layout,
-        view_layer,
-        use_local_collections,
-        collection,
-        index
+        self, layout, view_layer, use_local_collections, collection, index
     ):
         findex = 0
         for child in collection.children:
@@ -110,23 +110,32 @@ class Acon3dLayerPanel(bpy.types.Panel):
 
             target = bpy.context.scene.l_exclude[findex]
 
-            icon = 'OUTLINER_COLLECTION'
-            icon_vis = 'HIDE_ON'
-            if target.value: icon_vis = 'HIDE_OFF'
-            icon_lock = 'LOCKED'
-            if not target.lock: icon_lock = 'UNLOCKED'
+            icon = "OUTLINER_COLLECTION"
+            icon_vis = "HIDE_ON"
+            if target.value:
+                icon_vis = "HIDE_OFF"
+            icon_lock = "LOCKED"
+            if not target.lock:
+                icon_lock = "UNLOCKED"
 
             row = layout.row()
             row.use_property_decorate = False
             sub = row.split(factor=0.98)
             subrow = sub.row()
-            subrow.alignment = 'LEFT'
+            subrow.alignment = "LEFT"
             subrow.label(text=child.name, icon=icon)
 
             sub = row.split()
             subrow = sub.row(align=True)
-            subrow.alignment = 'RIGHT'
-            subrow.prop(target, "value", text="", icon=icon_vis, emboss=False, invert_checkbox=True)
+            subrow.alignment = "RIGHT"
+            subrow.prop(
+                target,
+                "value",
+                text="",
+                icon=icon_vis,
+                emboss=False,
+                invert_checkbox=True,
+            )
             subrow.prop(target, "lock", text="", icon=icon_lock, emboss=False)
             findex += 1
 
@@ -140,14 +149,14 @@ class Acon3dLayerPanel(bpy.types.Panel):
         view = context.space_data
         view_layer = context.view_layer
 
-        if 'Layers' in view_layer.layer_collection.children:
+        if "Layers" in view_layer.layer_collection.children:
 
             self._draw_collection(
                 box,
                 view_layer,
                 view.use_local_collections,
-                view_layer.layer_collection.children['Layers'],
-                1
+                view_layer.layer_collection.children["Layers"],
+                1,
             )
 
 
@@ -160,16 +169,17 @@ classes = (
 
 def register():
     from bpy.utils import register_class
+
     for cls in classes:
         register_class(cls)
-    
+
     layers.subscribeToGroupedObjects()
 
 
 def unregister():
     from bpy.utils import unregister_class
+
     for cls in reversed(classes):
         unregister_class(cls)
-    
-    layers.clearSubscribers()
 
+    layers.clearSubscribers()

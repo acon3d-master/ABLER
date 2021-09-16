@@ -12,8 +12,8 @@ def init_setting(dummy):
     prefs_paths = prefs.filepaths
 
     try:
-        init_screen = bpy.data.screens['ACON3D'].areas[0].spaces[0]
-        init_screen.shading.type = 'RENDERED'
+        init_screen = bpy.data.screens["ACON3D"].areas[0].spaces[0]
+        init_screen.shading.type = "RENDERED"
         init_screen.show_region_header = False
         init_screen.show_region_tool_header = False
         init_screen.show_gizmo = True
