@@ -27,12 +27,13 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
 # Main imports
 import bpy
+from types import ModuleType
 
 from . import custom_properties
 from . import credential_modal
@@ -52,59 +53,40 @@ from . import pref
 # Registration:
 # =========================================================================
 
+importedLibrary = [
+    custom_properties,
+    credential_modal,
+    general,
+    scene_control,
+    edge_control,
+    face_control,
+    image_adjustment,
+    shadow_control,
+    view_control,
+    layer_control,
+    render_control,
+    pref,
+]
+
 
 def register():
-    try: custom_properties.register()
-    except: print("Abler: Failed to register custom properties")
-    try: credential_modal.register()
-    except: print("Abler: Failed to register credential modal operators")
-    try: general.register()
-    except: print("Abler: Failed to register general panel")
-    try: scene_control.register()
-    except: print("Abler: Failed to register scene control panel")
-    try: edge_control.register()
-    except: print("Abler: Failed to register edge control panel")
-    try: face_control.register()
-    except: print("Abler: Failed to register face control panel")
-    try: image_adjustment.register()
-    except: print("Abler: Failed to register image adjustment panel")
-    try: shadow_control.register()
-    except: print("Abler: Failed to register shadow control panel")
-    try: view_control.register()
-    except: print("Abler: Failed to register view control panel")
-    try: layer_control.register()
-    except: print("Abler: Failed to register layer control panel")
-    try: render_control.register()
-    except: print("Abler: Failed to register render control panel")
-    try: pref.register()
-    except: print("Abler: Failed to register preference handler")
+    for item in importedLibrary:
+        if not isinstance(item, ModuleType):
+            continue
+        try:
+            item.register()
+        except Exception as e:
+            print(f"ABLER: Failed to register {item.__name__}\n" + e)
 
 
 def unregister():
-    try: pref.unregister()
-    except: print("Abler: Failed to unregister preference handler")
-    try: render_control.unregister()
-    except: print("Abler: Failed to unregister render control panel")
-    try: layer_control.unregister()
-    except: print("Abler: Failed to unregister layer control panel")
-    try: view_control.unregister()
-    except: print("Abler: Failed to unregister view control panel")
-    try: shadow_control.unregister()
-    except: print("Abler: Failed to unregister shadow control panel")
-    try: image_adjustment.unregister()
-    except: print("Abler: Failed to unregister image adjustment panel")
-    try: face_control.unregister()
-    except: print("Abler: Failed to unregister face control panel")
-    try: edge_control.unregister()
-    except: print("Abler: Failed to unregister edge control panel")
-    try: scene_control.unregister()
-    except: print("Abler: Failed to unregister scene control panel")
-    try: general.unregister()
-    except: print("Abler: Failed to unregister general panel")
-    try: credential_modal.unregister()
-    except: print("Abler: Failed to unregister credential modal operators")
-    try: custom_properties.register()
-    except: print("Abler: Failed to unregister custom properties")
+    for item in importedLibrary.reverse():
+        if not isinstance(item, ModuleType):
+            continue
+        try:
+            item.register()
+        except Exception as e:
+            print(f"ABLER: Failed to unregister {item.__name__}\n" + e)
 
 
 if __name__ == "__main__":
