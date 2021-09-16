@@ -17,6 +17,10 @@
 # ##### END GPL LICENSE BLOCK #####
 
 
+from bpy_extras.io_utils import ImportHelper
+import bpy
+from .lib import render, cameras
+from .lib.materials import materials_handler
 bl_info = {
     "name": "ACON3D Panel",
     "description": "",
@@ -29,12 +33,6 @@ bl_info = {
     "tracker_url": "",
     "category": "ACON3D"
 }
-
-
-from .lib.materials import materials_handler
-from .lib import render, cameras
-import bpy
-from bpy_extras.io_utils import ImportHelper
 
 
 class Acon3dCameraViewOperator(bpy.types.Operator):
@@ -77,13 +75,12 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         self.cancelRender = True
 
     def execute(self, context):
-
         self.cancelRender = False
         self.rendering = False
         self.renderQueue = []
         self.initial_scene = context.scene
         self.initial_display_type = context.preferences.view.render_display_type
-        
+
         context.preferences.view.render_display_type = "NONE"
 
         for scene in bpy.data.scenes:
@@ -94,7 +91,8 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         bpy.app.handlers.render_post.append(self.post_render)
         bpy.app.handlers.render_cancel.append(self.on_render_cancel)
 
-        self.timerEvent = context.window_manager.event_timer_add(0.2, window=context.window)
+        self.timerEvent = context.window_manager.event_timer_add(
+            0.2, window=context.window)
 
         context.window_manager.modal_handler_add(self)
 
@@ -105,7 +103,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         if event.type == 'TIMER':
 
             if not self.renderQueue or self.cancelRender is True:
-             
+
                 bpy.app.handlers.render_pre.remove(self.pre_render)
                 bpy.app.handlers.render_post.remove(self.post_render)
                 bpy.app.handlers.render_cancel.remove(self.on_render_cancel)
@@ -115,7 +113,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
                 context.preferences.view.render_display_type = self.initial_display_type
 
-                self.report({"INFO"},"RENDER QUEUE FINISHED")
+                self.report({"INFO"}, "RENDER QUEUE FINISHED")
 
                 bpy.ops.acon3d.alert(
                     'INVOKE_DEFAULT',

@@ -93288,3 +93288,6 @@ msgstr "다음 경로에 저장되었습니다."
 msgid "Render All Scenes"
 msgstr "씬 연속 렌더"
 
+
+msgid "Render all scenes with full render settings"
+msgstr "모든 씬을 고급렌더 설정으로 렌더합니다."
