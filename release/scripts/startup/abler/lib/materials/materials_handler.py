@@ -78,7 +78,7 @@ def toggleTexture(self, context):
 
 def toggleShading(self, context):
 
-    toggle_shading = context.scene.ACON_prop.toggle_texture
+    toggle_shading = context.scene.ACON_prop.toggle_shading
     shadingFactorValue = int(toggle_shading)
 
     node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
