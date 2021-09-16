@@ -163,6 +163,8 @@ class WorkerThread(QtCore.QThread):
             os.remove(self.filename)
             self.finishedEX.emit()
             source = next(os.walk(self.temp_path))
+            print(self.path)
+            self.path = "/Applications/ABLER.app/Contents/macOS"
             if "updater" in self.path and sys.platform == "win32":
                 if os.path.isfile(self.path + "/AblerLauncher.exe"):
                     os.rename(
@@ -184,6 +186,22 @@ class WorkerThread(QtCore.QThread):
                 shortcut = shell.CreateShortCut(sym_path)
                 shortcut.Targetpath = self.path / "/AblerLauncher.exe"
                 shortcut.save()
+            # macOS Launcher update
+            elif (
+                os.path.isfile(self.temp_path + "/AblerLauncher")
+                and sys.platform == "darwin"
+            ):
+                if os.path.isfile(self.path + "/AblerLauncher"):
+                    os.rename(
+                        self.path + "/AblerLauncher",
+                        self.path + "/AblerLauncher.bak",
+                    )
+                time.sleep(1)
+                shutil.copyfile(
+                    self.temp_path + "/AblerLauncher", self.path + "/AblerLauncher"
+                )
+                time.sleep(1)
+                os.system("chmod +x " + self.path + "/AblerLauncher")
             else:
                 try:
                     copy_tree(source[0], self.path)
@@ -349,7 +367,9 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                         info["version"] = version_tag
                         info["arch"] = "arm64"
                         results.append(info)
+                    print("hihi")
                 else:
+                    print("hehe")
                     target = asset["browser_download_url"]
                     if (
                         "macOS" in target
@@ -428,8 +448,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
             req = req[0]
 
         for asset in req["assets"]:
-            opsys = platform.system()
-            if opsys == "Windows":
+            if sys.platform == "win32":
                 target = asset["browser_download_url"]
                 if "Windows" in target and "Launcher" in target and "zip" in target:
                     info = {}
@@ -440,7 +459,7 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
                     info["version"] = info["filename"].split("_")[-1][1:-4]
                     info["arch"] = "x64"
                     results.append(info)
-            if opsys == "Darwin":
+            if sys.platform == "darwin":
                 target = asset["browser_download_url"]
                 if "macOS" in target and "Launcher" in target and "zip" in target:
                     info = {}
@@ -666,17 +685,27 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         QtWidgets.QMessageBox.information(
             self,
             "Launcher updated",
-            "ABLER launcher has been updated. Please re-run the launcher.",
+            "ABLER launcher has been updated. Launcher will restart automatically.",
         )
         try:
             if test_arg:
-                _ = subprocess.Popen(
-                    [get_datadir() + "Blender/2.96/updater/AblerLauncher.exe", "--test"]
-                )
+                if sys.platform == "win32":
+                    execute_path = (
+                        get_datadir() + "Blender/2.96/updater/AblerLauncher.exe"
+                    )
+                elif sys.platform == "darwin":
+                    execute_path = "/Application/ABLER.app/Contents/macOS/AblerLauncher"
+                _ = subprocess.Popen([execute_path, "--test"])
             else:
-                _ = subprocess.Popen(
-                    get_datadir() / "Blender/2.96/updater/AblerLauncher.exe"
-                )
+                if sys.platform == "win32":
+                    execute_path = (
+                        get_datadir() + "Blender/2.96/updater/AblerLauncher.exe"
+                    )
+                elif sys.platform == "darwin":
+                    execute_path = (
+                        "/Applications/ABLER.app/Contents/macOS/AblerLauncher"
+                    )
+                _ = subprocess.Popen(execute_path)
             QtCore.QCoreApplication.instance().quit()
         except Exception as e:
             logger.error(e)
