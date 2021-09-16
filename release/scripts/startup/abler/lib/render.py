@@ -20,10 +20,11 @@
 import bpy
 
 
-def setupBackgroundImagesCompositor():
+def setupBackgroundImagesCompositor(scene=None):
 
     context = bpy.context
-    scene = context.scene
+
+    if not scene: scene = context.scene
 
     scene.render.film_transparent = True
     scene.use_nodes = True
