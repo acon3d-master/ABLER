@@ -22,7 +22,8 @@ import bpy, math
 
 def changeSunRotation(self, context):
     acon_sun = bpy.data.objects.get("ACON_sun")
-    if not acon_sun: acon_sun = createAconSun()
+    if not acon_sun:
+        acon_sun = createAconSun()
 
     prop = context.scene.ACON_prop
 
@@ -33,7 +34,8 @@ def changeSunRotation(self, context):
 
 def toggleSun(self, context):
     acon_sun = bpy.data.objects.get("ACON_sun")
-    if not acon_sun: acon_sun = createAconSun()
+    if not acon_sun:
+        acon_sun = createAconSun()
 
     prop = context.scene.ACON_prop
 
@@ -43,7 +45,8 @@ def toggleSun(self, context):
 
 def changeSunStrength(self, context):
     acon_sun = bpy.data.objects.get("ACON_sun")
-    if not acon_sun: acon_sun = createAconSun()
+    if not acon_sun:
+        acon_sun = createAconSun()
 
     prop = context.scene.ACON_prop
 
@@ -52,7 +55,8 @@ def changeSunStrength(self, context):
 
 def toggleShadow(self, context):
     acon_sun = bpy.data.objects.get("ACON_sun")
-    if not acon_sun: acon_sun = createAconSun()
+    if not acon_sun:
+        acon_sun = createAconSun()
 
     prop = context.scene.ACON_prop
 
@@ -66,7 +70,8 @@ def setupSharpShadow():
 
     acon_sun = bpy.data.objects.get("ACON_sun")
 
-    if not acon_sun: acon_sun = createAconSun()
+    if not acon_sun:
+        acon_sun = createAconSun()
 
     acon_sun.data.angle = 0
     acon_sun.data.use_contact_shadow = 1

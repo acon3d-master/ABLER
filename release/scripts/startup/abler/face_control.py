@@ -27,7 +27,7 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
@@ -35,8 +35,9 @@ import bpy
 
 
 class MATERIAL_UL_List(bpy.types.UIList):
-    
-    def draw_item(self, context, layout, data, item, icon, active_data, active_propname):
+    def draw_item(
+        self, context, layout, data, item, icon, active_data, active_propname
+    ):
         layout.use_property_split = True
         layout.use_property_decorate = False
         ob = data
@@ -49,10 +50,10 @@ class MATERIAL_UL_List(bpy.types.UIList):
             layout.prop(ma.ACON_prop, "type", text="")
 
             toonNode = ma.node_tree.nodes["ACON_nodeGroup_combinedToon"]
-            
+
             if ma.ACON_prop.type == "Diffuse":
                 layout.label(text="", translate=False)
-            
+
             if ma.ACON_prop.type == "Mirror":
                 layout.prop(toonNode.inputs[6], "default_value", text="")
 
@@ -65,6 +66,7 @@ class MATERIAL_UL_List(bpy.types.UIList):
 
 class CloneMaterialOperator(bpy.types.Operator):
     """Clone selected material"""
+
     bl_idname = "acon3d.clone_material"
     bl_label = "Clone Material"
 
@@ -73,14 +75,16 @@ class CloneMaterialOperator(bpy.types.Operator):
         try:
             if context.object.active_material:
                 return True
-            else: return False
-        except: return False
+            else:
+                return False
+        except:
+            return False
 
     def execute(self, context):
         mat = context.object.active_material.copy()
         context.object.active_material = mat
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class MaterialPanel(bpy.types.Panel):
@@ -88,10 +92,10 @@ class MaterialPanel(bpy.types.Panel):
     bl_idname = "ACON_PT_Material"
     bl_label = "Object Material"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw(self, context):
         layout = self.layout
         obj = context.object
@@ -121,7 +125,9 @@ class MaterialPanel(bpy.types.Panel):
             if mat:
                 box = col.box()
                 row = box.row()
-                row.template_ID(obj, "active_material", new="acon3d.clone_material", unlink="")
+                row.template_ID(
+                    obj, "active_material", new="acon3d.clone_material", unlink=""
+                )
                 row = box.row()
                 row.prop(mat.ACON_prop, "toggle_shadow")
                 row = box.row()
@@ -130,15 +136,14 @@ class MaterialPanel(bpy.types.Panel):
                 row.prop(mat.ACON_prop, "toggle_edge")
 
 
-
 class Acon3dFacePanel(bpy.types.Panel):
     bl_idname = "ACON_PT_Face_Main"
     bl_label = "Face Control"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw_header(self, context):
         layout = self.layout
         layout.label(icon="NODE_MATERIAL")
@@ -162,10 +167,10 @@ class FaceSubPanel(bpy.types.Panel):
     bl_idname = "ACON_PT_Face_sub"
     bl_label = "Toon Style"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw_header(self, context):
         layout = self.layout
         layout.prop(context.scene.ACON_prop, "toggle_toon_face", text="")
@@ -174,32 +179,39 @@ class FaceSubPanel(bpy.types.Panel):
         layout = self.layout
         layout.use_property_split = True
         layout.use_property_decorate = False  # No animation.
-        
+
         if context.scene.ACON_prop.toggle_toon_face:
 
             prop = context.scene.ACON_prop
-            
+
             col = layout.column()
             col.prop(prop, "toon_shading_depth")
-            
+
             if prop.toon_shading_depth == "2":
-                col.prop(prop, "toon_shading_brightness_1", text="Brightness", slider=True)
+                col.prop(
+                    prop, "toon_shading_brightness_1", text="Brightness", slider=True
+                )
             else:
-                col.prop(prop, "toon_shading_brightness_1", text="Brightness 1", slider=True)
-                col.prop(prop, "toon_shading_brightness_2", text="Brightness 2", slider=True)
+                col.prop(
+                    prop, "toon_shading_brightness_1", text="Brightness 1", slider=True
+                )
+                col.prop(
+                    prop, "toon_shading_brightness_2", text="Brightness 2", slider=True
+                )
 
 
 class Acon3dBloomPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
+
     bl_parent_id = "ACON_PT_Face_Main"
     bl_idname = "ACON3D_BLOOM_PT_Main"
     bl_label = "Bloom"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    COMPAT_ENGINES = {'BLENDER_EEVEE'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+    COMPAT_ENGINES = {"BLENDER_EEVEE"}
+
     def draw_header(self, context):
         scene = context.scene
         props = scene.eevee
@@ -244,4 +256,3 @@ def unregister():
 
     for cls in reversed(classes):
         unregister_class(cls)
-

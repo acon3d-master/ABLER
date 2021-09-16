@@ -23,6 +23,7 @@ import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
 
+
 class Acon3dAlertOperator(bpy.types.Operator):
     bl_idname = "acon3d.alert"
     bl_label = ""
@@ -36,7 +37,7 @@ class Acon3dAlertOperator(bpy.types.Operator):
     message_3: bpy.props.StringProperty(name="Message")
 
     def execute(self, context):
-        return {'FINISHED'}
+        return {"FINISHED"}
 
     def invoke(self, context, event):
         wm = context.window_manager
@@ -66,59 +67,114 @@ class Acon3dModalOperator(bpy.types.Operator):
     bl_idname = "acon3d.modal_operator"
     bl_label = "Login Modal Operator"
     pass_key = {
-                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H',
-                'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P',
-                'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X',
-                'Y', 'Z', 'ZERO', 'ONE', 'TWO', 'THREE',
-                'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT',
-                'NINE',
-                'BACK_SPACE', 'SEMI_COLON', 'PERIOD', 'COMMA', 'QUOTE',
-                'ACCENT_GRAVE', 'MINUS', 'PLUS', 'SLASH', 'BACK_SLASH', 'EQUAL',
-                'LEFT_BRACKET', 'RIGHT_BRACKET', 'NUMPAD_2', 'NUMPAD_4', 'NUMPAD_6',
-                'NUMPAD_8', 'NUMPAD_1', 'NUMPAD_3', 'NUMPAD_5', 'NUMPAD_7',
-                'NUMPAD_9', 'NUMPAD_PERIOD', 'NUMPAD_SLASH', 'NUMPAD_ASTERIX',
-                'NUMPAD_0', 'NUMPAD_MINUS', 'NUMPAD_ENTER', 'NUMPAD_PLUS',
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G",
+        "H",
+        "I",
+        "J",
+        "K",
+        "L",
+        "M",
+        "N",
+        "O",
+        "P",
+        "Q",
+        "R",
+        "S",
+        "T",
+        "U",
+        "V",
+        "W",
+        "X",
+        "Y",
+        "Z",
+        "ZERO",
+        "ONE",
+        "TWO",
+        "THREE",
+        "FOUR",
+        "FIVE",
+        "SIX",
+        "SEVEN",
+        "EIGHT",
+        "NINE",
+        "BACK_SPACE",
+        "SEMI_COLON",
+        "PERIOD",
+        "COMMA",
+        "QUOTE",
+        "ACCENT_GRAVE",
+        "MINUS",
+        "PLUS",
+        "SLASH",
+        "BACK_SLASH",
+        "EQUAL",
+        "LEFT_BRACKET",
+        "RIGHT_BRACKET",
+        "NUMPAD_2",
+        "NUMPAD_4",
+        "NUMPAD_6",
+        "NUMPAD_8",
+        "NUMPAD_1",
+        "NUMPAD_3",
+        "NUMPAD_5",
+        "NUMPAD_7",
+        "NUMPAD_9",
+        "NUMPAD_PERIOD",
+        "NUMPAD_SLASH",
+        "NUMPAD_ASTERIX",
+        "NUMPAD_0",
+        "NUMPAD_MINUS",
+        "NUMPAD_ENTER",
+        "NUMPAD_PLUS",
     }
+
     def execute(self, context):
-        return {'FINISHED'}
+        return {"FINISHED"}
 
     def modal(self, context, event):
         userInfo = bpy.data.meshes.get("ACON_userInfo")
+
         def char2key(c):
             result = ctypes.windll.User32.VkKeyScanW(ord(c))
             shift_state = (result & 0xFF00) >> 8
             vk_key = result & 0xFF
             return vk_key
 
+        if userInfo and userInfo.ACON_prop.login_status == "SUCCESS":
+            return {"FINISHED"}
 
-        if userInfo and userInfo.ACON_prop.login_status == 'SUCCESS':
-            return {'FINISHED'}
-
-        if event.type == 'LEFTMOUSE':
-            bpy.ops.wm.splash('INVOKE_DEFAULT')
+        if event.type == "LEFTMOUSE":
+            bpy.ops.wm.splash("INVOKE_DEFAULT")
         if event.type in self.pass_key:
-            if platform.system() == 'Windows':
-                if event.type == 'BACK_SPACE':
-                    ctypes.windll.user32.keybd_event(char2key('\b'))
+            if platform.system() == "Windows":
+                if event.type == "BACK_SPACE":
+                    ctypes.windll.user32.keybd_event(char2key("\b"))
                 else:
                     ctypes.windll.user32.keybd_event(char2key(event.unicode))
-            elif platform.system() == 'Darwin':
+            elif platform.system() == "Darwin":
                 import keyboard
+
                 try:
-                    if event.type == 'BACK_SPACE':
-                        keyboard.send('delete')
+                    if event.type == "BACK_SPACE":
+                        keyboard.send("delete")
                     else:
                         keyboard.write(event.unicode)
                 except Exception as e:
                     print(e)
-            elif platform.system() == 'Linux':
+            elif platform.system() == "Linux":
                 print("Linux")
 
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
     def invoke(self, context, event):
         context.window_manager.modal_handler_add(self)
-        return {'RUNNING_MODAL'}
+        return {"RUNNING_MODAL"}
 
 
 def requestLogin():
@@ -129,8 +185,8 @@ def requestLogin():
     try:
 
         path = bpy.utils.resource_path("USER")
-        path_cookiesFolder = os.path.join(path, 'cookies')
-        path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
+        path_cookiesFolder = os.path.join(path, "cookies")
+        path_cookiesFile = os.path.join(path_cookiesFolder, "acon3d_session")
 
         if prop.show_password:
             prop.password = prop.password_shown
@@ -142,17 +198,14 @@ def requestLogin():
 
         try:
             response_godo = requests.post(
-                'https://www.acon3d.com/api/login.php',
-                data = {
-                    'loginId': prop.username,
-                    'loginPwd': prop.password    
-                }
+                "https://www.acon3d.com/api/login.php",
+                data={"loginId": prop.username, "loginPwd": prop.password},
             )
         except:
             response_godo = None
 
         try:
-            success_msg = response_godo.json()['message']
+            success_msg = response_godo.json()["message"]
             if success_msg != "success":
                 response_godo = None
         except:
@@ -160,24 +213,23 @@ def requestLogin():
 
         if response_godo is not None:
             cookies_godo = response_godo.cookies
-        
+
         response = requests.post(
-            'https://api-v2.acon3d.com/auth/acon3d/signin',
-            data = {
-                'account': prop.username,
-                'password': prop.password
-            },
-            cookies=cookies_godo
+            "https://api-v2.acon3d.com/auth/acon3d/signin",
+            data={"account": prop.username, "password": prop.password},
+            cookies=cookies_godo,
         )
 
         cookie_final = response.cookies
 
         if response_godo is not None:
-            cookie_final = requests.cookies.merge_cookies(cookies_godo, response.cookies)
-        
+            cookie_final = requests.cookies.merge_cookies(
+                cookies_godo, response.cookies
+            )
+
         if response.status_code == 200:
 
-            prop.login_status = 'SUCCESS'
+            prop.login_status = "SUCCESS"
 
             cookiesFile = open(path_cookiesFile, "wb")
             pickle.dump(cookie_final, cookiesFile)
@@ -189,7 +241,7 @@ def requestLogin():
 
         else:
 
-            prop.login_status = 'FAIL'
+            prop.login_status = "FAIL"
 
     except Exception as e:
 
@@ -200,16 +252,17 @@ def requestLogin():
     width = window.width
     height = window.height
     window.cursor_warp(width / 2, height / 2)
-    
-    if prop.login_status != 'SUCCESS':
+
+    if prop.login_status != "SUCCESS":
         bpy.ops.acon3d.alert(
-            'INVOKE_DEFAULT',
+            "INVOKE_DEFAULT",
             title="Login failed",
             message_1="If this happens continuously",
-            message_2="please contact us at \"cs@acon3d.com\"."
+            message_2='please contact us at "cs@acon3d.com".',
         )
-        
-    def moveMouse(): window.cursor_warp(width / 2, (height / 2) - 150)
+
+    def moveMouse():
+        window.cursor_warp(width / 2, (height / 2) - 150)
 
     bpy.app.timers.register(moveMouse, first_interval=0.1)
     bpy.context.window.cursor_set("DEFAULT")
@@ -222,10 +275,10 @@ class Acon3dLoginOperator(bpy.types.Operator):
 
     def execute(self, context):
         userInfo = bpy.data.meshes.get("ACON_userInfo")
-        userInfo.ACON_prop.login_status = 'LOADING'
+        userInfo.ACON_prop.login_status = "LOADING"
         context.window.cursor_set("WAIT")
         bpy.app.timers.register(requestLogin, first_interval=0.1)
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dAnchorOperator(bpy.types.Operator):
@@ -233,15 +286,12 @@ class Acon3dAnchorOperator(bpy.types.Operator):
     bl_label = "Go to link"
     bl_translation_context = "*"
 
-    href : bpy.props.StringProperty(
-        name="href",
-        description="href"
-    )
+    href: bpy.props.StringProperty(name="href", description="href")
 
     def execute(self, context):
         webbrowser.open(self.href)
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 @persistent
@@ -250,16 +300,16 @@ def open_credential_modal(dummy):
     prefs.view.show_splash = True
 
     userInfo = bpy.data.meshes.new("ACON_userInfo")
-    userInfo.ACON_prop.login_status = 'IDLE'
+    userInfo.ACON_prop.login_status = "IDLE"
 
     try:
         path = bpy.utils.resource_path("USER")
-        path_cookiesFolder = os.path.join(path, 'cookies')
-        path_cookiesFile = os.path.join(path_cookiesFolder, 'acon3d_session')
+        path_cookiesFolder = os.path.join(path, "cookies")
+        path_cookiesFile = os.path.join(path_cookiesFolder, "acon3d_session")
 
         if not os.path.isdir(path_cookiesFolder):
             os.mkdir(path_cookiesFolder)
-        
+
         if not os.path.exists(path_cookiesFile):
             raise
 
@@ -267,24 +317,25 @@ def open_credential_modal(dummy):
         cookies = pickle.load(cookiesFile)
         cookiesFile.close()
         response = requests.get(
-            'https://api-v2.acon3d.com/auth/acon3d/refresh',
-            cookies = cookies
+            "https://api-v2.acon3d.com/auth/acon3d/refresh", cookies=cookies
         )
 
         responseData = response.json()
-        token = responseData['accessToken']
+        token = responseData["accessToken"]
 
-        if token: userInfo.ACON_prop.login_status = 'SUCCESS'
+        if token:
+            userInfo.ACON_prop.login_status = "SUCCESS"
 
-    except: print("Failed to load cookies")
+    except:
+        print("Failed to load cookies")
 
-    if userInfo.ACON_prop.login_status != 'SUCCESS':
-        bpy.ops.acon3d.modal_operator('INVOKE_DEFAULT')
+    if userInfo.ACON_prop.login_status != "SUCCESS":
+        bpy.ops.acon3d.modal_operator("INVOKE_DEFAULT")
 
 
 @persistent
 def hide_header(dummy):
-    bpy.data.screens['ACON3D'].areas[0].spaces[0].show_region_header = False
+    bpy.data.screens["ACON3D"].areas[0].spaces[0].show_region_header = False
 
 
 classes = (
@@ -306,7 +357,6 @@ def register():
 def unregister():
     for cls in reversed(classes):
         bpy.utils.unregister_class(cls)
-    
+
     bpy.app.handlers.load_post.remove(hide_header)
     bpy.app.handlers.load_post.remove(open_credential_modal)
-
