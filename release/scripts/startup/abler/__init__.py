@@ -75,7 +75,6 @@ def register():
             continue
         try:
             item.register()
-            raise
         except Exception as e:
             print(f"ABLER: Failed to register {str(item.__name__)}\n" + str(e))
 
