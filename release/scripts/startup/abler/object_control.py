@@ -32,6 +32,59 @@ bl_info = {
 
 
 import bpy
+from .lib import objects
+
+
+class Acon3dStateUpdateOperator(bpy.types.Operator):
+    """Update object's state using current state position and location / rotation / scale values"""
+
+    bl_idname = "acon3d.state_update"
+    bl_label = "Update State"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+
+        for obj in context.selected_objects:
+
+            prop = obj.ACON_prop
+
+            if not prop.use_state:
+                continue
+
+            x = prop.state_slider
+
+            for att in ["location", "rotation_euler", "scale"]:
+
+                vector_begin = getattr(prop.state_begin, att)
+                vector_mid = getattr(obj, att)
+                vector_end = objects.step(vector_begin, vector_mid, 1 / x)
+                setattr(prop.state_end, att, vector_end)
+
+        return {"FINISHED"}
+
+
+class Acon3dStateActionOperator(bpy.types.Operator):
+    """Move object state"""
+
+    bl_idname = "acon3d.state_action"
+    bl_label = "Toggle State"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+
+        for obj in context.selected_objects:
+
+            prop = obj.ACON_prop
+            x = prop.state_slider
+
+            if x < 0.5:
+                prop.state_slider = 0.5
+            elif x >= 0.5 and x < 1:
+                prop.state_slider = 1
+            elif x == 1:
+                prop.state_slider = 0
+
+        return {"FINISHED"}
 
 
 class Acon3dObjectPanel(bpy.types.Panel):
@@ -44,21 +97,54 @@ class Acon3dObjectPanel(bpy.types.Panel):
 
     def draw_header(self, context):
         layout = self.layout
-        layout.label(icon="MESH_UVSPHERE")
+        layout.label(icon="FILE_3D")
+
+    def draw(self, context):
+        layout = self.layout
+        row = layout.row()
+        col = row.column()
+        col.scale_x = 3
+        col.separator()
+        col = row.column()
+        row = col.row()
+        row.prop(context.object.ACON_prop, "constraint_to_camera_rotation_z")
+
+
+class ObjectSubPanel(bpy.types.Panel):
+    bl_parent_id = "ACON_PT_Object_Main"
+    bl_idname = "ACON_PT_Object_Sub"
+    bl_label = "Use State"
+    bl_category = "ACON3D"
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
+    def draw_header(self, context):
+        obj = context.object
+        layout = self.layout
+        layout.active = bool(len(context.selected_objects))
+        layout.prop(obj.ACON_prop, "use_state", text="")
 
     def draw(self, context):
         layout = self.layout
         layout.use_property_split = True
-        layout.use_property_decorate = False  # No animation.
+        layout.use_property_decorate = True
 
         obj = context.object
+        prop = obj.ACON_prop
 
-        layout.prop(obj.ACON_prop, "constraint_to_camera_rotation_z")
+        layout.active = prop.use_state and len(context.selected_objects)
+        row = layout.row(align=True)
+        row.prop(prop, "state_slider", slider=True)
+        row.operator("acon3d.state_update", text="", icon="FILE_REFRESH")
 
-        return
 
-
-classes = (Acon3dObjectPanel,)
+classes = (
+    Acon3dStateActionOperator,
+    Acon3dStateUpdateOperator,
+    Acon3dObjectPanel,
+    ObjectSubPanel,
+)
 
 
 def register():
