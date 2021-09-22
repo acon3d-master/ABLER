@@ -56,10 +56,20 @@ def toggleUseState(self, context):
 
         if use_state:
 
+            if obj == context.object or not prop.use_state:
+
+                for att in ["location", "rotation_euler", "scale"]:
+
+                    vector = getattr(obj, att)
+                    setattr(prop.state_begin, att, vector)
+                    setattr(prop.state_end, att, vector)
+
+        else:
+
             for att in ["location", "rotation_euler", "scale"]:
 
-                vector = getattr(obj, att)
-                setattr(prop.state_begin, att, vector)
+                vector = getattr(prop.state_begin, att)
+                setattr(obj, att, vector)
                 setattr(prop.state_end, att, vector)
 
         if prop.use_state != use_state:
@@ -69,12 +79,18 @@ def toggleUseState(self, context):
 def moveState(self, context):
 
     prop = context.object.ACON_prop
-    use_state = prop.use_state
     state_slider = prop.state_slider
+    use_state = prop.use_state
+
+    if not use_state:
+        return
 
     for obj in context.selected_objects:
 
         prop = obj.ACON_prop
+
+        if prop.use_state != use_state:
+            prop.use_state = use_state
 
         for att in ["location", "rotation_euler", "scale"]:
 
@@ -84,10 +100,5 @@ def moveState(self, context):
 
             setattr(obj, att, vector_mid)
 
-        obj.rotation_mode = "XYZ"
-
         if prop.state_slider != state_slider:
             prop.state_slider = state_slider
-
-        if prop.use_state != use_state:
-            prop.use_state = use_state

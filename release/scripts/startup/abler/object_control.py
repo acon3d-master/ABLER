@@ -67,8 +67,10 @@ class Acon3dStateActionOperator(bpy.types.Operator):
     """Move object state"""
 
     bl_idname = "acon3d.state_action"
-    bl_label = "Toggle State"
+    bl_label = "Move State"
     bl_translation_context = "*"
+
+    step: bpy.props.FloatProperty(name="Toggle Mode", default=0.25)
 
     def execute(self, context):
 
@@ -77,12 +79,15 @@ class Acon3dStateActionOperator(bpy.types.Operator):
             prop = obj.ACON_prop
             x = prop.state_slider
 
-            if x < 0.5:
-                prop.state_slider = 0.5
-            elif x >= 0.5 and x < 1:
-                prop.state_slider = 1
-            elif x == 1:
-                prop.state_slider = 0
+            if x == 1:
+                x = 0
+            else:
+                x += self.step
+
+            if x > 1:
+                x = 1
+
+            prop.state_slider = x
 
         return {"FINISHED"}
 
@@ -123,6 +128,7 @@ class ObjectSubPanel(bpy.types.Panel):
         obj = context.object
         layout = self.layout
         layout.active = bool(len(context.selected_objects))
+        layout.enabled = layout.active
         layout.prop(obj.ACON_prop, "use_state", text="")
 
     def draw(self, context):
@@ -133,7 +139,8 @@ class ObjectSubPanel(bpy.types.Panel):
         obj = context.object
         prop = obj.ACON_prop
 
-        layout.active = prop.use_state and len(context.selected_objects)
+        layout.active = prop.use_state and bool(len(context.selected_objects))
+        layout.enabled = layout.active
         row = layout.row(align=True)
         row.prop(prop, "state_slider", slider=True)
         row.operator("acon3d.state_update", text="", icon="FILE_REFRESH")
