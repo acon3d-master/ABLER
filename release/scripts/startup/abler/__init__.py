@@ -27,12 +27,13 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
 # Main imports
 import bpy
+from types import ModuleType
 
 from . import custom_properties
 from . import credential_modal
@@ -52,35 +53,40 @@ from . import pref
 # Registration:
 # =========================================================================
 
+importedLibrary = [
+    custom_properties,
+    credential_modal,
+    general,
+    scene_control,
+    edge_control,
+    face_control,
+    image_adjustment,
+    shadow_control,
+    view_control,
+    layer_control,
+    render_control,
+    pref,
+]
+
 
 def register():
-    custom_properties.register()
-    credential_modal.register()
-    general.register()
-    scene_control.register()
-    edge_control.register()
-    face_control.register()
-    image_adjustment.register()
-    shadow_control.register()
-    view_control.register()
-    layer_control.register()
-    render_control.register()
-    pref.register()
+    for item in importedLibrary:
+        if not isinstance(item, ModuleType):
+            continue
+        try:
+            item.register()
+        except Exception as e:
+            print(f"ABLER: Failed to register {str(item.__name__)}\n" + str(e))
 
 
 def unregister():
-    pref.unregister()
-    render_control.unregister()
-    layer_control.unregister()
-    view_control.unregister()
-    shadow_control.unregister()
-    image_adjustment.unregister()
-    face_control.unregister()
-    edge_control.unregister()
-    scene_control.unregister()
-    general.unregister()
-    credential_modal.unregister()
-    custom_properties.register()
+    for item in importedLibrary.reverse():
+        if not isinstance(item, ModuleType):
+            continue
+        try:
+            item.register()
+        except Exception as e:
+            print(f"ABLER: Failed to unregister {str(item.__name__)}\n" + str(e))
 
 
 if __name__ == "__main__":

@@ -27,7 +27,7 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
@@ -38,10 +38,10 @@ class Acon3dEdgePanel(bpy.types.Panel):
     bl_idname = "ACON_PT_Edge_Main"
     bl_label = "Edges Control"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw_header(self, context):
         layout = self.layout
         layout.label(icon="MESH_UVSPHERE")
@@ -55,9 +55,9 @@ class EdgeSubPanel(bpy.types.Panel):
     bl_idname = "ACON_PT_Edge_Sub"
     bl_label = "Toon Style"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
 
     def draw_header(self, context):
         layout = self.layout
@@ -69,13 +69,12 @@ class EdgeSubPanel(bpy.types.Panel):
         layout.use_property_decorate = False  # No animation.
 
         prop = context.scene.ACON_prop
-        
+
         if prop.toggle_toon_edge:
-            
+
             layout.prop(prop, "edge_min_line_width", text="Min Line Width", slider=True)
             layout.prop(prop, "edge_max_line_width", text="Max Line Width", slider=True)
             layout.prop(prop, "edge_line_detail", text="Line Detail", slider=True)
-
 
 
 classes = (
@@ -96,5 +95,3 @@ def unregister():
 
     for cls in reversed(classes):
         unregister_class(cls)
-
-
