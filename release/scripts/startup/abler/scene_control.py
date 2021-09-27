@@ -27,7 +27,7 @@ bl_info = {
     "warning": "",  # used for warning icon and text in addons panel
     "wiki_url": "",
     "tracker_url": "",
-    "category": "ACON3D"
+    "category": "ACON3D",
 }
 
 
@@ -37,14 +37,15 @@ from .lib import scenes
 
 class CreateSceneOperator(bpy.types.Operator):
     """Create a new scene with current settings"""
+
     bl_idname = "acon3d.create_scene"
     bl_label = "New Scene"
     bl_translation_context = "*"
 
     def execute(self, context):
-        bpy.ops.acon3d.set_scene_name('INVOKE_DEFAULT')
+        bpy.ops.acon3d.set_scene_name("INVOKE_DEFAULT")
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class SetScenePropsOperator(bpy.types.Operator):
@@ -53,7 +54,7 @@ class SetScenePropsOperator(bpy.types.Operator):
 
     name: bpy.props.StringProperty(name="Name")
 
-    preset : bpy.props.EnumProperty(
+    preset: bpy.props.EnumProperty(
         name="Preset",
         description="Scene preset",
         items=[
@@ -63,15 +64,15 @@ class SetScenePropsOperator(bpy.types.Operator):
             ("Indoor Nighttime", "Indoor Nighttime", ""),
             ("Outdoor Daytime", "Outdoor Daytime", ""),
             ("Outdoor Sunset", "Outdoor Sunset", ""),
-            ("Outdoor Nighttime", "Outdoor Nighttime", "")
-        ]
+            ("Outdoor Nighttime", "Outdoor Nighttime", ""),
+        ],
     )
 
     def execute(self, context):
         old_scene = context.scene
         new_scene = scenes.createScene(old_scene, self.preset, self.name)
         context.scene.ACON_prop.scene = new_scene.name
-        return {'FINISHED'}
+        return {"FINISHED"}
 
     def invoke(self, context, event):
         self.name = scenes.genSceneName("ACON_Scene_")
@@ -88,6 +89,7 @@ class SetScenePropsOperator(bpy.types.Operator):
 
 class DeleteSceneOperator(bpy.types.Operator):
     """Remove current scene from project"""
+
     bl_idname = "acon3d.delete_scene"
     bl_label = "Remove Scene"
     bl_translation_context = "*"
@@ -97,17 +99,17 @@ class DeleteSceneOperator(bpy.types.Operator):
         scene = bpy.data.scenes[sceneName]
         bpy.data.scenes.remove(scene)
 
-        return {'FINISHED'}
+        return {"FINISHED"}
 
 
 class Acon3dScenesPanel(bpy.types.Panel):
     bl_idname = "ACON3D_PT_scenes"
     bl_label = "Scenes"
     bl_category = "ACON3D"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'UI'
-    bl_options = {'DEFAULT_CLOSED'}
-    
+    bl_space_type = "VIEW_3D"
+    bl_region_type = "UI"
+    bl_options = {"DEFAULT_CLOSED"}
+
     def draw_header(self, context):
         layout = self.layout
         layout.label(icon="SCENE_DATA")
@@ -115,11 +117,11 @@ class Acon3dScenesPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
-        
+
         row = layout.row(align=True)
         row.prop(scene.ACON_prop, "scene", text="")
-        row.operator("acon3d.create_scene", text="", icon='ADD')
-        row.operator("acon3d.delete_scene", text="", icon='REMOVE')
+        row.operator("acon3d.create_scene", text="", icon="ADD")
+        row.operator("acon3d.delete_scene", text="", icon="REMOVE")
 
 
 classes = (
@@ -142,4 +144,3 @@ def unregister():
 
     for cls in reversed(classes):
         unregister_class(cls)
-

@@ -21,77 +21,99 @@ import bpy
 
 
 def toggleToonEdge(self, context):
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    toonEdgeFactorValue = 0
-    if context.scene.ACON_prop.toggle_toon_edge:
-        toonEdgeFactorValue = 1
+    toonEdgeFactorValue = int(context.scene.ACON_prop.toggle_toon_edge)
 
-    node = node_group.nodes.get('ACON_node_toonEdgeFactor')
-    if node: node.outputs[0].default_value = toonEdgeFactorValue
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
+
+    node = node_group.nodes.get("ACON_node_toonEdgeFactor")
+    node.outputs[0].default_value = toonEdgeFactorValue
 
 
 def toggleEachEdge(self, context):
-    mat = context.object.active_material
+
+    if "object" not in dir(context):
+        return
+
+    obj = context.object
+    if obj == None:
+        return
+
+    mat = obj.active_material
+
+    toonEdgeFactorValue = int(mat.ACON_prop.toggle_edge)
     toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
-
-    toonEdgeFactorValue = 0
-    if mat.ACON_prop.toggle_edge:
-        toonEdgeFactorValue = 1
-
     toonNode.inputs[9].default_value = toonEdgeFactorValue
 
 
 def toggleToonFace(self, context):
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    toonFaceFactorValue = 0
-    if context.scene.ACON_prop.toggle_toon_face:
-        toonFaceFactorValue = 1
+    toonFaceFactorValue = int(context.scene.ACON_prop.toggle_toon_face)
 
-    node = node_group.nodes.get('ACON_nodeGroup_toonFace')
-    if node: node.inputs[4].default_value = toonFaceFactorValue
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
+
+    node = node_group.nodes.get("ACON_nodeGroup_toonFace")
+    node.inputs[4].default_value = toonFaceFactorValue
 
 
 def toggleTexture(self, context):
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    textureFactorValue = 1
-    if context.scene.ACON_prop.toggle_texture:
-        textureFactorValue = 0
+    toggle_texture = context.scene.ACON_prop.toggle_texture
+    textureFactorValue = int(not toggle_texture)
 
-    node = node_group.nodes.get('ACON_node_textureMixFactor')
-    if node: node.inputs[0].default_value = textureFactorValue
+    for image in context.scene.camera.data.background_images:
+        image.show_background_image = toggle_texture
+
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
+
+    node = node_group.nodes.get("ACON_node_textureMixFactor")
+    node.inputs[0].default_value = textureFactorValue
 
 
 def toggleShading(self, context):
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    shadingFactorValue = 0
-    if context.scene.ACON_prop.toggle_shading:
-        shadingFactorValue = 1
+    toggle_shading = context.scene.ACON_prop.toggle_shading
+    shadingFactorValue = int(toggle_shading)
 
-    node = node_group.nodes.get('ACON_node_shadeMixFactor')
-    if node: node.outputs[0].default_value = shadingFactorValue
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
+
+    node = node_group.nodes.get("ACON_node_shadeMixFactor")
+    node.outputs[0].default_value = shadingFactorValue
 
 
 def toggleEachShading(self, context):
-    mat = context.object.active_material
+
+    if "object" not in dir(context):
+        return
+
+    obj = context.object
+    if obj == None:
+        return
+
+    mat = obj.active_material
+    shadingFactorValue = int(mat.ACON_prop.toggle_shading)
     toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
-
-    shadingFactorValue = 0
-    if mat.ACON_prop.toggle_shading:
-        shadingFactorValue = 1
-
     toonNode.inputs[4].default_value = shadingFactorValue
 
 
 def toggleEachShadow(self, context):
-    mat = context.object.active_material
+
+    if "object" not in dir(context):
+        return
+
+    obj = context.object
+    if obj == None:
+        return
+
+    mat = obj.active_material
 
     if mat.ACON_prop.toggle_shadow:
         mat.shadow_method = "CLIP"
@@ -100,30 +122,31 @@ def toggleEachShadow(self, context):
 
 
 def changeToonDepth(self, context):
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    toonFaceFactorValue = 1
-    if context.scene.ACON_prop.toon_shading_depth == "2":
-        toonFaceFactorValue = 0
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
-    node = node_group.nodes.get('ACON_nodeGroup_toonFace')
-    if node: node.inputs[1].default_value = toonFaceFactorValue
+    toonFaceFactorValue = int(context.scene.ACON_prop.toon_shading_depth == "3")
+
+    node = node_group.nodes.get("ACON_nodeGroup_toonFace")
+    node.inputs[1].default_value = toonFaceFactorValue
 
 
 def setMaterialParametersByType(mat):
 
     type = mat.ACON_prop.type
-    
+
     toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
-    if not toonNode: return
-    
+    if not toonNode:
+        return
+
     if type == "Diffuse":
         mat.blend_method = "CLIP"
         mat.ACON_prop.toggle_shadow = True
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[3].default_value = 1
-    
+
     if type == "Mirror":
         bpy.context.scene.eevee.use_ssr = True
         mat.blend_method = "CLIP"
@@ -131,14 +154,14 @@ def setMaterialParametersByType(mat):
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 1
         toonNode.inputs[3].default_value = 0.5
-        
+
     if type == "Glow":
         mat.blend_method = "CLIP"
         mat.ACON_prop.toggle_shadow = True
         toonNode.inputs[1].default_value = 0
         toonNode.inputs[2].default_value = 0
         toonNode.inputs[3].default_value = 0
-        
+
     if type == "Clear":
         mat.blend_method = "BLEND"
         mat.ACON_prop.toggle_shadow = False
@@ -147,26 +170,25 @@ def setMaterialParametersByType(mat):
 
 
 def changeMaterialType(self, context):
-    
+
     try:
         material_slots = context.active_object.material_slots
-        
+
         for mat_slot in material_slots:
             mat = mat_slot.material
             setMaterialParametersByType(mat)
-    
+
     except:
         print("ACON Material Type change handler could not complete.")
 
 
 def changeImageAdjustBrightness(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    bright = node_group.nodes.get('ACON_node_bright')
-    if not bright: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    bright = node_group.nodes.get("ACON_node_bright")
     inputs = bright.inputs
 
     prop = context.scene.ACON_prop
@@ -177,13 +199,12 @@ def changeImageAdjustBrightness(self, context):
 
 
 def changeImageAdjustContrast(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    contrast = node_group.nodes.get('ACON_node_contrast')
-    if not contrast: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    contrast = node_group.nodes.get("ACON_node_contrast")
     inputs = contrast.inputs
 
     prop = context.scene.ACON_prop
@@ -194,13 +215,12 @@ def changeImageAdjustContrast(self, context):
 
 
 def changeImageAdjustColor(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    brightContrast = node_group.nodes.get('ACON_node_colorBalance')
-    if not brightContrast: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    brightContrast = node_group.nodes.get("ACON_node_colorBalance")
     inputs = brightContrast.inputs
 
     prop = context.scene.ACON_prop
@@ -213,13 +233,12 @@ def changeImageAdjustColor(self, context):
 
 
 def changeImageAdjustHue(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    hueSaturation = node_group.nodes.get('ACON_node_hueSaturation')
-    if not hueSaturation: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    hueSaturation = node_group.nodes.get("ACON_node_hueSaturation")
     inputs = hueSaturation.inputs
 
     prop = context.scene.ACON_prop
@@ -229,13 +248,12 @@ def changeImageAdjustHue(self, context):
 
 
 def changeImageAdjustSaturation(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    hueSaturation = node_group.nodes.get('ACON_node_hueSaturation')
-    if not hueSaturation: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    hueSaturation = node_group.nodes.get("ACON_node_hueSaturation")
     inputs = hueSaturation.inputs
 
     prop = context.scene.ACON_prop
@@ -245,13 +263,12 @@ def changeImageAdjustSaturation(self, context):
 
 
 def changeLineProps(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    node_outline = node_group.nodes.get('ACON_nodeGroup_outline')
-    if not node_outline: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    node_outline = node_group.nodes.get("ACON_nodeGroup_outline")
     inputs = node_outline.inputs
 
     prop = context.scene.ACON_prop
@@ -265,13 +282,12 @@ def changeLineProps(self, context):
 
 
 def changeToonShadingBrightness(self, context):
-    
-    node_group = bpy.data.node_groups.get('ACON_nodeGroup_combinedToon')
-    if not node_group: return
 
-    node_outline = node_group.nodes.get('ACON_nodeGroup_toonFace')
-    if not node_outline: return
+    node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
+    if not node_group:
+        return
 
+    node_outline = node_group.nodes.get("ACON_nodeGroup_toonFace")
     inputs = node_outline.inputs
 
     prop = context.scene.ACON_prop
@@ -280,4 +296,3 @@ def changeToonShadingBrightness(self, context):
 
     inputs[2].default_value = value_1
     inputs[3].default_value = value_2
-

@@ -33,11 +33,15 @@ def genSceneName(name, i=1):
             found = True
             break
 
-    if found: return genSceneName(name, i+1)
-    else: return combinedName
+    if found:
+        return genSceneName(name, i + 1)
+    else:
+        return combinedName
+
 
 # items should be a global variable due to a bug in EnumProperty
 items = []
+
 
 def add_scene_items(self, context):
     items.clear()
@@ -51,11 +55,12 @@ def loadScene(self, context):
     current_scene = context.scene
     target_scene = bpy.data.scenes[current_scene.ACON_prop.scene]
 
-    if current_scene is target_scene: return
+    if current_scene is target_scene:
+        return
 
     override = SimpleNamespace()
     override.scene = target_scene
-    
+
     materials_handler.toggleToonEdge(self, override)
     materials_handler.changeLineProps(self, override)
     materials_handler.toggleToonFace(self, override)
@@ -73,8 +78,9 @@ def loadScene(self, context):
     materials_handler.changeImageAdjustHue(self, override)
     materials_handler.changeImageAdjustSaturation(self, override)
     layers.handleLayerVisibilityOnSceneChange(current_scene, target_scene)
-    for obj in bpy.data.objects: objects.setConstraintToCameraByObject(obj, override)
-    
+    for obj in bpy.data.objects:
+        objects.setConstraintToCameraByObject(obj, override)
+
     context.window.scene = target_scene
 
     target_scene.ACON_prop.scene = current_scene.ACON_prop.scene
@@ -89,13 +95,15 @@ def createScene(old_scene, type, name):
     new_scene.camera.data = old_scene.camera.data.copy()
     new_scene.collection.objects.link(new_scene.camera)
 
-    try: new_scene.collection.objects.unlink(old_scene.camera)
-    except: print("Failed to unlink camera from old scene.")
+    try:
+        new_scene.collection.objects.unlink(old_scene.camera)
+    except:
+        print("Failed to unlink camera from old scene.")
 
     prop = new_scene.ACON_prop
 
     if type == "Indoor Daytime":
-        
+
         prop.toggle_toon_edge = True
         prop.edge_min_line_width = 1
         prop.edge_max_line_width = 1
@@ -127,7 +135,7 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_clamp = 0
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
-    
+
     if type == "Indoor Sunset":
 
         prop.toggle_toon_edge = True
@@ -161,9 +169,9 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_clamp = 0
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
-    
+
     if type == "Indoor Nighttime":
-        
+
         prop.toggle_toon_edge = True
         prop.edge_min_line_width = 1
         prop.edge_max_line_width = 1
@@ -195,9 +203,9 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_clamp = 0
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
-    
-    if type =="Outdoor Daytime":
-        
+
+    if type == "Outdoor Daytime":
+
         prop.toggle_toon_edge = True
         prop.edge_min_line_width = 1
         prop.edge_max_line_width = 1
@@ -229,9 +237,9 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_clamp = 0
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
-    
-    if type =="Outdoor Sunset":
-        
+
+    if type == "Outdoor Sunset":
+
         prop.toggle_toon_edge = True
         prop.edge_min_line_width = 1
         prop.edge_max_line_width = 1
@@ -263,9 +271,9 @@ def createScene(old_scene, type, name):
         new_scene.eevee.bloom_clamp = 0
         new_scene.render.resolution_x = 4800
         new_scene.render.resolution_y = 2700
-    
-    if type =="Outdoor Nighttime":
-        
+
+    if type == "Outdoor Nighttime":
+
         prop.toggle_toon_edge = True
         prop.edge_min_line_width = 1
         prop.edge_max_line_width = 1
@@ -299,4 +307,3 @@ def createScene(old_scene, type, name):
         new_scene.render.resolution_y = 2700
 
     return new_scene
-
