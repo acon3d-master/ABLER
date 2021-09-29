@@ -55,8 +55,13 @@ def loadScene(self, context):
     current_scene = context.scene
     target_scene = bpy.data.scenes[current_scene.ACON_prop.scene]
 
-    if current_scene is target_scene:
-        return
+    if current_scene is not target_scene:
+        loadScene_helper(self, context)
+
+
+def loadScene_helper(self, context):
+    current_scene = context.scene
+    target_scene = bpy.data.scenes[current_scene.ACON_prop.scene]
 
     override = SimpleNamespace()
     override.scene = target_scene
