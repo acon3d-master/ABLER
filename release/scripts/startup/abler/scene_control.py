@@ -98,6 +98,8 @@ class DeleteSceneOperator(bpy.types.Operator):
         sceneName = context.scene.ACON_prop.scene
         scene = bpy.data.scenes[sceneName]
         bpy.data.scenes.remove(scene)
+        context.scene.ACON_prop.scene = context.scene.name
+        scenes.loadScene_helper(self, context)
 
         return {"FINISHED"}
 

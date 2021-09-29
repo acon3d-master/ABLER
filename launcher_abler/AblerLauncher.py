@@ -218,6 +218,10 @@ class BlenderUpdater(QtWidgets.QMainWindow, mainwindow.Ui_MainWindow):
         # print(os.path.isfile(get_datadir() / "Blender/2.96/updater/config.ini"))
         if os.path.isfile(get_datadir() / "Blender/2.96/updater/AblerLauncher.bak"):
             os.remove(get_datadir() / "Blender/2.96/updater/AblerLauncher.bak")
+        if os.path.isfile(get_datadir() / "Blender/2.96/config/startup.blend"):
+            os.remove(get_datadir() / "Blender/2.96/config/startup.blend")
+        if os.path.isfile(get_datadir() / "Blender/2.96/config/userpref.blend"):
+            os.remove(get_datadir() / "Blender/2.96/config/userpref.blend")
         if os.path.isfile(get_datadir() / "Blender/2.96/updater/config.ini"):
             config_exist = True
             logger.info("Reading existing configuration file")
