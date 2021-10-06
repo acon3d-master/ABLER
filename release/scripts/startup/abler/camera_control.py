@@ -134,7 +134,20 @@ class Acon3dViewPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
+        layout.use_property_split = True
+        layout.use_property_decorate = False  # No animation.
         layout.operator("view3d.walk", text="Fly (shift + `)", text_ctxt="*")
+
+        cam = context.scene.camera
+        if cam is not None:
+            row = layout.row()
+            col = row.column()
+            col.scale_x = 3
+            col.separator()
+            col = row.column()
+            row = col.row()
+            row.prop(cam.data, "lens")
+
         return
 
 
@@ -153,25 +166,14 @@ class Acon3dCameraPanel(bpy.types.Panel):
         layout.use_property_split = True
         layout.use_property_decorate = False  # No animation.
 
-        row = layout.row()
-        row.scale_y = 1.0
-        row.operator("acon3d.create_camera", text="Create New Camera")
-
         scene = context.scene
         collection = bpy.data.collections.get("ACON_col_cameras")
 
         if collection is not None and len(collection.objects):
-            row = layout.row()
-            row.prop(scene.ACON_prop, "view")
-
-            row = layout.row()
-            row.operator("acon3d.update_custom_camera", text="Update")
-            row.operator("acon3d.delete_camera", text="Delete")
-
-        if bpy.context.scene.camera is not None:
-            cam = bpy.context.scene.camera.data
-            row = layout.row()
-            row.prop(cam, "lens")
+            row = layout.row(align=True)
+            row.prop(scene.ACON_prop, "view", text="")
+            row.operator("acon3d.create_camera", text="", icon="ADD")
+            row.operator("acon3d.delete_camera", text="", icon="REMOVE")
 
 
 def scene_mychosenobject_poll(self, object):
