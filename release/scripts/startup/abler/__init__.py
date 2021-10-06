@@ -78,7 +78,7 @@ def register():
         try:
             item.register()
         except Exception as e:
-            print(f"ABLER: Failed to register {item.__name__}\n" + e)
+            print(f"ABLER: Failed to register {str(item.__name__)}\n" + str(e))
 
 
 def unregister():
@@ -88,7 +88,7 @@ def unregister():
         try:
             item.register()
         except Exception as e:
-            print(f"ABLER: Failed to unregister {item.__name__}\n" + e)
+            print(f"ABLER: Failed to unregister {str(item.__name__)}\n" + str(e))
 
 
 if __name__ == "__main__":

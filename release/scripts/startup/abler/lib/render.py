@@ -45,7 +45,9 @@ def setupBackgroundImagesCompositor(scene=None):
     node_entry_right_in = node_composite.inputs[0]
     tree.links.new(node_entry_left_out, node_entry_right_in)
 
-    if not cam.show_background_images:
+    toggle_texture = context.scene.ACON_prop.toggle_texture
+
+    if not cam.show_background_images or not toggle_texture:
         return
 
     for background_image in reversed(background_images):
