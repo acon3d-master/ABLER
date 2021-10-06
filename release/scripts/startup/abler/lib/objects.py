@@ -64,7 +64,7 @@ def toggleUseState(self, context):
                     setattr(prop.state_begin, att, vector)
                     setattr(prop.state_end, att, vector)
 
-        else:
+        elif obj == context.object or prop.use_state:
 
             for att in ["location", "rotation_euler", "scale"]:
 
