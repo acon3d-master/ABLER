@@ -140,7 +140,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         return {"PASS_THROUGH"}
 
 
-class Acon3dRenderFullOperator(bpy.types.Operator):
+class Acon3dRenderFullOperator(bpy.types.Operator, ImportHelper):
     """Render according to the set pixel"""
 
     bl_idname = "acon3d.render_full"
@@ -148,14 +148,51 @@ class Acon3dRenderFullOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
-        render.setupBackgroundImagesCompositor()
+        scene = context.scene
+        scene.render.filepath = self.filepath + "\\" + scene.name
+        render.setupBackgroundImagesCompositor(snip=self.snip)
         render.matchObjectVisibility()
-        bpy.ops.render.render("INVOKE_DEFAULT")
+        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
         return {"FINISHED"}
 
 
-class Acon3dRenderLineOperator(bpy.types.Operator):
+class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
+    """Render selected objects isolatedly from background"""
+
+    bl_idname = "acon3d.render_snip"
+    bl_label = "Snip Render"
+    bl_translation_context = "*"
+
+    def execute(self, context):
+
+        scene = context.scene
+        scene.render.filepath = self.filepath + "\\" + scene.name
+
+        layer = context.scene.view_layers.new("ACON_layer_snip")
+        for col in layer.layer_collection.children:
+            col.exclude = True
+
+        col_group = bpy.data.collections.new("ACON_group_snip")
+        context.scene.collection.children.link(col_group)
+        for obj in context.selected_objects:
+            col_group.objects.link(obj)
+
+        render.setupBackgroundImagesCompositor(snipLayer=layer, path=self.filepath)
+        render.matchObjectVisibility()
+
+        def removeSnipData(dummy):
+            context.scene.view_layers.remove(layer)
+            bpy.data.collections.remove(col_group)
+            bpy.app.handlers.render_post.remove(removeSnipData)
+
+        bpy.app.handlers.render_post.append(removeSnipData)
+        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+
+        return {"FINISHED"}
+
+
+class Acon3dRenderLineOperator(bpy.types.Operator, ImportHelper):
     """Renders only lines according to the set pixel"""
 
     bl_idname = "acon3d.render_line"
@@ -163,13 +200,17 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
+
         scene = context.scene
+        scene.render.filepath = self.filepath + "\\" + scene.name
+
         prop = scene.ACON_prop
         toggleTexture = prop.toggle_texture
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
         useBloom = scene.eevee.use_bloom
         use_lock_interface = scene.render.use_lock_interface
+
         render.clearCompositor()
 
         def setTempMaterialSettings(dummy):
@@ -205,12 +246,12 @@ class Acon3dRenderLineOperator(bpy.types.Operator):
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
 
         render.matchObjectVisibility()
-        bpy.ops.render.render("INVOKE_DEFAULT")
+        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
         return {"FINISHED"}
 
 
-class Acon3dRenderShadowOperator(bpy.types.Operator):
+class Acon3dRenderShadowOperator(bpy.types.Operator, ImportHelper):
     """Renders only shadow according to the set pixel"""
 
     bl_idname = "acon3d.render_shadow"
@@ -218,13 +259,17 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
     bl_translation_context = "*"
 
     def execute(self, context):
+
         scene = context.scene
+        scene.render.filepath = self.filepath + "\\" + scene.name
+
         prop = scene.ACON_prop
         toggleTexture = prop.toggle_texture
         toggleShading = prop.toggle_shading
         toggleToonEdge = prop.toggle_toon_edge
         useBloom = scene.eevee.use_bloom
         use_lock_interface = scene.render.use_lock_interface
+
         render.clearCompositor()
 
         node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
@@ -264,23 +309,30 @@ class Acon3dRenderShadowOperator(bpy.types.Operator):
         bpy.app.handlers.render_post.append(rollbackMaterialSettings)
 
         render.matchObjectVisibility()
-        bpy.ops.render.render("INVOKE_DEFAULT")
+        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
         return {"FINISHED"}
 
 
-class Acon3dRenderQuickOperator(bpy.types.Operator):
-    """Quick render with deselect_all"""
+class Acon3dRenderQuickOperator(bpy.types.Operator, ImportHelper):
+    """Take a snapshot of the active viewport"""
 
     bl_idname = "acon3d.render_quick"
     bl_label = "Quick Render"
     bl_translation_context = "*"
 
     def execute(self, context):
+
+        scene = context.scene
+        scene.render.filepath = self.filepath + "\\" + scene.name
+
         ops = bpy.ops
+
         if ops.object.select_all.poll():
             ops.object.select_all(action="DESELECT")
-        ops.render.opengl("INVOKE_DEFAULT")
+
+        ops.render.opengl("INVOKE_DEFAULT", write_still=True)
+
         return {"FINISHED"}
 
 
@@ -311,11 +363,18 @@ class Acon3dRenderPanel(bpy.types.Panel):
                 break
 
         scene = context.scene
-        col = layout.column(align=True)
-        col.prop(scene.render, "resolution_x", text="Resolution X")
-        col.prop(scene.render, "resolution_y", text="Y")
+
         row = layout.row()
-        row.operator("acon3d.camera_view", text="Camera View", icon="RESTRICT_VIEW_OFF")
+
+        col = row.column()
+        col.scale_x = 3
+        col.operator("acon3d.camera_view", text="", icon="RESTRICT_VIEW_OFF")
+
+        col = row.column(align=True)
+        row = col.row()
+        row.prop(scene.render, "resolution_x", text="Resolution X")
+        row.prop(scene.render, "resolution_y", text="Y")
+
         row = layout.row()
         row.operator("acon3d.render_quick", text="Quick Render", text_ctxt="*")
 
@@ -326,6 +385,7 @@ class Acon3dRenderPanel(bpy.types.Panel):
             row.operator("acon3d.render_shadow", text="Shadow Render")
             row = layout.row()
             row.operator("acon3d.render_all", text="Render All Scenes")
+            row.operator("acon3d.render_snip", text="Snip Render")
 
 
 classes = (
@@ -335,6 +395,7 @@ classes = (
     Acon3dRenderShadowOperator,
     Acon3dRenderQuickOperator,
     Acon3dRenderAllOperator,
+    Acon3dRenderSnipOperator,
     Acon3dRenderPanel,
 )
 

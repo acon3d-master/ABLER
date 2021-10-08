@@ -67,8 +67,7 @@ def selectByGroup():
 def checkObjectSelectionChange(dummy):
 
     depsgraph = bpy.context.evaluated_depsgraph_get()
-    test = depsgraph.id_type_updated("SCENE")
-    if not test:
+    if not depsgraph.id_type_updated("SCENE"):
         return
 
     new_selected_objects_str = ""

@@ -20,31 +20,36 @@
 import bpy
 
 
-def setupBackgroundImagesCompositor(scene=None):
+def setupBackgroundImagesCompositor(scene=None, snipLayer=None, path=None):
 
     context = bpy.context
 
     if not scene:
         scene = context.scene
 
-    scene.render.film_transparent = True
-    scene.use_nodes = True
+    node_entry_left_out, node_entry_right_in = clearCompositor(scene=scene)
+
     tree = scene.node_tree
     nodes = tree.nodes
 
-    for node in nodes:
-        nodes.remove(node)
+    if snipLayer:
 
-    node_composite = nodes.new("CompositorNodeComposite")
-    node_rlayer = nodes.new("CompositorNodeRLayers")
+        node_rlayer = nodes.new("CompositorNodeRLayers")
+        node_rlayer.layer = snipLayer.name
+
+        node_setAlpha = nodes.new("CompositorNodeSetAlpha")
+        tree.links.new(node_entry_left_out, node_setAlpha.inputs[0])
+        tree.links.new(node_rlayer.outputs[1], node_setAlpha.inputs[1])
+
+        node_output = nodes.new("CompositorNodeOutputFile")
+        tree.links.new(node_setAlpha.outputs[0], node_output.inputs[0])
+
+        node_output.file_slots[0].path = scene.name + "_snipped_#"
+        if path:
+            node_output.base_path = path
 
     cam = scene.camera.data
     background_images = cam.background_images
-
-    node_entry_left_out = node_rlayer.outputs[0]
-    node_entry_right_in = node_composite.inputs[0]
-    tree.links.new(node_entry_left_out, node_entry_right_in)
-
     toggle_texture = context.scene.ACON_prop.toggle_texture
 
     if not cam.show_background_images or not toggle_texture:
@@ -105,10 +110,12 @@ def setupBackgroundImagesCompositor(scene=None):
             node_entry_right_in = node_alphaOver.inputs[1]
 
 
-def clearCompositor():
+def clearCompositor(scene=None):
 
     context = bpy.context
-    scene = context.scene
+
+    if not scene:
+        scene = context.scene
 
     scene.render.film_transparent = True
     scene.use_nodes = True
@@ -124,6 +131,8 @@ def clearCompositor():
     node_entry_left_out = node_rlayer.outputs[0]
     node_entry_right_in = node_composite.inputs[0]
     tree.links.new(node_entry_left_out, node_entry_right_in)
+
+    return node_entry_left_out, node_entry_right_in
 
 
 def matchObjectVisibility():

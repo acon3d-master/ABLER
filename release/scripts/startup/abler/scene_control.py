@@ -119,11 +119,22 @@ class Acon3dScenesPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         scene = context.scene
+        window = context.window
 
         row = layout.row(align=True)
         row.prop(scene.ACON_prop, "scene", text="")
         row.operator("acon3d.create_scene", text="", icon="ADD")
         row.operator("acon3d.delete_scene", text="", icon="REMOVE")
+
+        row = layout.row(align=True)
+        row.template_search(
+            window,
+            "view_layer",
+            scene,
+            "view_layers",
+            new="scene.view_layer_add",
+            unlink="scene.view_layer_remove",
+        )
 
 
 classes = (
