@@ -364,16 +364,10 @@ class Acon3dRenderPanel(bpy.types.Panel):
 
         scene = context.scene
 
-        row = layout.row()
-
-        col = row.column()
-        col.scale_x = 3
-        col.operator("acon3d.camera_view", text="", icon="RESTRICT_VIEW_OFF")
-
-        col = row.column(align=True)
-        row = col.row()
-        row.prop(scene.render, "resolution_x", text="Resolution X")
-        row.prop(scene.render, "resolution_y", text="Y")
+        row = layout.row(align=True)
+        row.operator("acon3d.camera_view", text="", icon="RESTRICT_VIEW_OFF")
+        row.prop(scene.render, "resolution_x", text="")
+        row.prop(scene.render, "resolution_y", text="")
 
         row = layout.row()
         row.operator("acon3d.render_quick", text="Quick Render", text_ctxt="*")
