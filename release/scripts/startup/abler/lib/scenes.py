@@ -65,6 +65,7 @@ def loadScene_helper(self, context):
 
     override = SimpleNamespace()
     override.scene = target_scene
+    override.selected_objects = context.selected_objects
 
     materials_handler.toggleToonEdge(self, override)
     materials_handler.changeLineProps(self, override)
