@@ -78,19 +78,14 @@ def toggleUseState(self, context):
 
 def moveState(self, context):
 
-    prop = context.object.ACON_prop
-    state_slider = prop.state_slider
-    use_state = prop.use_state
-
-    if not use_state:
-        return
+    state_slider = context.object.ACON_prop.state_slider
 
     for obj in context.selected_objects:
 
         prop = obj.ACON_prop
 
-        if prop.use_state != use_state:
-            prop.use_state = use_state
+        if not prop.use_state:
+            continue
 
         for att in ["location", "rotation_euler", "scale"]:
 

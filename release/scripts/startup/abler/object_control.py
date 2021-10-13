@@ -44,14 +44,17 @@ class Acon3dStateUpdateOperator(bpy.types.Operator):
 
     def execute(self, context):
 
+        x = context.object.ACON_prop.state_slider
+
+        if not 0 < x <= 1:
+            return {"FINISHED"}
+
         for obj in context.selected_objects:
 
             prop = obj.ACON_prop
 
             if not prop.use_state:
                 continue
-
-            x = prop.state_slider
 
             for att in ["location", "rotation_euler", "scale"]:
 
