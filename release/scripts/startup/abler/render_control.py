@@ -186,15 +186,18 @@ class Acon3dRenderFullOperator(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
+        show_on_completion = self.show_on_completion
+        filepath = self.filepath
+
         scene = context.scene
         scene.render.filepath = self.filepath + "\\" + scene.name
         render.setupBackgroundImagesCompositor()
         render.matchObjectVisibility()
         bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
-        if self.show_on_completion:
+        if show_on_completion:
             filename = scene.name + "." + scene.render.image_settings.file_format
-            openDirectory(os.path.join(self.filepath, filename))
+            openDirectory(os.path.join(filepath, filename))
 
         return {"FINISHED"}
 
@@ -212,8 +215,11 @@ class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
+        show_on_completion = self.show_on_completion
+        filepath = self.filepath
+
         scene = context.scene
-        scene.render.filepath = self.filepath + "\\" + scene.name
+        scene.render.filepath = filepath + "\\" + scene.name
 
         layer = scene.view_layers.new("ACON_layer_snip")
         for col in layer.layer_collection.children:
@@ -231,9 +237,9 @@ class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
             scene.view_layers.remove(layer)
             bpy.data.collections.remove(col_group)
 
-            if self.show_on_completion:
+            if show_on_completion:
                 filename = scene.name + "." + scene.render.image_settings.file_format
-                openDirectory(os.path.join(self.filepath, filename))
+                openDirectory(os.path.join(filepath, filename))
 
             bpy.app.handlers.render_post.remove(removeSnipData)
 
@@ -256,8 +262,11 @@ class Acon3dRenderLineOperator(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
+        show_on_completion = self.show_on_completion
+        filepath = self.filepath
+
         scene = context.scene
-        scene.render.filepath = self.filepath + "\\" + scene.name
+        scene.render.filepath = filepath + "\\" + scene.name
 
         prop = scene.ACON_prop
         toggleTexture = prop.toggle_texture
@@ -295,9 +304,9 @@ class Acon3dRenderLineOperator(bpy.types.Operator, ImportHelper):
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
 
-            if self.show_on_completion:
+            if show_on_completion:
                 filename = scene.name + "." + scene.render.image_settings.file_format
-                openDirectory(os.path.join(self.filepath, filename))
+                openDirectory(os.path.join(filepath, filename))
 
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
@@ -323,8 +332,11 @@ class Acon3dRenderShadowOperator(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
+        show_on_completion = self.show_on_completion
+        filepath = self.filepath
+
         scene = context.scene
-        scene.render.filepath = self.filepath + "\\" + scene.name
+        scene.render.filepath = filepath + "\\" + scene.name
 
         prop = scene.ACON_prop
         toggleTexture = prop.toggle_texture
@@ -366,9 +378,9 @@ class Acon3dRenderShadowOperator(bpy.types.Operator, ImportHelper):
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
 
-            if self.show_on_completion:
+            if show_on_completion:
                 filename = scene.name + "." + scene.render.image_settings.file_format
-                openDirectory(os.path.join(self.filepath, filename))
+                openDirectory(os.path.join(filepath, filename))
 
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
@@ -394,8 +406,11 @@ class Acon3dRenderQuickOperator(bpy.types.Operator, ImportHelper):
 
     def execute(self, context):
 
+        show_on_completion = self.show_on_completion
+        filepath = self.filepath
+
         scene = context.scene
-        scene.render.filepath = self.filepath + "\\" + scene.name
+        scene.render.filepath = filepath + "\\" + scene.name
 
         ops = bpy.ops
 
@@ -404,9 +419,9 @@ class Acon3dRenderQuickOperator(bpy.types.Operator, ImportHelper):
 
         ops.render.opengl("INVOKE_DEFAULT", write_still=True)
 
-        if self.show_on_completion:
+        if show_on_completion:
             filename = scene.name + "." + scene.render.image_settings.file_format
-            openDirectory(os.path.join(self.filepath, filename))
+            openDirectory(os.path.join(filepath, filename))
 
         return {"FINISHED"}
 
