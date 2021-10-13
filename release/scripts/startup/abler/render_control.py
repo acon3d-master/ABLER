@@ -150,7 +150,7 @@ class Acon3dRenderFullOperator(bpy.types.Operator, ImportHelper):
     def execute(self, context):
         scene = context.scene
         scene.render.filepath = self.filepath + "\\" + scene.name
-        render.setupBackgroundImagesCompositor(snip=self.snip)
+        render.setupBackgroundImagesCompositor()
         render.matchObjectVisibility()
         bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
