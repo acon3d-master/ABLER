@@ -17,10 +17,11 @@
 # ##### END GPL LICENSE BLOCK #####
 
 
+import bpy, platform, os, subprocess
 from bpy_extras.io_utils import ImportHelper
-import bpy
 from .lib import render, cameras
 from .lib.materials import materials_handler
+
 
 bl_info = {
     "name": "ACON3D Panel",
@@ -34,6 +35,25 @@ bl_info = {
     "tracker_url": "",
     "category": "ACON3D",
 }
+
+
+def openDirectory(path):
+
+    if platform.system() == "Windows":
+
+        FILEBROWSER_PATH = os.path.join(os.getenv("WINDIR"), "explorer.exe")
+        path = os.path.normpath(path)
+
+        if os.path.isdir(path):
+            subprocess.run([FILEBROWSER_PATH, path])
+        elif os.path.isfile(path):
+            subprocess.run([FILEBROWSER_PATH, "/select,", os.path.normpath(path)])
+
+    elif platform.system() == "Darwin":
+        subprocess.call(["open", "-R", path])
+
+    elif platform.system() == "Linux":
+        print("Linux")
 
 
 class Acon3dCameraViewOperator(bpy.types.Operator):
@@ -57,6 +77,9 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
     bl_translation_context = "*"
 
     filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
+    show_on_completion: bpy.props.BoolProperty(
+        name="Show in folder on completion", default=True
+    )
 
     cancelRender = None
     rendering = None
@@ -124,6 +147,16 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
                     message_2=self.filepath,
                 )
 
+                if self.show_on_completion:
+
+                    filename = (
+                        context.scene.name
+                        + "."
+                        + context.scene.render.image_settings.file_format
+                    )
+
+                    openDirectory(os.path.join(self.filepath, filename))
+
                 return {"FINISHED"}
 
             elif self.rendering is False:
@@ -147,12 +180,21 @@ class Acon3dRenderFullOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Full Render"
     bl_translation_context = "*"
 
+    show_on_completion: bpy.props.BoolProperty(
+        name="Show in folder on completion", default=True
+    )
+
     def execute(self, context):
+
         scene = context.scene
         scene.render.filepath = self.filepath + "\\" + scene.name
         render.setupBackgroundImagesCompositor()
         render.matchObjectVisibility()
         bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+
+        if self.show_on_completion:
+            filename = scene.name + "." + scene.render.image_settings.file_format
+            openDirectory(os.path.join(self.filepath, filename))
 
         return {"FINISHED"}
 
@@ -164,17 +206,21 @@ class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Snip Render"
     bl_translation_context = "*"
 
+    show_on_completion: bpy.props.BoolProperty(
+        name="Show in folder on completion", default=True
+    )
+
     def execute(self, context):
 
         scene = context.scene
         scene.render.filepath = self.filepath + "\\" + scene.name
 
-        layer = context.scene.view_layers.new("ACON_layer_snip")
+        layer = scene.view_layers.new("ACON_layer_snip")
         for col in layer.layer_collection.children:
             col.exclude = True
 
         col_group = bpy.data.collections.new("ACON_group_snip")
-        context.scene.collection.children.link(col_group)
+        scene.collection.children.link(col_group)
         for obj in context.selected_objects:
             col_group.objects.link(obj)
 
@@ -182,8 +228,13 @@ class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
         render.matchObjectVisibility()
 
         def removeSnipData(dummy):
-            context.scene.view_layers.remove(layer)
+            scene.view_layers.remove(layer)
             bpy.data.collections.remove(col_group)
+
+            if self.show_on_completion:
+                filename = scene.name + "." + scene.render.image_settings.file_format
+                openDirectory(os.path.join(self.filepath, filename))
+
             bpy.app.handlers.render_post.remove(removeSnipData)
 
         bpy.app.handlers.render_post.append(removeSnipData)
@@ -198,6 +249,10 @@ class Acon3dRenderLineOperator(bpy.types.Operator, ImportHelper):
     bl_idname = "acon3d.render_line"
     bl_label = "Line Render"
     bl_translation_context = "*"
+
+    show_on_completion: bpy.props.BoolProperty(
+        name="Show in folder on completion", default=True
+    )
 
     def execute(self, context):
 
@@ -240,6 +295,10 @@ class Acon3dRenderLineOperator(bpy.types.Operator, ImportHelper):
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
 
+            if self.show_on_completion:
+                filename = scene.name + "." + scene.render.image_settings.file_format
+                openDirectory(os.path.join(self.filepath, filename))
+
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
@@ -257,6 +316,10 @@ class Acon3dRenderShadowOperator(bpy.types.Operator, ImportHelper):
     bl_idname = "acon3d.render_shadow"
     bl_label = "Shadow Render"
     bl_translation_context = "*"
+
+    show_on_completion: bpy.props.BoolProperty(
+        name="Show in folder on completion", default=True
+    )
 
     def execute(self, context):
 
@@ -303,6 +366,10 @@ class Acon3dRenderShadowOperator(bpy.types.Operator, ImportHelper):
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
 
+            if self.show_on_completion:
+                filename = scene.name + "." + scene.render.image_settings.file_format
+                openDirectory(os.path.join(self.filepath, filename))
+
             bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
 
         bpy.app.handlers.render_pre.append(setTempMaterialSettings)
@@ -321,6 +388,10 @@ class Acon3dRenderQuickOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Quick Render"
     bl_translation_context = "*"
 
+    show_on_completion: bpy.props.BoolProperty(
+        name="Show in folder on completion", default=True
+    )
+
     def execute(self, context):
 
         scene = context.scene
@@ -332,6 +403,10 @@ class Acon3dRenderQuickOperator(bpy.types.Operator, ImportHelper):
             ops.object.select_all(action="DESELECT")
 
         ops.render.opengl("INVOKE_DEFAULT", write_still=True)
+
+        if self.show_on_completion:
+            filename = scene.name + "." + scene.render.image_settings.file_format
+            openDirectory(os.path.join(self.filepath, filename))
 
         return {"FINISHED"}
 
