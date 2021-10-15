@@ -93291,3 +93291,9 @@ msgstr "씬 연속 렌더"
 
 msgid "Render all scenes with full render settings"
 msgstr "모든 씬을 고급렌더 설정으로 렌더합니다."
+
+
+msgctxt "Operator"
+msgid "New Camera"
+msgstr "새로운 카메라"
+

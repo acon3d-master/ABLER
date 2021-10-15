@@ -43,7 +43,7 @@ from . import edge_control
 from . import face_control
 from . import image_adjustment
 from . import shadow_control
-from . import view_control
+from . import camera_control
 from . import layer_control
 from . import render_control
 from . import pref
@@ -62,7 +62,7 @@ importedLibrary = [
     face_control,
     image_adjustment,
     shadow_control,
-    view_control,
+    camera_control,
     layer_control,
     render_control,
     pref,
