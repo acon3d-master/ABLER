@@ -180,6 +180,7 @@ class Acon3dRenderFullOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Full Render"
     bl_translation_context = "*"
 
+    filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
     show_on_completion: bpy.props.BoolProperty(
         name="Show in folder on completion", default=True
     )
@@ -209,6 +210,7 @@ class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Snip Render"
     bl_translation_context = "*"
 
+    filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
     show_on_completion: bpy.props.BoolProperty(
         name="Show in folder on completion", default=True
     )
@@ -234,8 +236,8 @@ class Acon3dRenderSnipOperator(bpy.types.Operator, ImportHelper):
         render.matchObjectVisibility()
 
         def removeSnipData(dummy):
-            scene.view_layers.remove(layer)
-            bpy.data.collections.remove(col_group)
+            # scene.view_layers.remove(layer)
+            # bpy.data.collections.remove(col_group)
 
             if show_on_completion:
                 filename = scene.name + "." + scene.render.image_settings.file_format
@@ -256,6 +258,7 @@ class Acon3dRenderLineOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Line Render"
     bl_translation_context = "*"
 
+    filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
     show_on_completion: bpy.props.BoolProperty(
         name="Show in folder on completion", default=True
     )
@@ -326,6 +329,7 @@ class Acon3dRenderShadowOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Shadow Render"
     bl_translation_context = "*"
 
+    filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
     show_on_completion: bpy.props.BoolProperty(
         name="Show in folder on completion", default=True
     )
@@ -400,6 +404,7 @@ class Acon3dRenderQuickOperator(bpy.types.Operator, ImportHelper):
     bl_label = "Quick Render"
     bl_translation_context = "*"
 
+    filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
     show_on_completion: bpy.props.BoolProperty(
         name="Show in folder on completion", default=True
     )
