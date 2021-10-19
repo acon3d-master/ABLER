@@ -112,7 +112,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
                 context.window_manager.event_timer_remove(self.timerEvent)
                 context.scene.ACON_prop.scene = self.initial_scene.name
-
+                context.window.scene = self.initial_scene
                 context.preferences.view.render_display_type = self.initial_display_type
 
                 self.report({"INFO"}, "RENDER QUEUE FINISHED")
@@ -128,11 +128,10 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
             elif self.rendering is False:
 
-                scene = context.scene
                 qitem = self.renderQueue[0]
 
-                scene.ACON_prop.scene = qitem.name
-                render.setupBackgroundImagesCompositor(scene=scene)
+                context.scene.ACON_prop.scene = qitem.name
+                render.setupBackgroundImagesCompositor()
                 render.matchObjectVisibility()
 
                 bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
