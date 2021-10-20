@@ -83,9 +83,12 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         self.initial_display_type = context.preferences.view.render_display_type
 
         context.preferences.view.render_display_type = "NONE"
+        outDirName = self.filepath
+        if ".blend" in self.filepath or "." in self.filepath:
+            outDirName = self.filepath.split(".")[0]
 
         for scene in bpy.data.scenes:
-            scene.render.filepath = self.filepath + "\\" + scene.name
+            scene.render.filepath = outDirName + "\\" + scene.name
             self.renderQueue.append(scene)
 
         bpy.app.handlers.render_pre.append(self.pre_render)
@@ -112,7 +115,7 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
                 context.window_manager.event_timer_remove(self.timerEvent)
                 context.scene.ACON_prop.scene = self.initial_scene.name
-
+                context.window.scene = self.initial_scene
                 context.preferences.view.render_display_type = self.initial_display_type
 
                 self.report({"INFO"}, "RENDER QUEUE FINISHED")
@@ -128,11 +131,10 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
 
             elif self.rendering is False:
 
-                scene = context.scene
                 qitem = self.renderQueue[0]
 
-                scene.ACON_prop.scene = qitem.name
-                render.setupBackgroundImagesCompositor(scene=scene)
+                context.scene.ACON_prop.scene = qitem.name
+                render.setupBackgroundImagesCompositor()
                 render.matchObjectVisibility()
 
                 bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
