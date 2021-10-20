@@ -83,9 +83,12 @@ class Acon3dRenderAllOperator(bpy.types.Operator, ImportHelper):
         self.initial_display_type = context.preferences.view.render_display_type
 
         context.preferences.view.render_display_type = "NONE"
+        outDirName = self.filepath
+        if ".blend" in self.filepath or "." in self.filepath:
+            outDirName = self.filepath.split(".")[0]
 
         for scene in bpy.data.scenes:
-            scene.render.filepath = self.filepath + "\\" + scene.name
+            scene.render.filepath = outDirName + "\\" + scene.name
             self.renderQueue.append(scene)
 
         bpy.app.handlers.render_pre.append(self.pre_render)
