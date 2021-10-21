@@ -40,17 +40,6 @@ class CreateSceneOperator(bpy.types.Operator):
 
     bl_idname = "acon3d.create_scene"
     bl_label = "New Scene"
-    bl_translation_context = "*"
-
-    def execute(self, context):
-        bpy.ops.acon3d.set_scene_name("INVOKE_DEFAULT")
-
-        return {"FINISHED"}
-
-
-class SetScenePropsOperator(bpy.types.Operator):
-    bl_idname = "acon3d.set_scene_name"
-    bl_label = "New Scene"
 
     name: bpy.props.StringProperty(name="Name")
 
@@ -94,12 +83,15 @@ class DeleteSceneOperator(bpy.types.Operator):
     bl_label = "Remove Scene"
     bl_translation_context = "*"
 
+    @classmethod
+    def poll(self, context):
+        return len(bpy.data.scenes) > 1
+
     def execute(self, context):
         sceneName = context.scene.ACON_prop.scene
         scene = bpy.data.scenes[sceneName]
         bpy.data.scenes.remove(scene)
         context.scene.ACON_prop.scene = context.scene.name
-        scenes.loadScene_helper(self, context)
 
         return {"FINISHED"}
 
@@ -128,7 +120,6 @@ class Acon3dScenesPanel(bpy.types.Panel):
 
 classes = (
     CreateSceneOperator,
-    SetScenePropsOperator,
     DeleteSceneOperator,
     Acon3dScenesPanel,
 )

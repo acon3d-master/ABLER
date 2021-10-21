@@ -93304,3 +93304,8 @@ msgstr "선택한 오브젝트들을 오려낸 렌더 이미지를 전체 렌더
 msgid "Show in folder on completion"
 msgstr "완료 후 폴더 열기"
 
+
+msgctxt "Operator"
+msgid "New Camera"
+msgstr "새로운 카메라"
+

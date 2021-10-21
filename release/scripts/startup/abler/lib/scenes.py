@@ -52,43 +52,42 @@ def add_scene_items(self, context):
 
 
 def loadScene(self, context):
+
     current_scene = context.scene
-    target_scene = bpy.data.scenes[current_scene.ACON_prop.scene]
+    target_scene = bpy.data.scenes.get(current_scene.ACON_prop.scene)
 
     if current_scene is not target_scene:
-        loadScene_helper(self, context)
 
+        override = SimpleNamespace()
+        override.scene = target_scene
+        override.selected_objects = context.selected_objects
 
-def loadScene_helper(self, context):
-    current_scene = context.scene
-    target_scene = bpy.data.scenes[current_scene.ACON_prop.scene]
+        materials_handler.toggleToonEdge(self, override)
+        materials_handler.changeLineProps(self, override)
+        materials_handler.toggleToonFace(self, override)
+        materials_handler.toggleTexture(self, override)
+        materials_handler.toggleShading(self, override)
+        materials_handler.changeToonDepth(self, override)
+        materials_handler.changeToonShadingBrightness(self, override)
+        materials_handler.changeImageAdjustBrightness(self, override)
+        materials_handler.changeImageAdjustContrast(self, override)
+        materials_handler.changeImageAdjustColor(self, override)
+        materials_handler.changeImageAdjustHue(self, override)
+        materials_handler.changeImageAdjustSaturation(self, override)
 
-    override = SimpleNamespace()
-    override.scene = target_scene
+        layers.handleLayerVisibilityOnSceneChange(current_scene, target_scene)
 
-    materials_handler.toggleToonEdge(self, override)
-    materials_handler.changeLineProps(self, override)
-    materials_handler.toggleToonFace(self, override)
-    materials_handler.toggleTexture(self, override)
-    materials_handler.toggleShading(self, override)
-    materials_handler.changeToonDepth(self, override)
-    materials_handler.changeToonShadingBrightness(self, override)
-    shadow.toggleSun(self, override)
-    shadow.changeSunStrength(self, override)
-    shadow.toggleShadow(self, override)
-    shadow.changeSunRotation(self, override)
-    materials_handler.changeImageAdjustBrightness(self, override)
-    materials_handler.changeImageAdjustContrast(self, override)
-    materials_handler.changeImageAdjustColor(self, override)
-    materials_handler.changeImageAdjustHue(self, override)
-    materials_handler.changeImageAdjustSaturation(self, override)
-    layers.handleLayerVisibilityOnSceneChange(current_scene, target_scene)
-    for obj in bpy.data.objects:
-        objects.setConstraintToCameraByObject(obj, override)
+        shadow.toggleSun(self, override)
+        shadow.changeSunStrength(self, override)
+        shadow.toggleShadow(self, override)
+        shadow.changeSunRotation(self, override)
 
-    context.window.scene = target_scene
+        for obj in bpy.data.objects:
+            objects.setConstraintToCameraByObject(obj, override)
 
-    target_scene.ACON_prop.scene = current_scene.ACON_prop.scene
+        context.window.scene = target_scene
+
+        target_scene.ACON_prop.scene = current_scene.ACON_prop.scene
 
 
 def createScene(old_scene, type, name):

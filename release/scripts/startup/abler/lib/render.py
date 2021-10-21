@@ -23,9 +23,7 @@ import bpy
 def setupBackgroundImagesCompositor(scene=None, snipLayer=None, path=None):
 
     context = bpy.context
-
-    if not scene:
-        scene = context.scene
+    scene = context.scene
 
     node_entry_left_out, node_entry_right_in = clearCompositor(scene=scene)
 
