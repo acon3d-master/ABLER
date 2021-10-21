@@ -88,10 +88,20 @@ class DeleteSceneOperator(bpy.types.Operator):
         return len(bpy.data.scenes) > 1
 
     def execute(self, context):
+
         sceneName = context.scene.ACON_prop.scene
-        scene = bpy.data.scenes[sceneName]
+        scene = bpy.data.scenes.get(sceneName)
+        scenesList = [*bpy.data.scenes]
+
+        i = scenesList.index(scene)
+        scenesList.remove(scene)
+        length = len(scenesList)
+        nextScene = scenesList[min(i, length - 1)]
+        context.scene.ACON_prop.scene = nextScene.name
+
         bpy.data.scenes.remove(scene)
-        context.scene.ACON_prop.scene = context.scene.name
+
+        nextScene.ACON_prop.scene = nextScene.name
 
         return {"FINISHED"}
 
