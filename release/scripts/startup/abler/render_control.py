@@ -116,6 +116,8 @@ class Acon3dRenderAllOperator(Acon3dRenderOperator):
     initial_display_type = None
 
     def pre_render(self, dummy, dum):
+        render.setupBackgroundImagesCompositor()
+        render.matchObjectVisibility()
         self.rendering = True
 
     def post_render(self, dummy, dum):
@@ -181,8 +183,6 @@ class Acon3dRenderAllOperator(Acon3dRenderOperator):
                 qitem = self.renderQueue[0]
 
                 context.scene.ACON_prop.scene = qitem.name
-                render.setupBackgroundImagesCompositor()
-                render.matchObjectVisibility()
 
                 bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
@@ -230,16 +230,22 @@ class Acon3dRenderSnipOperator(Acon3dRenderOperator):
         for obj in context.selected_objects:
             col_group.objects.link(obj)
 
-        render.setupBackgroundImagesCompositor(snipLayer=layer, path=filepath)
-        render.matchObjectVisibility()
+        def createSnip(dummy):
+            compNodes = render.clearCompositor()
+            render.setupBackgroundImagesCompositor(*compNodes)
+            render.setupSnipCompositor(*compNodes, snipLayer=layer, path=filepath)
+            render.matchObjectVisibility()
+            bpy.app.handlers.render_post.remove(createSnip)
+            bpy.app.handlers.render_post.append(removeSnip)
+            bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
-        def removeSnipData(dummy):
+        def removeSnip(dummy):
             # scene.view_layers.remove(layer)
             # bpy.data.collections.remove(col_group)
-            bpy.app.handlers.render_post.remove(removeSnipData)
+            bpy.app.handlers.render_post.remove(removeSnip)
 
-        bpy.app.handlers.render_post.append(removeSnipData)
-        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+        bpy.app.handlers.render_post.append(createSnip)
+        bpy.ops.acon3d.render_shadow()
 
         return self.acon3d_render_onFinish(context)
 

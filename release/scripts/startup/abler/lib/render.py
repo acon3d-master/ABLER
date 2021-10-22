@@ -20,31 +20,43 @@
 import bpy
 
 
-def setupBackgroundImagesCompositor(scene=None, snipLayer=None, path=None):
+def setupSnipCompositor(node_left=None, node_right=None, snipLayer=None, path=None):
+
+    if not node_left or not node_right:
+        node_left, node_right = clearCompositor()
 
     context = bpy.context
     scene = context.scene
 
-    node_entry_left_out, node_entry_right_in = clearCompositor(scene=scene)
-
     tree = scene.node_tree
     nodes = tree.nodes
 
-    if snipLayer:
+    node_rlayer = nodes.new("CompositorNodeRLayers")
+    node_rlayer.layer = snipLayer.name
 
-        node_rlayer = nodes.new("CompositorNodeRLayers")
-        node_rlayer.layer = snipLayer.name
+    node_setAlpha = nodes.new("CompositorNodeSetAlpha")
+    tree.links.new(node_left, node_setAlpha.inputs[0])
+    tree.links.new(node_rlayer.outputs[1], node_setAlpha.inputs[1])
 
-        node_setAlpha = nodes.new("CompositorNodeSetAlpha")
-        tree.links.new(node_entry_left_out, node_setAlpha.inputs[0])
-        tree.links.new(node_rlayer.outputs[1], node_setAlpha.inputs[1])
+    node_output = nodes.new("CompositorNodeOutputFile")
+    tree.links.new(node_setAlpha.outputs[0], node_output.inputs[0])
 
-        node_output = nodes.new("CompositorNodeOutputFile")
-        tree.links.new(node_setAlpha.outputs[0], node_output.inputs[0])
+    node_output.file_slots[0].path = scene.name + "_snipped_#"
+    if path:
+        node_output.base_path = path
 
-        node_output.file_slots[0].path = scene.name + "_snipped_#"
-        if path:
-            node_output.base_path = path
+
+def setupBackgroundImagesCompositor(node_left=None, node_right=None, scene=None):
+
+    if not node_left or not node_right:
+        node_left, node_right = clearCompositor()
+
+    context = bpy.context
+    if not scene:
+        scene = context.scene
+
+    tree = scene.node_tree
+    nodes = tree.nodes
 
     cam = scene.camera.data
     background_images = cam.background_images
@@ -96,16 +108,16 @@ def setupBackgroundImagesCompositor(scene=None, snipLayer=None, path=None):
         tree.links.new(node_conditional.outputs[0], node_transform.inputs[0])
 
         node_alphaOver = nodes.new("CompositorNodeAlphaOver")
-        tree.links.new(node_alphaOver.outputs[0], node_entry_right_in)
+        tree.links.new(node_alphaOver.outputs[0], node_right)
 
         if background_image.display_depth == "BACK":
             tree.links.new(node_transform.outputs[0], node_alphaOver.inputs[1])
-            tree.links.new(node_entry_left_out, node_alphaOver.inputs[2])
-            node_entry_left_out = node_alphaOver.outputs[0]
+            tree.links.new(node_left, node_alphaOver.inputs[2])
+            node_left = node_alphaOver.outputs[0]
         else:
             tree.links.new(node_transform.outputs[0], node_alphaOver.inputs[2])
-            tree.links.new(node_entry_left_out, node_alphaOver.inputs[1])
-            node_entry_right_in = node_alphaOver.inputs[1]
+            tree.links.new(node_left, node_alphaOver.inputs[1])
+            node_right = node_alphaOver.inputs[1]
 
 
 def clearCompositor(scene=None):
@@ -126,11 +138,11 @@ def clearCompositor(scene=None):
     node_composite = nodes.new("CompositorNodeComposite")
     node_rlayer = nodes.new("CompositorNodeRLayers")
 
-    node_entry_left_out = node_rlayer.outputs[0]
-    node_entry_right_in = node_composite.inputs[0]
-    tree.links.new(node_entry_left_out, node_entry_right_in)
+    node_left = node_rlayer.outputs[0]
+    node_right = node_composite.inputs[0]
+    tree.links.new(node_left, node_right)
 
-    return node_entry_left_out, node_entry_right_in
+    return node_left, node_right
 
 
 def matchObjectVisibility():
