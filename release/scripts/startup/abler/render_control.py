@@ -163,7 +163,6 @@ class Acon3dRenderAllOperator(Acon3dRenderOperator):
                 bpy.app.handlers.render_cancel.remove(self.on_render_cancel)
 
                 context.window_manager.event_timer_remove(self.timerEvent)
-                context.scene.ACON_prop.scene = self.initial_scene.name
                 context.window.scene = self.initial_scene
                 context.preferences.view.render_display_type = self.initial_display_type
 
@@ -181,8 +180,7 @@ class Acon3dRenderAllOperator(Acon3dRenderOperator):
             elif self.rendering is False:
 
                 qitem = self.renderQueue[0]
-
-                context.scene.ACON_prop.scene = qitem.name
+                context.window.scene = qitem
 
                 bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 

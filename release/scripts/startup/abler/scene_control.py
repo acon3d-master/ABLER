@@ -60,7 +60,7 @@ class CreateSceneOperator(bpy.types.Operator):
     def execute(self, context):
         old_scene = context.scene
         new_scene = scenes.createScene(old_scene, self.preset, self.name)
-        context.scene.ACON_prop.scene = new_scene.name
+        context.window.scene = new_scene
         return {"FINISHED"}
 
     def invoke(self, context, event):
@@ -88,10 +88,7 @@ class DeleteSceneOperator(bpy.types.Operator):
         return len(bpy.data.scenes) > 1
 
     def execute(self, context):
-        sceneName = context.scene.ACON_prop.scene
-        scene = bpy.data.scenes[sceneName]
-        bpy.data.scenes.remove(scene)
-        context.scene.ACON_prop.scene = context.scene.name
+        bpy.data.scenes.remove(context.scene)
 
         return {"FINISHED"}
 
@@ -110,10 +107,9 @@ class Acon3dScenesPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
 
         row = layout.row(align=True)
-        row.prop(scene.ACON_prop, "scene", text="")
+        row.prop(context.window, "scene", text="")
         row.operator("acon3d.create_scene", text="", icon="ADD")
         row.operator("acon3d.delete_scene", text="", icon="REMOVE")
 
@@ -131,9 +127,15 @@ def register():
     for cls in classes:
         register_class(cls)
 
+    bpy.app.handlers.load_post.append(scenes.subscribeSceneChange)
+    bpy.app.handlers.load_pre.append(scenes.unsubscribeSceneChange)
+
 
 def unregister():
     from bpy.utils import unregister_class
 
     for cls in reversed(classes):
         unregister_class(cls)
+
+    bpy.app.handlers.load_post.remove(scenes.subscribeSceneChange)
+    bpy.app.handlers.load_pre.remove(scenes.unsubscribeSceneChange)

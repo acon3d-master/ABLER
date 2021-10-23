@@ -19,7 +19,7 @@
 
 import bpy
 from math import radians
-from .lib import cameras, shadow, scenes, objects
+from .lib import cameras, shadow, objects
 from .lib.materials import materials_handler
 
 
@@ -64,13 +64,6 @@ class AconSceneProperty(bpy.types.PropertyGroup):
     @classmethod
     def unregister(cls):
         del bpy.types.Scene.ACON_prop
-
-    scene: bpy.props.EnumProperty(
-        name="Scene",
-        description="Change scene",
-        items=scenes.add_scene_items,
-        update=scenes.loadScene,
-    )
 
     toggle_toon_edge: bpy.props.BoolProperty(
         name="Toon Style Edge",

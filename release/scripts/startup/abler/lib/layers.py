@@ -22,7 +22,9 @@ from bpy.app.handlers import persistent
 
 
 def handleLayerVisibilityOnSceneChange(oldScene, newScene):
+
     if not oldScene or not newScene:
+        print("Invalid oldScene / newScene given")
         return
 
     i = 0
