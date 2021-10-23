@@ -22,6 +22,7 @@ from bpy.app.handlers import persistent
 from . import shadow, layers, objects
 from .materials import materials_handler
 from math import radians
+from types import SimpleNamespace
 
 
 def genSceneName(name, i=1):
@@ -48,10 +49,18 @@ def subscribeSceneChange(oldScene=None):
     if not oldScene:
         oldScene = bpy.context.scene
 
+    override = SimpleNamespace()
+    override.l_exclude = []
+    for item in oldScene.l_exclude:
+        clonedItem = SimpleNamespace()
+        clonedItem.value = item.value
+        clonedItem.lock = item.lock
+        override.l_exclude.append(clonedItem)
+
     bpy.msgbus.subscribe_rna(
         key=(bpy.types.Window, "scene"),
         owner=scene_msgbus,
-        args=(oldScene,),
+        args=(override,),
         notify=loadScene,
         options={"PERSISTENT"},
     )
