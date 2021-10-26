@@ -67,7 +67,7 @@ def subscribeSceneChange(oldScene=None):
 
 
 @persistent
-def unsubscribeSceneChange():
+def unsubscribeSceneChange(dummy=None, dum=None):
     bpy.msgbus.clear_by_owner(scene_msgbus)
 
 

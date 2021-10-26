@@ -21,6 +21,7 @@ import bpy, platform, os, subprocess
 from bpy_extras.io_utils import ImportHelper
 from .lib import render, cameras
 from .lib.materials import materials_handler
+from types import SimpleNamespace
 
 
 bl_info = {
@@ -78,39 +79,9 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
         name="Show in folder on completion", default=True
     )
 
-    def acon3d_render(self, context):
-        return self.acon3d_render_onFinish(context)
-
-    def acon3d_render_onFinish(self, context):
-
-        scene = context.scene
-
-        if self.show_on_completion:
-            filename = scene.name + "." + scene.render.image_settings.file_format
-            openDirectory(os.path.join(self.filepath, filename))
-
-        return {"FINISHED"}
-
-    def execute(self, context):
-
-        dirname, basename = os.path.split(os.path.normpath(self.filepath))
-        if "." in basename:
-            basename = basename.split(".")[0]
-        self.filepath = os.path.join(dirname, basename)
-
-        return self.acon3d_render(context)
-
-
-class Acon3dRenderAllOperator(Acon3dRenderOperator):
-    """Render all scenes with full render settings"""
-
-    bl_idname = "acon3d.render_all"
-    bl_label = "Save"
-    bl_translation_context = "*"
-
-    cancelRender = None
-    rendering = None
-    renderQueue = None
+    cancelRender = False
+    rendering = False
+    renderQueue = []
     timerEvent = None
     initial_scene = None
     initial_display_type = None
@@ -127,30 +98,40 @@ class Acon3dRenderAllOperator(Acon3dRenderOperator):
     def on_render_cancel(self, dummy, dum):
         self.cancelRender = True
 
-    def acon3d_render(self, context):
+    def on_render_finish(self, context):
+        return {"FINISHED"}
+
+    def prepare_queue(self, context):
+
+        for scene in bpy.data.scenes:
+            self.renderQueue.append(scene)
+
+        return {"RUNNING_MODAL"}
+
+    def execute(self, context):
+
+        dirname, basename = os.path.split(os.path.normpath(self.filepath))
+        if "." in basename:
+            basename = basename.split(".")[0]
+
+        self.filepath = os.path.join(dirname, basename)
         self.cancelRender = False
         self.rendering = False
         self.renderQueue = []
         self.initial_scene = context.scene
         self.initial_display_type = context.preferences.view.render_display_type
+        self.timerEvent = context.window_manager.event_timer_add(
+            0.2, window=context.window
+        )
 
         context.preferences.view.render_display_type = "NONE"
-
-        for scene in bpy.data.scenes:
-            scene.render.filepath = self.filepath + "\\" + scene.name
-            self.renderQueue.append(scene)
+        context.window_manager.modal_handler_add(self)
 
         bpy.app.handlers.render_pre.append(self.pre_render)
         bpy.app.handlers.render_post.append(self.post_render)
         bpy.app.handlers.render_cancel.append(self.on_render_cancel)
 
-        self.timerEvent = context.window_manager.event_timer_add(
-            0.2, window=context.window
-        )
-
-        context.window_manager.modal_handler_add(self)
-
-        return {"RUNNING_MODAL"}
+        return self.prepare_queue(context)
 
     def modal(self, context, event):
 
@@ -175,16 +156,32 @@ class Acon3dRenderAllOperator(Acon3dRenderOperator):
                     message_2=self.filepath,
                 )
 
-                return self.acon3d_render_onFinish(context)
+                if self.show_on_completion:
+                    scene = context.scene
+                    filename = (
+                        scene.name + "." + scene.render.image_settings.file_format
+                    )
+                    openDirectory(os.path.join(self.filepath, filename))
+
+                return self.on_render_finish(context)
 
             elif self.rendering is False:
 
                 qitem = self.renderQueue[0]
+                qitem.render.filepath = self.filepath + "\\" + qitem.name
                 context.window.scene = qitem
 
                 bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
 
         return {"PASS_THROUGH"}
+
+
+class Acon3dRenderAllOperator(Acon3dRenderOperator):
+    """Render all scenes with full render settings"""
+
+    bl_idname = "acon3d.render_all"
+    bl_label = "Save"
+    bl_translation_context = "*"
 
 
 class Acon3dRenderFullOperator(Acon3dRenderOperator):
@@ -194,16 +191,9 @@ class Acon3dRenderFullOperator(Acon3dRenderOperator):
     bl_label = "Full Render"
     bl_translation_context = "*"
 
-    def acon3d_render(self, context):
-
-        filepath = self.filepath
-        scene = context.scene
-        scene.render.filepath = filepath + "\\" + scene.name
-        render.setupBackgroundImagesCompositor()
-        render.matchObjectVisibility()
-        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
-
-        return self.acon3d_render_onFinish(context)
+    def prepare_queue(self, context):
+        self.renderQueue.append(context.scene)
+        return {"RUNNING_MODAL"}
 
 
 class Acon3dRenderSnipOperator(Acon3dRenderOperator):
@@ -213,99 +203,52 @@ class Acon3dRenderSnipOperator(Acon3dRenderOperator):
     bl_label = "Snip Render"
     bl_translation_context = "*"
 
-    def acon3d_render(self, context):
+    temp_col = None
 
-        filepath = self.filepath
-        scene = context.scene
-        scene.render.filepath = filepath + "\\" + scene.name
+    def pre_render(self, dummy, dum):
+        if len(self.renderQueue) > 1:
+            render.clearCompositor()
+        else:
+            compNodes = render.clearCompositor()
+            render.setupBackgroundImagesCompositor(*compNodes)
+            render.setupSnipCompositor(
+                *compNodes, snipLayer=self.snipLayer, path=self.filepath
+            )
+        render.matchObjectVisibility()
+        self.rendering = True
+
+    def post_render(self, dummy, dum):
+        scene = self.renderQueue.pop(0)
+        bpy.data.scenes.remove(scene)
+        self.rendering = False
+
+    def prepare_queue(self, context):
+
+        Acon3dRenderShadowOperator.prepare_queue(self, context)
+
+        scene = context.scene.copy()
+        self.renderQueue.append(scene)
 
         layer = scene.view_layers.new("ACON_layer_snip")
         for col in layer.layer_collection.children:
             col.exclude = True
 
         col_group = bpy.data.collections.new("ACON_group_snip")
+        self.temp_col = col_group
         scene.collection.children.link(col_group)
         for obj in context.selected_objects:
             col_group.objects.link(obj)
 
-        def createSnip(dummy):
-            compNodes = render.clearCompositor()
-            render.setupBackgroundImagesCompositor(*compNodes)
-            render.setupSnipCompositor(*compNodes, snipLayer=layer, path=filepath)
-            render.matchObjectVisibility()
-            bpy.app.handlers.render_post.remove(createSnip)
-            bpy.app.handlers.render_post.append(removeSnip)
-            bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+        return {"RUNNING_MODAL"}
 
-        def removeSnip(dummy):
-            # scene.view_layers.remove(layer)
-            # bpy.data.collections.remove(col_group)
-            bpy.app.handlers.render_post.remove(removeSnip)
+    def on_render_finish(self, context):
 
-        bpy.app.handlers.render_post.append(createSnip)
-        bpy.ops.acon3d.render_shadow()
+        # bpy.data.collections.remove(self.temp_col)
 
-        return self.acon3d_render_onFinish(context)
+        for mat in bpy.data.materials:
+            materials_handler.setMaterialParametersByType(mat)
 
-
-class Acon3dRenderLineOperator(Acon3dRenderOperator):
-    """Renders only lines according to the set pixel"""
-
-    bl_idname = "acon3d.render_line"
-    bl_label = "Line Render"
-    bl_translation_context = "*"
-
-    def acon3d_render(self, context):
-
-        filepath = self.filepath
-        scene = context.scene
-        scene.render.filepath = filepath + "\\" + scene.name
-
-        prop = scene.ACON_prop
-        toggleTexture = prop.toggle_texture
-        toggleShading = prop.toggle_shading
-        toggleToonEdge = prop.toggle_toon_edge
-        useBloom = scene.eevee.use_bloom
-        use_lock_interface = scene.render.use_lock_interface
-
-        render.clearCompositor()
-
-        def setTempMaterialSettings(dummy):
-            prop.toggle_texture = False
-            prop.toggle_shading = False
-            prop.toggle_toon_edge = True
-            scene.eevee.use_bloom = False
-            scene.render.use_lock_interface = True
-
-            for mat in bpy.data.materials:
-                mat.blend_method = "OPAQUE"
-                mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
-                if toonNode:
-                    toonNode.inputs[1].default_value = 0
-                    toonNode.inputs[3].default_value = 1
-
-            bpy.app.handlers.render_pre.remove(setTempMaterialSettings)
-
-        def rollbackMaterialSettings(dummy):
-            prop.toggle_texture = toggleTexture
-            prop.toggle_shading = toggleShading
-            prop.toggle_toon_edge = toggleToonEdge
-            scene.eevee.use_bloom = useBloom
-            scene.render.use_lock_interface = use_lock_interface
-
-            for mat in bpy.data.materials:
-                materials_handler.setMaterialParametersByType(mat)
-
-            bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
-
-        bpy.app.handlers.render_pre.append(setTempMaterialSettings)
-        bpy.app.handlers.render_post.append(rollbackMaterialSettings)
-
-        render.matchObjectVisibility()
-        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
-
-        return self.acon3d_render_onFinish(context)
+        return super().on_render_finish(context)
 
 
 class Acon3dRenderShadowOperator(Acon3dRenderOperator):
@@ -315,61 +258,58 @@ class Acon3dRenderShadowOperator(Acon3dRenderOperator):
     bl_label = "Shadow Render"
     bl_translation_context = "*"
 
-    def acon3d_render(self, context):
+    def pre_render(self, dummy, dum):
+        render.clearCompositor()
+        render.matchObjectVisibility()
+        self.rendering = True
 
-        filepath = self.filepath
-        scene = context.scene
-        scene.render.filepath = filepath + "\\" + scene.name
+    def prepare_queue(self, context):
+
+        scene = context.scene.copy()
+        self.renderQueue.append(scene)
 
         prop = scene.ACON_prop
-        toggleTexture = prop.toggle_texture
-        toggleShading = prop.toggle_shading
-        toggleToonEdge = prop.toggle_toon_edge
-        useBloom = scene.eevee.use_bloom
-        use_lock_interface = scene.render.use_lock_interface
+        prop.toggle_texture = False
+        prop.toggle_shading = True
+        prop.toggle_toon_edge = False
+        scene.eevee.use_bloom = False
+        scene.render.use_lock_interface = True
 
-        render.clearCompositor()
+        for mat in bpy.data.materials:
+            mat.blend_method = "OPAQUE"
+            mat.shadow_method = "OPAQUE"
+            toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
+            if toonNode:
+                toonNode.inputs[1].default_value = 0
+                toonNode.inputs[3].default_value = 1
 
-        node_group = bpy.data.node_groups.get("ACON_nodeGroup_combinedToon")
-        if not node_group:
-            return
+        return {"RUNNING_MODAL"}
 
-        def setTempMaterialSettings(dummy):
-            prop.toggle_texture = False
-            prop.toggle_shading = True
-            prop.toggle_toon_edge = False
-            scene.eevee.use_bloom = False
-            scene.render.use_lock_interface = True
+    def on_render_finish(self, context):
 
-            for mat in bpy.data.materials:
-                mat.blend_method = "OPAQUE"
-                mat.shadow_method = "OPAQUE"
-                toonNode = mat.node_tree.nodes.get("ACON_nodeGroup_combinedToon")
-                if toonNode:
-                    toonNode.inputs[1].default_value = 0
-                    toonNode.inputs[3].default_value = 1
+        for mat in bpy.data.materials:
+            materials_handler.setMaterialParametersByType(mat)
 
-            bpy.app.handlers.render_pre.remove(setTempMaterialSettings)
+        return super().on_render_finish(context)
 
-        def rollbackMaterialSettings(dummy):
-            prop.toggle_texture = toggleTexture
-            prop.toggle_shading = toggleShading
-            prop.toggle_toon_edge = toggleToonEdge
-            scene.eevee.use_bloom = useBloom
-            scene.render.use_lock_interface = use_lock_interface
 
-            for mat in bpy.data.materials:
-                materials_handler.setMaterialParametersByType(mat)
+class Acon3dRenderLineOperator(Acon3dRenderShadowOperator):
+    """Renders only lines according to the set pixel"""
 
-            bpy.app.handlers.render_post.remove(rollbackMaterialSettings)
+    bl_idname = "acon3d.render_line"
+    bl_label = "Line Render"
+    bl_translation_context = "*"
 
-        bpy.app.handlers.render_pre.append(setTempMaterialSettings)
-        bpy.app.handlers.render_post.append(rollbackMaterialSettings)
+    def prepare_queue(self, context):
 
-        render.matchObjectVisibility()
-        bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+        super().prepare_queue(context)
 
-        return self.acon3d_render_onFinish(context)
+        scene = self.renderQueue[0]
+        prop = scene.ACON_prop
+        prop.toggle_shading = False
+        prop.toggle_toon_edge = True
+
+        return {"RUNNING_MODAL"}
 
 
 class Acon3dRenderQuickOperator(Acon3dRenderOperator):
@@ -379,20 +319,18 @@ class Acon3dRenderQuickOperator(Acon3dRenderOperator):
     bl_label = "Quick Render"
     bl_translation_context = "*"
 
-    def acon3d_render(self, context):
+    def prepare_queue(self, context):
 
         filepath = self.filepath
         scene = context.scene
         scene.render.filepath = filepath + "\\" + scene.name
 
-        ops = bpy.ops
+        for obj in context.selected_objects:
+            obj.select_set(False)
 
-        if ops.object.select_all.poll():
-            ops.object.select_all(action="DESELECT")
+        bpy.ops.render.opengl("INVOKE_DEFAULT", write_still=True)
 
-        ops.render.opengl("INVOKE_DEFAULT", write_still=True)
-
-        return self.acon3d_render_onFinish(context)
+        return {"RUNNING_MODAL"}
 
 
 class Acon3dRenderPanel(bpy.types.Panel):
