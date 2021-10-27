@@ -72,31 +72,27 @@ class Acon3dCameraViewOperator(bpy.types.Operator):
 
 class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
 
-    bl_translation_context = "*"
-
     filter_glob: bpy.props.StringProperty(default="", options={"HIDDEN"})
     show_on_completion: bpy.props.BoolProperty(
         name="Show in folder on completion", default=True
     )
-
-    cancelRender = False
+    write_still = True
+    render_queue = []
     rendering = False
-    renderQueue = []
-    timerEvent = None
+    render_canceled = False
+    timer_event = None
     initial_scene = None
     initial_display_type = None
 
     def pre_render(self, dummy, dum):
-        render.setupBackgroundImagesCompositor()
-        render.matchObjectVisibility()
         self.rendering = True
 
     def post_render(self, dummy, dum):
-        self.renderQueue.pop(0)
+        self.render_queue.pop(0)
         self.rendering = False
 
     def on_render_cancel(self, dummy, dum):
-        self.cancelRender = True
+        self.render_canceled = True
 
     def on_render_finish(self, context):
         return {"FINISHED"}
@@ -104,9 +100,13 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
     def prepare_queue(self, context):
 
         for scene in bpy.data.scenes:
-            self.renderQueue.append(scene)
+            self.render_queue.append(scene)
 
         return {"RUNNING_MODAL"}
+
+    def prepare_render(self):
+        render.setupBackgroundImagesCompositor()
+        render.matchObjectVisibility()
 
     def execute(self, context):
 
@@ -115,12 +115,12 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
             basename = basename.split(".")[0]
 
         self.filepath = os.path.join(dirname, basename)
-        self.cancelRender = False
+        self.render_canceled = False
         self.rendering = False
-        self.renderQueue = []
+        self.render_queue = []
         self.initial_scene = context.scene
         self.initial_display_type = context.preferences.view.render_display_type
-        self.timerEvent = context.window_manager.event_timer_add(
+        self.timer_event = context.window_manager.event_timer_add(
             0.2, window=context.window
         )
 
@@ -137,13 +137,13 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
 
         if event.type == "TIMER":
 
-            if not self.renderQueue or self.cancelRender is True:
+            if not self.render_queue or self.render_canceled is True:
 
                 bpy.app.handlers.render_pre.remove(self.pre_render)
                 bpy.app.handlers.render_post.remove(self.post_render)
                 bpy.app.handlers.render_cancel.remove(self.on_render_cancel)
 
-                context.window_manager.event_timer_remove(self.timerEvent)
+                context.window_manager.event_timer_remove(self.timer_event)
                 context.window.scene = self.initial_scene
                 context.preferences.view.render_display_type = self.initial_display_type
 
@@ -167,11 +167,13 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
 
             elif self.rendering is False:
 
-                qitem = self.renderQueue[0]
+                qitem = self.render_queue[0]
                 qitem.render.filepath = self.filepath + "\\" + qitem.name
                 context.window.scene = qitem
 
-                bpy.ops.render.render("INVOKE_DEFAULT", write_still=True)
+                self.prepare_render()
+
+                bpy.ops.render.render("INVOKE_DEFAULT", write_still=self.write_still)
 
         return {"PASS_THROUGH"}
 
@@ -192,81 +194,24 @@ class Acon3dRenderFullOperator(Acon3dRenderOperator):
     bl_translation_context = "*"
 
     def prepare_queue(self, context):
-        self.renderQueue.append(context.scene)
+        self.render_queue.append(context.scene)
         return {"RUNNING_MODAL"}
 
 
-class Acon3dRenderSnipOperator(Acon3dRenderOperator):
-    """Render selected objects isolatedly from background"""
+class Acon3dRenderTempSceneOperator(Acon3dRenderOperator):
 
-    bl_idname = "acon3d.render_snip"
-    bl_label = "Snip Render"
-    bl_translation_context = "*"
+    temp_scenes = []
 
-    temp_col = None
-
-    def pre_render(self, dummy, dum):
-        if len(self.renderQueue) > 1:
-            render.clearCompositor()
-        else:
-            compNodes = render.clearCompositor()
-            render.setupBackgroundImagesCompositor(*compNodes)
-            render.setupSnipCompositor(
-                *compNodes, snipLayer=self.snipLayer, path=self.filepath
-            )
-        render.matchObjectVisibility()
-        self.rendering = True
-
-    def post_render(self, dummy, dum):
-        scene = self.renderQueue.pop(0)
-        bpy.data.scenes.remove(scene)
-        self.rendering = False
-
-    def prepare_queue(self, context):
-
-        Acon3dRenderShadowOperator.prepare_queue(self, context)
-
-        scene = context.scene.copy()
-        self.renderQueue.append(scene)
-
-        layer = scene.view_layers.new("ACON_layer_snip")
-        for col in layer.layer_collection.children:
-            col.exclude = True
-
-        col_group = bpy.data.collections.new("ACON_group_snip")
-        self.temp_col = col_group
-        scene.collection.children.link(col_group)
-        for obj in context.selected_objects:
-            col_group.objects.link(obj)
-
-        return {"RUNNING_MODAL"}
-
-    def on_render_finish(self, context):
-
-        # bpy.data.collections.remove(self.temp_col)
-
-        for mat in bpy.data.materials:
-            materials_handler.setMaterialParametersByType(mat)
-
-        return super().on_render_finish(context)
-
-
-class Acon3dRenderShadowOperator(Acon3dRenderOperator):
-    """Renders only shadow according to the set pixel"""
-
-    bl_idname = "acon3d.render_shadow"
-    bl_label = "Shadow Render"
-    bl_translation_context = "*"
-
-    def pre_render(self, dummy, dum):
+    def prepare_render(self):
         render.clearCompositor()
         render.matchObjectVisibility()
-        self.rendering = True
 
     def prepare_queue(self, context):
 
         scene = context.scene.copy()
-        self.renderQueue.append(scene)
+        scene.name = context.scene.name + "_shadow"
+        self.render_queue.append(scene)
+        self.temp_scenes.append(scene.name)
 
         prop = scene.ACON_prop
         prop.toggle_texture = False
@@ -290,10 +235,23 @@ class Acon3dRenderShadowOperator(Acon3dRenderOperator):
         for mat in bpy.data.materials:
             materials_handler.setMaterialParametersByType(mat)
 
-        return super().on_render_finish(context)
+        for scene_name in self.temp_scenes:
+            scene = bpy.data.scenes.get(scene_name)
+            if scene:
+                bpy.data.scenes.remove(scene)
+
+        return {"FINISHED"}
 
 
-class Acon3dRenderLineOperator(Acon3dRenderShadowOperator):
+class Acon3dRenderShadowOperator(Acon3dRenderTempSceneOperator):
+    """Renders only shadow according to the set pixel"""
+
+    bl_idname = "acon3d.render_shadow"
+    bl_label = "Shadow Render"
+    bl_translation_context = "*"
+
+
+class Acon3dRenderLineOperator(Acon3dRenderTempSceneOperator):
     """Renders only lines according to the set pixel"""
 
     bl_idname = "acon3d.render_line"
@@ -304,12 +262,86 @@ class Acon3dRenderLineOperator(Acon3dRenderShadowOperator):
 
         super().prepare_queue(context)
 
-        scene = self.renderQueue[0]
+        scene = self.render_queue[0]
+        scene.name = context.scene.name + "_line"
         prop = scene.ACON_prop
         prop.toggle_shading = False
         prop.toggle_toon_edge = True
 
         return {"RUNNING_MODAL"}
+
+
+class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
+    """Render selected objects isolatedly from background"""
+
+    bl_idname = "acon3d.render_snip"
+    bl_label = "Snip Render"
+    bl_translation_context = "*"
+
+    temp_layer = None
+    temp_col = None
+
+    def prepare_render(self):
+
+        if len(self.render_queue) == 3:
+
+            render.clearCompositor()
+
+        elif len(self.render_queue) == 2:
+
+            for mat in bpy.data.materials:
+                materials_handler.setMaterialParametersByType(mat)
+
+            compNodes = render.clearCompositor()
+            render.setupBackgroundImagesCompositor(*compNodes)
+            render.setupSnipCompositor(
+                *compNodes, snipLayer=self.temp_layer, path=self.filepath
+            )
+
+        else:
+
+            render.setupBackgroundImagesCompositor()
+
+        render.matchObjectVisibility()
+
+    def prepare_queue(self, context):
+
+        super().prepare_queue(context)
+
+        scene = context.scene.copy()
+        scene.name = context.scene.name + "_snipped"
+        scene.ACON_prop.toggle_shading = False
+        self.render_queue.append(scene)
+        self.temp_scenes.append(scene.name)
+
+        layer = scene.view_layers.new("ACON_layer_snip")
+        self.temp_layer = layer
+        for col in layer.layer_collection.children:
+            col.exclude = True
+
+        col_group = bpy.data.collections.new("ACON_group_snip")
+        self.temp_col = col_group
+        scene.collection.children.link(col_group)
+        for obj in context.selected_objects:
+            col_group.objects.link(obj)
+
+        scene = context.scene.copy()
+        scene.name = context.scene.name + "_full"
+        self.render_queue.append(scene)
+        self.temp_scenes.append(scene.name)
+
+        return {"RUNNING_MODAL"}
+
+    def on_render_finish(self, context):
+
+        # bpy.data.collections.remove(self.temp_col)
+
+        # for scene_name in self.temp_scenes:
+        #     scene = bpy.data.scenes.get(scene_name)
+        #     if scene:
+        #         bpy.data.scenes.remove(scene)
+
+        return {"FINISHED"}
 
 
 class Acon3dRenderQuickOperator(Acon3dRenderOperator):
@@ -382,11 +414,11 @@ class Acon3dRenderPanel(bpy.types.Panel):
 classes = (
     Acon3dCameraViewOperator,
     Acon3dRenderFullOperator,
-    Acon3dRenderLineOperator,
-    Acon3dRenderShadowOperator,
-    Acon3dRenderQuickOperator,
     Acon3dRenderAllOperator,
+    Acon3dRenderShadowOperator,
+    Acon3dRenderLineOperator,
     Acon3dRenderSnipOperator,
+    Acon3dRenderQuickOperator,
     Acon3dRenderPanel,
 )
 
