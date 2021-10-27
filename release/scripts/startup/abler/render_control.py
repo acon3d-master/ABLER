@@ -198,26 +198,20 @@ class Acon3dRenderFullOperator(Acon3dRenderOperator):
         return {"RUNNING_MODAL"}
 
 
-# `temp_scenes` is intended to be a class attribute of `Acon3dRenderTempSceneOperator`
-# However, `Scene` objects get lost during render process even though
-# they are still referred in both `self.temp_scenes` and `bpy.data.scenes`.
-# In order to avoid this bug, `temp_scenes` is declared in global scope
-temp_scenes = []
-
-
 class Acon3dRenderTempSceneOperator(Acon3dRenderOperator):
+
+    temp_scenes = []
+
     def prepare_render(self):
         render.clearCompositor()
         render.matchObjectVisibility()
 
     def prepare_queue(self, context):
 
-        temp_scenes.clear()
-
         scene = context.scene.copy()
         scene.name = context.scene.name + "_shadow"
         self.render_queue.append(scene)
-        temp_scenes.append(scene)
+        self.temp_scenes.append(scene)
 
         prop = scene.ACON_prop
         prop.toggle_texture = False
@@ -241,8 +235,10 @@ class Acon3dRenderTempSceneOperator(Acon3dRenderOperator):
         for mat in bpy.data.materials:
             materials_handler.setMaterialParametersByType(mat)
 
-        for scene in temp_scenes:
+        for scene in self.temp_scenes:
             bpy.data.scenes.remove(scene)
+
+        self.temp_scenes.clear()
 
         return {"FINISHED"}
 
@@ -298,7 +294,7 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
 
         elif len(self.render_queue) == 2:
 
-            shade_scene = temp_scenes[0]
+            shade_scene = self.temp_scenes[0]
             filename = (
                 shade_scene.name + "." + shade_scene.render.image_settings.file_format
             )
@@ -316,6 +312,8 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
 
         else:
 
+            bpy.data.collections.remove(self.temp_col)
+            bpy.data.images.remove(self.temp_image)
             render.setupBackgroundImagesCompositor()
 
         render.matchObjectVisibility()
@@ -328,7 +326,7 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
         scene.name = context.scene.name + "_snipped"
         scene.ACON_prop.toggle_shading = False
         self.render_queue.append(scene)
-        temp_scenes.append(scene)
+        self.temp_scenes.append(scene)
 
         layer = scene.view_layers.new("ACON_layer_snip")
         self.temp_layer = layer
@@ -344,19 +342,9 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
         scene = context.scene.copy()
         scene.name = context.scene.name + "_full"
         self.render_queue.append(scene)
-        temp_scenes.append(scene)
+        self.temp_scenes.append(scene)
 
         return {"RUNNING_MODAL"}
-
-    def on_render_finish(self, context):
-
-        bpy.data.collections.remove(self.temp_col)
-        bpy.data.images.remove(self.temp_image)
-
-        for scene in temp_scenes:
-            bpy.data.scenes.remove(scene)
-
-        return {"FINISHED"}
 
 
 class Acon3dRenderQuickOperator(Acon3dRenderOperator):
