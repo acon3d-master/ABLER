@@ -198,20 +198,26 @@ class Acon3dRenderFullOperator(Acon3dRenderOperator):
         return {"RUNNING_MODAL"}
 
 
+# `temp_scenes` is intended to be a class attribute of `Acon3dRenderTempSceneOperator`
+# However, `Scene` objects get lost during render process even though
+# they are still referred in both `self.temp_scenes` and `bpy.data.scenes`.
+# In order to avoid this bug, `temp_scenes` is declared in global scope
+temp_scenes = []
+
+
 class Acon3dRenderTempSceneOperator(Acon3dRenderOperator):
-
-    temp_scenes = []
-
     def prepare_render(self):
         render.clearCompositor()
         render.matchObjectVisibility()
 
     def prepare_queue(self, context):
 
+        temp_scenes.clear()
+
         scene = context.scene.copy()
         scene.name = context.scene.name + "_shadow"
         self.render_queue.append(scene)
-        self.temp_scenes.append(scene.name)
+        temp_scenes.append(scene)
 
         prop = scene.ACON_prop
         prop.toggle_texture = False
@@ -235,10 +241,8 @@ class Acon3dRenderTempSceneOperator(Acon3dRenderOperator):
         for mat in bpy.data.materials:
             materials_handler.setMaterialParametersByType(mat)
 
-        for scene_name in self.temp_scenes:
-            scene = bpy.data.scenes.get(scene_name)
-            if scene:
-                bpy.data.scenes.remove(scene)
+        for scene in temp_scenes:
+            bpy.data.scenes.remove(scene)
 
         return {"FINISHED"}
 
@@ -280,6 +284,11 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
 
     temp_layer = None
     temp_col = None
+    temp_image = None
+
+    @classmethod
+    def poll(self, context):
+        return len(context.selected_objects)
 
     def prepare_render(self):
 
@@ -289,13 +298,20 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
 
         elif len(self.render_queue) == 2:
 
+            shade_scene = temp_scenes[0]
+            filename = (
+                shade_scene.name + "." + shade_scene.render.image_settings.file_format
+            )
+            image_path = os.path.join(self.filepath, filename)
+            self.temp_image = bpy.data.images.load(image_path)
+
             for mat in bpy.data.materials:
                 materials_handler.setMaterialParametersByType(mat)
 
             compNodes = render.clearCompositor()
             render.setupBackgroundImagesCompositor(*compNodes)
             render.setupSnipCompositor(
-                *compNodes, snipLayer=self.temp_layer, path=self.filepath
+                *compNodes, snip_layer=self.temp_layer, shade_image=self.temp_image
             )
 
         else:
@@ -312,7 +328,7 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
         scene.name = context.scene.name + "_snipped"
         scene.ACON_prop.toggle_shading = False
         self.render_queue.append(scene)
-        self.temp_scenes.append(scene.name)
+        temp_scenes.append(scene)
 
         layer = scene.view_layers.new("ACON_layer_snip")
         self.temp_layer = layer
@@ -328,18 +344,17 @@ class Acon3dRenderSnipOperator(Acon3dRenderTempSceneOperator):
         scene = context.scene.copy()
         scene.name = context.scene.name + "_full"
         self.render_queue.append(scene)
-        self.temp_scenes.append(scene.name)
+        temp_scenes.append(scene)
 
         return {"RUNNING_MODAL"}
 
     def on_render_finish(self, context):
 
-        # bpy.data.collections.remove(self.temp_col)
+        bpy.data.collections.remove(self.temp_col)
+        bpy.data.images.remove(self.temp_image)
 
-        # for scene_name in self.temp_scenes:
-        #     scene = bpy.data.scenes.get(scene_name)
-        #     if scene:
-        #         bpy.data.scenes.remove(scene)
+        for scene in temp_scenes:
+            bpy.data.scenes.remove(scene)
 
         return {"FINISHED"}
 
@@ -351,6 +366,8 @@ class Acon3dRenderQuickOperator(Acon3dRenderOperator):
     bl_label = "Quick Render"
     bl_translation_context = "*"
 
+    initial_selected_objects = []
+
     def prepare_queue(self, context):
 
         filepath = self.filepath
@@ -358,11 +375,19 @@ class Acon3dRenderQuickOperator(Acon3dRenderOperator):
         scene.render.filepath = filepath + "\\" + scene.name
 
         for obj in context.selected_objects:
+            self.initial_selected_objects.append(obj)
             obj.select_set(False)
 
         bpy.ops.render.opengl("INVOKE_DEFAULT", write_still=True)
 
         return {"RUNNING_MODAL"}
+
+    def on_render_finish(self, context):
+
+        for obj in self.initial_selected_objects:
+            obj.select_set(True)
+
+        return {"FINISHED"}
 
 
 class Acon3dRenderPanel(bpy.types.Panel):

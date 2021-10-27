@@ -20,7 +20,9 @@
 import bpy
 
 
-def setupSnipCompositor(node_left=None, node_right=None, snipLayer=None, path=None):
+def setupSnipCompositor(
+    node_left=None, node_right=None, snip_layer=None, shade_image=None
+):
 
     if not node_left or not node_right:
         node_left, node_right = clearCompositor()
@@ -31,19 +33,16 @@ def setupSnipCompositor(node_left=None, node_right=None, snipLayer=None, path=No
     tree = scene.node_tree
     nodes = tree.nodes
 
-    node_rlayer = nodes.new("CompositorNodeRLayers")
-    node_rlayer.layer = snipLayer.name
+    node_left.node.layer = snip_layer.name
 
-    node_setAlpha = nodes.new("CompositorNodeSetAlpha")
-    tree.links.new(node_left, node_setAlpha.inputs[0])
-    tree.links.new(node_rlayer.outputs[1], node_setAlpha.inputs[1])
+    node_image = nodes.new("CompositorNodeImage")
+    node_image.image = shade_image
 
-    node_output = nodes.new("CompositorNodeOutputFile")
-    tree.links.new(node_setAlpha.outputs[0], node_output.inputs[0])
-
-    node_output.file_slots[0].path = scene.name + "_snipped_#"
-    if path:
-        node_output.base_path = path
+    node_multiply = nodes.new("CompositorNodeMixRGB")
+    node_multiply.blend_type = "MULTIPLY"
+    tree.links.new(node_left, node_multiply.inputs[1])
+    tree.links.new(node_image.outputs[0], node_multiply.inputs[2])
+    tree.links.new(node_multiply.outputs[0], node_right)
 
 
 def setupBackgroundImagesCompositor(node_left=None, node_right=None, scene=None):
