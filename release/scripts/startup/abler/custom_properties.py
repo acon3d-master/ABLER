@@ -361,6 +361,17 @@ class AconObjectGroupProperty(bpy.types.PropertyGroup):
     name: bpy.props.StringProperty(name="Group", description="Group", default="")
 
 
+class AconObjectStateProperty(bpy.types.PropertyGroup):
+
+    location: bpy.props.FloatVectorProperty(
+        name="location", description="location", subtype="TRANSLATION", unit="LENGTH"
+    )
+    rotation_euler: bpy.props.FloatVectorProperty(
+        name="rotation", description="rotation", subtype="EULER", unit="ROTATION"
+    )
+    scale: bpy.props.FloatVectorProperty(name="scale", description="scale")
+
+
 class AconObjectProperty(bpy.types.PropertyGroup):
     @classmethod
     def register(cls):
@@ -376,6 +387,28 @@ class AconObjectProperty(bpy.types.PropertyGroup):
         name="Look at me", default=False, update=objects.toggleConstraintToCamera
     )
 
+    use_state: bpy.props.BoolProperty(
+        name="Use State", default=False, update=objects.toggleUseState
+    )
+
+    state_exists: bpy.props.BoolProperty(
+        name="Determine if state is created", default=False
+    )
+
+    state_slider: bpy.props.FloatProperty(
+        name="State Slider",
+        description="Move between begin and end of the state",
+        default=0,
+        min=0,
+        max=1,
+        step=1,
+        update=objects.moveState,
+    )
+
+    state_begin: bpy.props.PointerProperty(type=AconObjectStateProperty)
+
+    state_end: bpy.props.PointerProperty(type=AconObjectStateProperty)
+
 
 classes = (
     CollectionLayerExcludeProperties,
@@ -383,6 +416,7 @@ classes = (
     AconMaterialProperty,
     AconMeshProperty,
     AconObjectGroupProperty,
+    AconObjectStateProperty,
     AconObjectProperty,
 )
 
