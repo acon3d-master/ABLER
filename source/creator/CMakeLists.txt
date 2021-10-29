@@ -1013,13 +1013,15 @@ elseif(APPLE)
     TARGETS blender
     DESTINATION "."
   )
-  # build and install abler launcher
+    # build and install abler launcher
+    # (if possible, do "cmake -S . -B ./build" from launcher_qt directory first)
   if(APPLE)
     execute_process(
-      COMMAND pyinstaller --icon=icon.icns --onefile --windowed --uac-admin -y ${CMAKE_SOURCE_DIR}/launcher_abler/AblerLauncher.py
+        COMMAND cmake -S ${CMAKE_SOURCE_DIR}/launcher_qt -B ${CMAKE_SOURCE_DIR}/launcher_qt/build
+      COMMAND cmake --build ${CMAKE_SOURCE_DIR}/launcher_qt/build --target all
     )
     install(
-      FILES ${CMAKE_SOURCE_DIR}/launcher_abler/dist/AblerLauncher
+      FILES ${CMAKE_SOURCE_DIR}/launcher_qt/build/AblerLauncher
       PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
       DESTINATION ABLER.app/Contents/MacOS
     )
