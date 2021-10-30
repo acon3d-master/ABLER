@@ -18,11 +18,9 @@
 
 
 import bpy
-from bpy.app.handlers import persistent
 from . import shadow, layers, objects
 from .materials import materials_handler
 from math import radians
-from types import SimpleNamespace
 
 
 def genSceneName(name, i=1):
@@ -40,45 +38,29 @@ def genSceneName(name, i=1):
         return combinedName
 
 
-scene_msgbus = object()
+# scene_items should be a global variable due to a bug in EnumProperty
+scene_items = []
 
 
-@persistent
-def subscribeSceneChange(oldScene=None):
+def add_scene_items(self, context):
+    scene_items.clear()
+    for scene in bpy.data.scenes:
+        scene_items.append((scene.name, scene.name, ""))
 
-    if not oldScene:
-        oldScene = bpy.context.scene
-
-    override = SimpleNamespace()
-    override.l_exclude = []
-    for item in oldScene.l_exclude:
-        clonedItem = SimpleNamespace()
-        clonedItem.value = item.value
-        clonedItem.lock = item.lock
-        override.l_exclude.append(clonedItem)
-
-    bpy.msgbus.subscribe_rna(
-        key=(bpy.types.Window, "scene"),
-        owner=scene_msgbus,
-        args=(override,),
-        notify=loadScene,
-        options={"PERSISTENT"},
-    )
+    return scene_items
 
 
-@persistent
-def unsubscribeSceneChange(dummy=None, dum=None):
-    bpy.msgbus.clear_by_owner(scene_msgbus)
+def loadScene(self, context):
 
+    if not context:
+        context = bpy.context
 
-def loadScene(oldScene):
+    if not self:
+        self = context.window_manager.ACON_prop
 
-    self = None
-    context = bpy.context
-    newScene = context.scene
-
-    unsubscribeSceneChange()
-    subscribeSceneChange(newScene)
+    newScene = bpy.data.scenes.get(self.scene)
+    oldScene = context.scene
+    context.window.scene = newScene
 
     materials_handler.toggleToonEdge(self, context)
     materials_handler.changeLineProps(self, context)

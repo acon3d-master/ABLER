@@ -60,7 +60,7 @@ class CreateSceneOperator(bpy.types.Operator):
     def execute(self, context):
         old_scene = context.scene
         new_scene = scenes.createScene(old_scene, self.preset, self.name)
-        context.window.scene = new_scene
+        context.window_manager.ACON_prop.scene = new_scene.name
         return {"FINISHED"}
 
     def invoke(self, context, event):
@@ -97,9 +97,17 @@ class DeleteSceneOperator(bpy.types.Operator):
         length = len(scenesList)
         nextScene = scenesList[min(i, length - 1)]
 
-        context.window.scene = nextScene
+        # Updating `scene` value invoke `loadScene` function which compares current
+        # scene and target scene. So it should happen before removing scene.
+        context.window_manager.ACON_prop.scene = nextScene.name
 
         bpy.data.scenes.remove(scene)
+
+        # Why set `scene` value again? Because `remove(scene)` occurs funny bug
+        # that sets `scene` value to 1 when `nextScene` is the first element of
+        # `bpy.data.scenes` collection. This ends up having `scene` value invalid
+        # and displaying empty value in the ui panel.
+        context.window_manager.ACON_prop.scene = nextScene.name
 
         return {"FINISHED"}
 
@@ -120,7 +128,7 @@ class Acon3dScenesPanel(bpy.types.Panel):
         layout = self.layout
 
         row = layout.row(align=True)
-        row.prop(context.window, "scene", text="")
+        row.prop(context.window_manager.ACON_prop, "scene", text="")
         row.operator("acon3d.create_scene", text="", icon="ADD")
         row.operator("acon3d.delete_scene", text="", icon="REMOVE")
 
@@ -138,15 +146,9 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.app.handlers.load_post.append(scenes.subscribeSceneChange)
-    bpy.app.handlers.load_pre.append(scenes.unsubscribeSceneChange)
-
 
 def unregister():
     from bpy.utils import unregister_class
 
     for cls in reversed(classes):
         unregister_class(cls)
-
-    bpy.app.handlers.load_post.remove(scenes.subscribeSceneChange)
-    bpy.app.handlers.load_pre.remove(scenes.unsubscribeSceneChange)
