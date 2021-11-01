@@ -34,7 +34,7 @@ class MixpanelResource:
     _flush_interval = 5  # seconds
 
     def __init__(self):
-        self._consumer = BufferedConsumer()
+        self._consumer = BufferedConsumer(max_size=100)
         print(f"Initializing Mixpanel with token {_mixpanel_token}")
         self.mp = Mixpanel(_mixpanel_token, consumer=self._consumer)
 
