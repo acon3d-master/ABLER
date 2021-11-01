@@ -16,3 +16,4 @@
 [submodule "launcher_qt"]
 	path = launcher_qt
 	url = https://acontainer@dev.azure.com/acontainer/acon3d-V2/_git/RND_QTLauncher
+	branch = main
