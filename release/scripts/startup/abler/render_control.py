@@ -169,7 +169,7 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
 
                 qitem = self.render_queue[0]
                 qitem.render.filepath = self.filepath + "\\" + qitem.name
-                context.window.scene = qitem
+                context.window_manager.ACON_prop.scene = qitem.name
 
                 self.prepare_render()
 
