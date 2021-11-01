@@ -954,6 +954,7 @@ elseif(WIN32)
   execute_process(
     COMMAND cmake -S ${CMAKE_SOURCE_DIR}/launcher_qt -B ${CMAKE_SOURCE_DIR}/launcher_qt/build
     COMMAND cmake --build ${CMAKE_SOURCE_DIR}/launcher_qt/build --target ALL_BUILD --config Release
+    COMMAND "C:\\Qt\\6.2.1\\msvc2019_64\\bin\\windeployqt.exe" --release ${CMAKE_BINARY_DIR}/bin/Release/AblerLauncher.exe
   )
   install(
     FILES ${CMAKE_SOURCE_DIR}/launcher_qt/build/Release/AblerLauncher.exe
