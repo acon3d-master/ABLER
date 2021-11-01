@@ -1014,7 +1014,11 @@ elseif(APPLE)
     DESTINATION "."
   )
     # build and install abler launcher
-    # (if possible, do "cmake -S . -B ./build" from launcher_qt directory first)
+    # below is how to setup the build for qt launcher
+    # brew install qt
+    # git submodule update --init --recursive
+    # cd ./launcher_qt
+    # cmake -S . -B ./build
   if(APPLE)
     execute_process(
         COMMAND cmake -S ${CMAKE_SOURCE_DIR}/launcher_qt -B ${CMAKE_SOURCE_DIR}/launcher_qt/build
