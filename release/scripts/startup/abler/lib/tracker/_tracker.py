@@ -42,3 +42,15 @@ class Tracker(metaclass=ABCMeta):
 
     def rendered_quickly(self):
         self._track(EventKind.render_quick.value)
+
+
+class DummyTracker(Tracker):
+    def __init__(self):
+        super().__init__()
+        self._agreed = False
+
+    def _send_event(self, event_name: str):
+        pass
+
+    def _update_email(self, email: str):
+        pass
