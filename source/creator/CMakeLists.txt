@@ -950,6 +950,17 @@ elseif(WIN32)
       DESTINATION ${TARGETDIR_VER}/python/lib/site-packages
     )
   endif()
+  
+  execute_process(
+    COMMAND cmake -S ${CMAKE_SOURCE_DIR}/launcher_qt -B ${CMAKE_SOURCE_DIR}/launcher_qt/build
+    COMMAND cmake --build ${CMAKE_SOURCE_DIR}/launcher_qt/build --target ALL_BUILD --config Release
+  )
+  install(
+    FILES ${CMAKE_SOURCE_DIR}/launcher_qt/build/Release/AblerLauncher.exe
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+    DESTINATION .
+  )
+
 elseif(APPLE)
   if(NOT WITH_PYTHON_MODULE)
     # Uppercase name for app bundle
@@ -1019,17 +1030,15 @@ elseif(APPLE)
     # git submodule update --init --recursive
     # cd ./launcher_qt
     # cmake -S . -B ./build
-  if(APPLE)
-    execute_process(
-        COMMAND cmake -S ${CMAKE_SOURCE_DIR}/launcher_qt -B ${CMAKE_SOURCE_DIR}/launcher_qt/build
-      COMMAND cmake --build ${CMAKE_SOURCE_DIR}/launcher_qt/build --target all
-    )
-    install(
-      FILES ${CMAKE_SOURCE_DIR}/launcher_qt/build/AblerLauncher
-      PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-      DESTINATION ABLER.app/Contents/MacOS
-    )
-  endif()
+  execute_process(
+      COMMAND cmake -S ${CMAKE_SOURCE_DIR}/launcher_qt -B ${CMAKE_SOURCE_DIR}/launcher_qt/build
+    COMMAND cmake --build ${CMAKE_SOURCE_DIR}/launcher_qt/build --target all
+  )
+  install(
+    FILES ${CMAKE_SOURCE_DIR}/launcher_qt/build/AblerLauncher
+    PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+    DESTINATION ABLER.app/Contents/MacOS
+  )
 
   # install release and app files
   set(BLENDER_TEXT_FILES_DESTINATION ABLER.app/Contents/Resources/text)
