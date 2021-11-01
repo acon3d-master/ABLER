@@ -12,10 +12,6 @@ from ._tracker import Tracker
 _user_path = bpy.utils.resource_path("USER")
 _tid_path = os.path.join(_user_path, "abler_tid")
 
-mixpanel_token_path = os.path.join(os.path.dirname(__file__), "mixpanel_token")
-with open(mixpanel_token_path, "r") as f:
-    _mixpanel_token = f.readline()
-
 
 def _nonblock(runner):
     def wrapper(*args, **kwargs):
@@ -33,10 +29,11 @@ class MixpanelResource:
     _consumer: BufferedConsumer
     _flush_interval = 5  # seconds
 
-    def __init__(self):
+    def __init__(self, token: str):
         self._consumer = BufferedConsumer(max_size=100)
-        print(f"Initializing Mixpanel with token {_mixpanel_token}")
-        self.mp = Mixpanel(_mixpanel_token, consumer=self._consumer)
+
+        print(f"Initializing Mixpanel with token {token}")
+        self.mp = Mixpanel(token, consumer=self._consumer)
 
         # NOTE: 로그아웃 후 다른 이메일로 로그인하는 경우는 고려하지 않음
         try:
@@ -62,10 +59,17 @@ class MixpanelResource:
 
 class MixpanelTracker(Tracker):
     _r: Optional[MixpanelResource] = None
+    _mixpanel_token: str
+
+    def __init__(self):
+        super().__init__()
+        mixpanel_token_path = os.path.join(os.path.dirname(__file__), "mixpanel_token")
+        with open(mixpanel_token_path, "r") as f:
+            self._mixpanel_token = f.readline()
 
     def _ensure_resource(self):
         if self._r is None:
-            self._r = MixpanelResource()
+            self._r = MixpanelResource(self._mixpanel_token)
 
     @_nonblock
     def _enqueue_event(self, event_name: str):
