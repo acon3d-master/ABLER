@@ -23,8 +23,8 @@ import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
 from .lib.remember_id import (
+    delete_remembered_id,
     read_remembered_checkbox,
-    remember_checkbox,
     remember_id,
     read_remembered_id,
 )
@@ -241,12 +241,11 @@ def requestLogin():
             pickle.dump(cookie_final, cookiesFile)
             cookiesFile.close()
 
-            remember_checkbox(prop.remember_username)
-
-            if prop.remember_username:  # 체크박스가 선택된 상태라면
+            read_remembered_checkbox()
+            if prop.remember_username:
                 remember_id(prop.username)
             else:
-                pass  # 파일 실제로 삭제할지 추후 고려
+                delete_remembered_id()
 
             prop.username = ""
             prop.password = ""
@@ -348,7 +347,8 @@ def open_credential_modal(dummy):
         bpy.ops.acon3d.modal_operator("INVOKE_DEFAULT")
 
     prop = userInfo.ACON_prop
-    prop.remember_username = read_remembered_checkbox()
+    if os.path.isfile(path_cookiesFile):
+        prop.remember_username = read_remembered_checkbox()
     if prop.remember_username:
         prop.username = read_remembered_id()
 
