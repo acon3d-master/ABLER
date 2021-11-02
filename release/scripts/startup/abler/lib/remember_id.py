@@ -7,7 +7,6 @@ path_cookiesID = os.path.join(path_cookiesFolder, "userID")
 
 
 def remember_id(username):
-
     cookiesID = open(path_cookiesID, "wb")
     pickle.dump(username, cookiesID)
     cookiesID.close()

@@ -2742,7 +2742,7 @@ class WM_MT_splash(Menu):
                     icon="CHECKBOX_HLT",
                     emboss=False,
                     invert_checkbox=True,
-                )  # rememeber username checkbox UI
+                )
                 row = column.row()
                 row.prop(
                     userInfo.ACON_prop,
