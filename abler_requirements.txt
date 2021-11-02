@@ -1,0 +1,2 @@
+mixpanel==4.9.0
+keyboard
