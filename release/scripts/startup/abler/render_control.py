@@ -21,7 +21,6 @@ import bpy, platform, os, subprocess
 from bpy_extras.io_utils import ImportHelper
 from .lib import render, cameras
 from .lib.materials import materials_handler
-from types import SimpleNamespace
 
 
 bl_info = {
@@ -168,7 +167,16 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
             elif self.rendering is False:
 
                 qitem = self.render_queue[0]
-                qitem.render.filepath = self.filepath + "\\" + qitem.name
+
+                base_filepath = os.path.join(self.filepath, qitem.name)
+                file_format = qitem.render.image_settings.file_format
+                numbered_filepath = f"{base_filepath}.{file_format}"
+                number = 2
+                while os.path.isfile(numbered_filepath):
+                    numbered_filepath = f"{base_filepath} ({number}).{file_format}"
+                    number += 1
+
+                qitem.render.filepath = numbered_filepath
                 context.window_manager.ACON_prop.scene = qitem.name
 
                 self.prepare_render()
@@ -360,7 +368,7 @@ class Acon3dRenderQuickOperator(Acon3dRenderOperator):
 
         filepath = self.filepath
         scene = context.scene
-        scene.render.filepath = filepath + "\\" + scene.name
+        scene.render.filepath = os.path.join(filepath, scene.name)
 
         for obj in context.selected_objects:
             self.initial_selected_objects.append(obj)
