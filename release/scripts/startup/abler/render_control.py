@@ -21,6 +21,7 @@ from bpy_extras.io_utils import ImportHelper
 import bpy
 from .lib import render, cameras
 from .lib.materials import materials_handler
+from .lib.tracker import tracker
 
 bl_info = {
     "name": "ACON3D Panel",
@@ -283,6 +284,7 @@ class Acon3dRenderQuickOperator(bpy.types.Operator):
         if ops.object.select_all.poll():
             ops.object.select_all(action="DESELECT")
         ops.render.opengl("INVOKE_DEFAULT")
+        tracker.rendered_quickly()
         return {"FINISHED"}
 
 
