@@ -170,7 +170,7 @@ class Acon3dRenderOperator(bpy.types.Operator, ImportHelper):
                 qitem = self.render_queue[0]
 
                 base_filepath = os.path.join(self.filepath, qitem.name)
-                file_format = qitem.render.image_settings.file_format
+                file_format = qitem.render.image_settings.file_format.lower()
                 numbered_filepath = f"{base_filepath}.{file_format}"
                 number = 2
                 while os.path.isfile(numbered_filepath):
