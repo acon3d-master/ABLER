@@ -22,6 +22,12 @@ import ctypes
 import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
+from .lib.remember_id import (
+    read_remembered_checkbox,
+    remember_checkbox,
+    remember_id,
+    read_remembered_id,
+)
 
 
 class Acon3dAlertOperator(bpy.types.Operator):
@@ -235,6 +241,13 @@ def requestLogin():
             pickle.dump(cookie_final, cookiesFile)
             cookiesFile.close()
 
+            remember_checkbox(prop.remember_username)
+
+            if prop.remember_username:  # 체크박스가 선택된 상태라면
+                remember_id(prop.username)
+            else:
+                pass  # 파일 실제로 삭제할지 추후 고려
+
             prop.username = ""
             prop.password = ""
             prop.password_shown = ""
@@ -325,12 +338,24 @@ def open_credential_modal(dummy):
 
         if token:
             userInfo.ACON_prop.login_status = "SUCCESS"
+        else:
+            userInfo.ACON_prop.username = read_remembered_id()
 
     except:
         print("Failed to load cookies")
 
     if userInfo.ACON_prop.login_status != "SUCCESS":
         bpy.ops.acon3d.modal_operator("INVOKE_DEFAULT")
+
+    # 로그인 시 체크박스 상태를 저장해 실행시 체크박스 상태를 불러옵니다.
+    prop = userInfo.ACON_prop
+    prop.remember_username = read_remembered_checkbox()
+    if prop.remember_username:
+        prop.username = read_remembered_id()
+        # 체크박스가 켜진 상태면 cookies에 저장한 아이디를 받아옵니다.
+    else:
+        prop.username = ""
+        # 체크박스가 꺼진상태에서 로그인하면 remember_username = False가 되어 빈칸으로 남게 합니다.
 
 
 @persistent
