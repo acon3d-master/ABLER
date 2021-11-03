@@ -2732,17 +2732,20 @@ class WM_MT_splash(Menu):
                     row.prop(userInfo.ACON_prop, "password_shown")
                 else:
                     row.prop(userInfo.ACON_prop, "password")
-
-                column = row_outside.column()
                 row = column.row()
-                row.prop(
+                layout.prop(
                     userInfo.ACON_prop,
                     "remember_username",
-                    text="",
+                    text="Remember Username",
                     icon="CHECKBOX_HLT",
                     emboss=False,
                     invert_checkbox=True,
                 )
+
+                column = row_outside.column()
+                column.separator()
+                column.separator()
+                column.separator()
                 row = column.row()
                 row.prop(
                     userInfo.ACON_prop,
