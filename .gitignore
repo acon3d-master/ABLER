@@ -2,9 +2,6 @@
 # .*
 .gitignore
 
-# Mixpanel
-release/scripts/startup/abler/lib/tracker/mixpanel_token
-
 # python temp paths
 __pycache__/
 *.py[cod]
