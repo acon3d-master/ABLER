@@ -241,7 +241,6 @@ def requestLogin():
             pickle.dump(cookie_final, cookiesFile)
             cookiesFile.close()
 
-            read_remembered_checkbox()
             if prop.remember_username:
                 remember_id(prop.username)
             else:
@@ -312,7 +311,8 @@ def open_credential_modal(dummy):
     prefs.view.show_splash = True
 
     userInfo = bpy.data.meshes.new("ACON_userInfo")
-    userInfo.ACON_prop.login_status = "IDLE"
+    prop = userInfo.ACON_prop
+    prop.login_status = "IDLE"
 
     try:
         path = bpy.utils.resource_path("USER")
@@ -324,6 +324,7 @@ def open_credential_modal(dummy):
 
         if not os.path.exists(path_cookiesFile):
             raise
+        prop.remember_username = read_remembered_checkbox()
 
         cookiesFile = open(path_cookiesFile, "rb")
         cookies = pickle.load(cookiesFile)
@@ -336,9 +337,7 @@ def open_credential_modal(dummy):
         token = responseData["accessToken"]
 
         if token:
-            userInfo.ACON_prop.login_status = "SUCCESS"
-        else:
-            userInfo.ACON_prop.username = read_remembered_id()
+            prop.login_status = "SUCCESS"
 
     except:
         print("Failed to load cookies")
@@ -346,9 +345,6 @@ def open_credential_modal(dummy):
     if userInfo.ACON_prop.login_status != "SUCCESS":
         bpy.ops.acon3d.modal_operator("INVOKE_DEFAULT")
 
-    prop = userInfo.ACON_prop
-    if os.path.isfile(path_cookiesFile):
-        prop.remember_username = read_remembered_checkbox()
     if prop.remember_username:
         prop.username = read_remembered_id()
 
