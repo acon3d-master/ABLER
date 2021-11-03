@@ -60,7 +60,7 @@ class CreateSceneOperator(bpy.types.Operator):
     def execute(self, context):
         old_scene = context.scene
         new_scene = scenes.createScene(old_scene, self.preset, self.name)
-        context.scene.ACON_prop.scene = new_scene.name
+        context.window_manager.ACON_prop.scene = new_scene.name
         return {"FINISHED"}
 
     def invoke(self, context, event):
@@ -88,10 +88,26 @@ class DeleteSceneOperator(bpy.types.Operator):
         return len(bpy.data.scenes) > 1
 
     def execute(self, context):
-        sceneName = context.scene.ACON_prop.scene
-        scene = bpy.data.scenes[sceneName]
+
+        scene = context.scene
+        scenesList = [*bpy.data.scenes]
+
+        i = scenesList.index(scene)
+        scenesList.remove(scene)
+        length = len(scenesList)
+        nextScene = scenesList[min(i, length - 1)]
+
+        # Updating `scene` value invoke `loadScene` function which compares current
+        # scene and target scene. So it should happen before removing scene.
+        context.window_manager.ACON_prop.scene = nextScene.name
+
         bpy.data.scenes.remove(scene)
-        context.scene.ACON_prop.scene = context.scene.name
+
+        # Why set `scene` value again? Because `remove(scene)` occurs funny bug
+        # that sets `scene` value to 1 when `nextScene` is the first element of
+        # `bpy.data.scenes` collection. This ends up having `scene` value invalid
+        # and displaying empty value in the ui panel.
+        context.window_manager.ACON_prop.scene = nextScene.name
 
         return {"FINISHED"}
 
@@ -110,10 +126,9 @@ class Acon3dScenesPanel(bpy.types.Panel):
 
     def draw(self, context):
         layout = self.layout
-        scene = context.scene
 
         row = layout.row(align=True)
-        row.prop(scene.ACON_prop, "scene", text="")
+        row.prop(context.window_manager.ACON_prop, "scene", text="")
         row.operator("acon3d.create_scene", text="", icon="ADD")
         row.operator("acon3d.delete_scene", text="", icon="REMOVE")
 
