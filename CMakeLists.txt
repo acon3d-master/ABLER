@@ -1997,5 +1997,3 @@ endif()
 if(0)
   print_all_vars()
 endif()
-
-execute_process(COMMAND ${PYTHON_EXECUTABLE} -m pip install -r ${CMAKE_CURRENT_LIST_DIR}/abler_requirements.txt)

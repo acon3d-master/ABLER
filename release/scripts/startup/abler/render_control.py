@@ -21,7 +21,6 @@ import bpy, platform, os, subprocess
 from bpy_extras.io_utils import ImportHelper
 from .lib import render, cameras
 from .lib.materials import materials_handler
-from .lib.tracker import tracker
 
 
 bl_info = {
@@ -383,8 +382,6 @@ class Acon3dRenderQuickOperator(Acon3dRenderOperator):
 
         for obj in self.initial_selected_objects:
             obj.select_set(True)
-
-        tracker.rendered_quickly()
 
         return {"FINISHED"}
 
