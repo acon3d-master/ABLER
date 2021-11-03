@@ -3,18 +3,18 @@ import bpy, pickle, os
 
 path = bpy.utils.resource_path("USER")
 path_cookiesFolder = os.path.join(path, "cookies")
-path_cookiesID = os.path.join(path_cookiesFolder, "userID")
+path_cookies_username = os.path.join(path_cookiesFolder, "username")
 
 
 def remember_id(username):
-    cookiesID = open(path_cookiesID, "wb")
-    pickle.dump(username, cookiesID)
-    cookiesID.close()
+    cookies_username = open(path_cookies_username, "wb")
+    pickle.dump(username, cookies_username)
+    cookies_username.close()
 
 
 def read_remembered_id():
-    if os.path.isfile(path_cookiesID):
-        with open(path_cookiesID, "rb") as fr:
+    if os.path.isfile(path_cookies_username):
+        with open(path_cookies_username, "rb") as fr:
             data = pickle.load(fr)
         return data
     else:
@@ -22,12 +22,12 @@ def read_remembered_id():
 
 
 def delete_remembered_id():
-    if os.path.isfile(path_cookiesID):
-        os.remove(path_cookiesID)
+    if os.path.isfile(path_cookies_username):
+        os.remove(path_cookies_username)
 
 
 def read_remembered_checkbox():
-    if os.path.isfile(path_cookiesID):
+    if os.path.isfile(path_cookies_username):
         return True
     else:
         return False
