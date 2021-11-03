@@ -48,10 +48,7 @@ from . import camera_control
 from . import layer_control
 from . import render_control
 from . import pref
-from .lib.tracker import tracker
 
-
-tracker.opened_abler()
 
 # =========================================================================
 # Registration:
