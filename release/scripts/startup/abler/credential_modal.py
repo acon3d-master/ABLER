@@ -22,11 +22,11 @@ import ctypes
 import platform
 from bpy.app.handlers import persistent
 import requests, webbrowser, pickle, os
-from .lib.remember_id import (
-    delete_remembered_id,
+from .lib.remember_username import (
+    delete_remembered_username,
     read_remembered_checkbox,
-    remember_id,
-    read_remembered_id,
+    remember_username,
+    read_remembered_username,
 )
 
 
@@ -242,9 +242,9 @@ def requestLogin():
             cookiesFile.close()
 
             if prop.remember_username:
-                remember_id(prop.username)
+                remember_username(prop.username)
             else:
-                delete_remembered_id()
+                delete_remembered_username()
 
             prop.username = ""
             prop.password = ""
@@ -346,7 +346,7 @@ def open_credential_modal(dummy):
         bpy.ops.acon3d.modal_operator("INVOKE_DEFAULT")
 
     if prop.remember_username:
-        prop.username = read_remembered_id()
+        prop.username = read_remembered_username()
 
 
 @persistent
