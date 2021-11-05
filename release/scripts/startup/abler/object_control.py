@@ -42,12 +42,14 @@ class Acon3dStateUpdateOperator(bpy.types.Operator):
     bl_label = "Update State"
     bl_translation_context = "*"
 
+    @classmethod
+    def poll(self, context):
+        x = context.object.ACON_prop.state_slider
+        return 0 < x <= 1
+
     def execute(self, context):
 
         x = context.object.ACON_prop.state_slider
-
-        if not 0 < x <= 1:
-            return {"FINISHED"}
 
         for obj in context.selected_objects:
 

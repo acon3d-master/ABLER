@@ -72,6 +72,8 @@ def toggleUseState(self, context):
                 setattr(obj, att, vector)
                 setattr(prop.state_end, att, vector)
 
+            prop.state_slider = 0
+
         if prop.use_state != use_state:
             prop.use_state = use_state
 
