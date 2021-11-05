@@ -33,19 +33,14 @@ def setupSnipCompositor(
     tree = scene.node_tree
     nodes = tree.nodes
 
-    node_rlayer = nodes.new("CompositorNodeRLayers")
-    node_rlayer.layer = snip_layer.name
-
-    node_setAlpha = nodes.new("CompositorNodeSetAlpha")
-    tree.links.new(node_left, node_setAlpha.inputs[0])
-    tree.links.new(node_rlayer.outputs[1], node_setAlpha.inputs[1])
+    node_left.node.layer = snip_layer.name
 
     node_image = nodes.new("CompositorNodeImage")
     node_image.image = shade_image
 
     node_multiply = nodes.new("CompositorNodeMixRGB")
     node_multiply.blend_type = "MULTIPLY"
-    tree.links.new(node_setAlpha.outputs[0], node_multiply.inputs[1])
+    tree.links.new(node_left, node_multiply.inputs[1])
     tree.links.new(node_image.outputs[0], node_multiply.inputs[2])
     tree.links.new(node_multiply.outputs[0], node_right)
 
