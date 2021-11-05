@@ -93045,6 +93045,10 @@ msgid "Please login with your ACON3D account."
 msgstr "에이콘3D 계정으로 로그인해주세요."
 
 
+msgid "Remember Username"
+msgstr "아이디 기억하기"
+
+
 msgid "Username"
 msgstr "아이디"
 

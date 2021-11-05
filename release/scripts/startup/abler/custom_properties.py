@@ -362,6 +362,9 @@ class AconMeshProperty(bpy.types.PropertyGroup):
         name="Show Password", default=False, update=toggle_show_password
     )
 
+    # TODO: description 달기
+    remember_username: bpy.props.BoolProperty(name="Remember Username", default=True)
+
     login_status: bpy.props.StringProperty(
         name="Login Status",
         description="Login Status",
