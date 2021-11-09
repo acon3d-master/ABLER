@@ -1042,9 +1042,9 @@ elseif(APPLE)
     PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
     DESTINATION ABLER.app/Contents/MacOS
   )
-    ADD_CUSTOM_COMMAND(TARGET blender POST_BUILD
-    COMMAND macdeployqt ${EXECUTABLE_OUTPUT_PATH}/ABLER.app
-    )
+    # ADD_CUSTOM_COMMAND(TARGET blender POST_BUILD
+    # COMMAND macdeployqt ${EXECUTABLE_OUTPUT_PATH}/ABLER.app
+    # )
 
   # install release and app files
   set(BLENDER_TEXT_FILES_DESTINATION ABLER.app/Contents/Resources/text)

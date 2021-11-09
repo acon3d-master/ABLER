@@ -67,3 +67,5 @@ CmakeFiles/
 build
 dist
 **/mixpanel_token
+./launcher_qt/.qt_for_python/*.*
+**/macdeployqtfix.log
