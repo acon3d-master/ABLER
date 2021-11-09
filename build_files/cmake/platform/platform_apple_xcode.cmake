@@ -181,7 +181,7 @@ if("${CMAKE_OSX_ARCHITECTURES}" STREQUAL "arm64")
   set(OSX_MIN_DEPLOYMENT_TARGET 11.00)
 else()
   # 10.13 is our min. target, if you use higher sdk, weak linking happens
-  set(OSX_MIN_DEPLOYMENT_TARGET 10.13)
+  set(OSX_MIN_DEPLOYMENT_TARGET 11.00)
 endif()
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET "${OSX_MIN_DEPLOYMENT_TARGET}" CACHE STRING "" FORCE)

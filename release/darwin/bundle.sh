@@ -155,7 +155,9 @@ if [ ! -z "${C_CERT}" ]; then
         codesign --remove-signature "${f}/Versions/A"
         codesign --deep --force --verbose --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${f}/Versions/A"
     done    
-
+    
+    sleep 30
+    
     echo ; echo -n "Codesigning AblerLauncher"
     codesign --remove-signature "${_mount_dir}/ABLER.app/Contents/macOS/AblerLauncher"
     codesign --deep --force --verbose --timestamp --options runtime --entitlements="${_entitlements}" --sign "${C_CERT}" "${_mount_dir}/ABLER.app/Contents/macOS/AblerLauncher"
