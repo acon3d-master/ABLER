@@ -17,6 +17,7 @@ class SentryTracker(Tracker):
                 sentry_dsn,
                 release=make_release_version(),
             )
+            print(f"Sentry Initialized")
 
     def _enqueue_event(self, event_name: str):
         sentry_sdk.add_breadcrumb(

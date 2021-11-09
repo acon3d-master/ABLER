@@ -32,7 +32,6 @@ class MixpanelResource:
     def __init__(self, token: str):
         self._consumer = BufferedConsumer(max_size=100)
 
-        print(f"Initializing Mixpanel with token {token}")
         self.mp = Mixpanel(token, consumer=self._consumer)
 
         # NOTE: 로그아웃 후 다른 이메일로 로그인하는 경우는 고려하지 않음
@@ -46,6 +45,7 @@ class MixpanelResource:
             self.tid = "anonymous"
 
         self.flush_repeatedly()
+        print(f"Mixpanel Initialized")
 
     def flush_repeatedly(self):
         # 현재는 cleanup 로직을 두지 않음
