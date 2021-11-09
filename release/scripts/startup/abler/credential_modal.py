@@ -28,6 +28,7 @@ from .lib.remember_username import (
     remember_username,
     read_remembered_username,
 )
+from .lib.tracker import tracker
 
 
 class Acon3dAlertOperator(bpy.types.Operator):
@@ -234,7 +235,7 @@ def requestLogin():
             )
 
         if response.status_code == 200:
-
+            tracker.logged_in(prop.username)
             prop.login_status = "SUCCESS"
 
             cookiesFile = open(path_cookiesFile, "wb")
