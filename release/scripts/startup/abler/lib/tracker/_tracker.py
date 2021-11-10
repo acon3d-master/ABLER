@@ -64,3 +64,17 @@ class DummyTracker(Tracker):
 
     def _enqueue_email_update(self, email: str):
         pass
+
+
+class AggregateTracker(Tracker):
+    def __init__(self, *trackers: Tracker):
+        super().__init__()
+        self.trackers = trackers
+
+    def _enqueue_event(self, event_name: str):
+        for t in self.trackers:
+            t._enqueue_event(event_name)
+
+    def _enqueue_email_update(self, email: str):
+        for t in self.trackers:
+            t._enqueue_email_update(email)
