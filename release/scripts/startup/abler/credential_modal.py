@@ -29,6 +29,7 @@ from .lib.remember_username import (
     read_remembered_username,
 )
 from .lib.tracker import tracker
+from .lib.async_task import AsyncTask
 
 
 class Acon3dAlertOperator(bpy.types.Operator):
@@ -184,29 +185,19 @@ class Acon3dModalOperator(bpy.types.Operator):
         return {"RUNNING_MODAL"}
 
 
-def requestLogin():
+class LoginTask(AsyncTask):
+    cookies_final = None
 
-    userInfo = bpy.data.meshes.get("ACON_userInfo")
-    prop = userInfo.ACON_prop
+    def __init__(self, username: str, password: str):
+        self.username = username
+        self.password = password
+        self.prop = bpy.data.meshes.get("ACON_userInfo").ACON_prop
 
-    try:
-
-        path = bpy.utils.resource_path("USER")
-        path_cookiesFolder = os.path.join(path, "cookies")
-        path_cookiesFile = os.path.join(path_cookiesFolder, "acon3d_session")
-
-        if prop.show_password:
-            prop.password = prop.password_shown
-        else:
-            prop.password_shown = prop.password
-
-        cookies_godo = ""
-        response_godo = None
-
+    def _task(self):
         try:
             response_godo = requests.post(
                 "https://www.acon3d.com/api/login.php",
-                data={"loginId": prop.username, "loginPwd": prop.password},
+                data={"loginId": self.username, "loginPwd": self.password},
             )
         except:
             response_godo = None
@@ -223,49 +214,60 @@ def requestLogin():
 
         response = requests.post(
             "https://api-v2.acon3d.com/auth/acon3d/signin",
-            data={"account": prop.username, "password": prop.password},
+            data={"account": self.username, "password": self.password},
             cookies=cookies_godo,
         )
 
-        cookie_final = response.cookies
+        self.cookie_final = response.cookies
 
         if response_godo is not None:
-            cookie_final = requests.cookies.merge_cookies(
+            self.cookie_final = requests.cookies.merge_cookies(
                 cookies_godo, response.cookies
             )
 
-        if response.status_code == 200:
-            tracker.logged_in(prop.username)
-            prop.login_status = "SUCCESS"
+        if response.status_code != 200:
+            raise Exception("status code is not 200")
 
-            cookiesFile = open(path_cookiesFile, "wb")
-            pickle.dump(cookie_final, cookiesFile)
-            cookiesFile.close()
+    def _on_success(self):
+        tracker.logged_in(self.username)
+
+        prop = self.prop
+        path = bpy.utils.resource_path("USER")
+        path_cookiesFolder = os.path.join(path, "cookies")
+        path_cookiesFile = os.path.join(path_cookiesFolder, "acon3d_session")
+
+        try:
+            with open(path_cookiesFile, "wb") as cookies_file:
+                pickle.dump(self.cookie_final, cookies_file)
 
             if prop.remember_username:
                 remember_username(prop.username)
             else:
                 delete_remembered_username()
+        finally:
+            pass
 
-            prop.username = ""
-            prop.password = ""
-            prop.password_shown = ""
+        prop.login_status = "SUCCESS"
+        prop.username = ""
+        prop.password = ""
+        prop.password_shown = ""
 
-        else:
+        window = bpy.context.window
+        width = window.width
+        height = window.height
+        window.cursor_warp(width / 2, height / 2)
 
-            prop.login_status = "FAIL"
+        def moveMouse():
+            window.cursor_warp(width / 2, (height / 2) - 150)
 
-    except Exception as e:
+        bpy.app.timers.register(moveMouse, first_interval=0.1)
+        bpy.context.window.cursor_set("DEFAULT")
 
+    def _on_failure(self, e: BaseException):
+        self.prop.login_status = "FAIL"
         print("Login request has failed.")
         print(e)
 
-    window = bpy.context.window
-    width = window.width
-    height = window.height
-    window.cursor_warp(width / 2, height / 2)
-
-    if prop.login_status != "SUCCESS":
         bpy.ops.acon3d.alert(
             "INVOKE_DEFAULT",
             title="Login failed",
@@ -273,11 +275,20 @@ def requestLogin():
             message_2='please contact us at "cs@acon3d.com".',
         )
 
-    def moveMouse():
-        window.cursor_warp(width / 2, (height / 2) - 150)
 
-    bpy.app.timers.register(moveMouse, first_interval=0.1)
-    bpy.context.window.cursor_set("DEFAULT")
+def requestLogin():
+
+    userInfo = bpy.data.meshes.get("ACON_userInfo")
+    prop = userInfo.ACON_prop
+
+    if prop.show_password:
+        prop.password = prop.password_shown
+    else:
+        prop.password_shown = prop.password
+
+    login_task = LoginTask(prop.username, prop.password)
+    login_task.timeout = 10
+    login_task.start()
 
 
 class Acon3dLoginOperator(bpy.types.Operator):
