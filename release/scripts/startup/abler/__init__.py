@@ -48,7 +48,6 @@ from . import camera_control
 from . import layer_control
 from . import render_control
 from . import pref
-from .converter import skp_converter
 
 
 # =========================================================================
@@ -69,7 +68,6 @@ importedLibrary = [
     layer_control,
     render_control,
     pref,
-    skp_converter,
 ]
 
 
