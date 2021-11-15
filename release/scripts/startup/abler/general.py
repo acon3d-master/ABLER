@@ -111,6 +111,44 @@ class ImportOperator(bpy.types.Operator, ImportHelper):
         return {"FINISHED"}
 
 
+class ImportFBXOperator(bpy.types.Operator, ImportHelper):
+    """Import objects according to the current settings"""
+
+    bl_idname = "acon3d.import_fbx"
+    bl_label = "Import FBX"
+    bl_translation_context = "*"
+
+    filter_glob: bpy.props.StringProperty(default="*.fbx", options={"HIDDEN"})
+
+    def execute(self, context):
+
+        for obj in bpy.data.objects:
+            obj.select_set(False)
+
+        FILEPATH = self.filepath
+
+        col_imported = bpy.data.collections.get("Imported FBX")
+        if not col_imported:
+            col_imported = bpy.data.collections.new("Imported FBX")
+            context.scene.collection.children.link(col_imported)
+
+        bpy.ops.import_scene.fbx(filepath=FILEPATH)
+        for obj in bpy.context.selected_objects:
+            bpy.context.scene.collection.objects.unlink(obj)
+            col_imported.objects.link(obj)
+
+        materials_setup.applyAconToonStyle()
+
+        for area in context.screen.areas:
+            if area.type == "VIEW_3D":
+                ctx = bpy.context.copy()
+                ctx["area"] = area
+                ctx["region"] = area.regions[-1]
+                bpy.ops.view3d.view_selected(ctx)
+
+        return {"FINISHED"}
+
+
 class ToggleToolbarOperator(bpy.types.Operator):
     """Toggle toolbar visibility"""
 
@@ -151,6 +189,10 @@ class Acon3dImportPanel(bpy.types.Panel):
         ).load_ui = False
         row.operator("acon3d.import_blend", text="Import")
 
+        layout.separator()
+        row = layout.row()
+        row.operator("acon3d.import_fbx", text="Import FBX")
+
         row = layout.row()
 
         prefs = context.preferences
@@ -167,6 +209,7 @@ classes = (
     Acon3dImportPanel,
     ToggleToolbarOperator,
     ImportOperator,
+    ImportFBXOperator,
 )
 
 
