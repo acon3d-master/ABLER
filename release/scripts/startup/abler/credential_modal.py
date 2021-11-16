@@ -249,16 +249,13 @@ class LoginTask(AsyncTask):
         path_cookiesFolder = os.path.join(path, "cookies")
         path_cookiesFile = os.path.join(path_cookiesFolder, "acon3d_session")
 
-        try:
-            with open(path_cookiesFile, "wb") as cookies_file:
-                pickle.dump(self.cookie_final, cookies_file)
+        with open(path_cookiesFile, "wb") as cookies_file:
+            pickle.dump(self.cookie_final, cookies_file)
 
-            if prop.remember_username:
-                remember_username(prop.username)
-            else:
-                delete_remembered_username()
-        finally:
-            pass
+        if prop.remember_username:
+            remember_username(prop.username)
+        else:
+            delete_remembered_username()
 
         prop.login_status = "SUCCESS"
         prop.username = ""
