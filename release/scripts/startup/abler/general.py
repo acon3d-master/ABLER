@@ -31,6 +31,7 @@ bl_info = {
 }
 
 
+import os
 import bpy
 from bpy_extras.io_utils import ImportHelper
 from .lib.materials import materials_setup
@@ -127,9 +128,8 @@ class ImportFBXOperator(bpy.types.Operator, ImportHelper):
 
         FILEPATH = self.filepath
 
-        col_imported = bpy.data.collections.new(
-            "Imported FBX"
-        )  # TODO: change collections name
+        filename = os.path.basename(FILEPATH)
+        col_imported = bpy.data.collections.new(filename)
         context.scene.collection.children.link(col_imported)
 
         col_layers = bpy.data.collections.get("Layers")
@@ -148,13 +148,6 @@ class ImportFBXOperator(bpy.types.Operator, ImportHelper):
         added_l_exclude.value = True
 
         materials_setup.applyAconToonStyle()
-
-        for area in context.screen.areas:
-            if area.type == "VIEW_3D":
-                ctx = bpy.context.copy()
-                ctx["area"] = area
-                ctx["region"] = area.regions[-1]
-                bpy.ops.view3d.view_selected(ctx)
 
         return {"FINISHED"}
 
