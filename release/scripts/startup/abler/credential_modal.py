@@ -188,11 +188,23 @@ class Acon3dModalOperator(bpy.types.Operator):
 class LoginTask(AsyncTask):
     cookies_final = None
 
-    def __init__(self, username: str, password: str):
+    def __init__(self):
         super().__init__(timeout=10)
-        self.username = username
-        self.password = password
+
         self.prop = bpy.data.meshes.get("ACON_userInfo").ACON_prop
+        self.username = self.prop.username
+        self.password = self.prop.password
+
+    def request_login(self):
+        prop = self.prop
+
+        if prop.show_password:
+            prop.password = prop.password_shown
+        else:
+            prop.password_shown = prop.password
+
+        prop.login_status = "LOADING"
+        self.start()
 
     def _task(self):
         try:
@@ -277,30 +289,14 @@ class LoginTask(AsyncTask):
         )
 
 
-def requestLogin():
-
-    userInfo = bpy.data.meshes.get("ACON_userInfo")
-    prop = userInfo.ACON_prop
-
-    if prop.show_password:
-        prop.password = prop.password_shown
-    else:
-        prop.password_shown = prop.password
-
-    login_task = LoginTask(prop.username, prop.password)
-    login_task.start()
-
-
 class Acon3dLoginOperator(bpy.types.Operator):
     bl_idname = "acon3d.login"
     bl_label = "Login"
     bl_translation_context = "*"
 
     def execute(self, context):
-        userInfo = bpy.data.meshes.get("ACON_userInfo")
-        userInfo.ACON_prop.login_status = "LOADING"
         context.window.cursor_set("WAIT")
-        bpy.app.timers.register(requestLogin, first_interval=0.1)
+        LoginTask().request_login()
         return {"FINISHED"}
 
 
