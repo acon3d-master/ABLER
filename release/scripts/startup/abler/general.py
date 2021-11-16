@@ -127,15 +127,25 @@ class ImportFBXOperator(bpy.types.Operator, ImportHelper):
 
         FILEPATH = self.filepath
 
-        col_imported = bpy.data.collections.get("Imported FBX")
-        if not col_imported:
-            col_imported = bpy.data.collections.new("Imported FBX")
-            context.scene.collection.children.link(col_imported)
+        col_imported = bpy.data.collections.new(
+            "Imported FBX"
+        )  # TODO: change collections name
+        context.scene.collection.children.link(col_imported)
+
+        col_layers = bpy.data.collections.get("Layers")
+        if not col_layers:
+            col_layers = bpy.data.collections.new("Layers")
+            context.scene.collection.children.link(col_layers)
 
         bpy.ops.import_scene.fbx(filepath=FILEPATH)
         for obj in bpy.context.selected_objects:
             bpy.context.scene.collection.objects.unlink(obj)
             col_imported.objects.link(obj)
+
+        col_layers.children.link(col_imported)
+        added_l_exclude = context.scene.l_exclude.add()
+        added_l_exclude.name = col_imported.name
+        added_l_exclude.value = True
 
         materials_setup.applyAconToonStyle()
 
