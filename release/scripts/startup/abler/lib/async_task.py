@@ -7,12 +7,18 @@ import bpy
 
 
 class AsyncTask(metaclass=ABCMeta):
-    timeout = 0  # seconds
     _wait_interval = 0.1
     _queue_sentinel = None
     _timeout_sentinel = None
+    __timeout: Optional[float] = None  # seconds
     __running: Optional[Thread] = None
     __queue: Optional[Queue] = None
+
+    def __init__(self, timeout: float):
+        """
+        If you don't need timeout, pass 0 as timeout parameter.
+        """
+        self.__timeout = timeout
 
     @abstractmethod
     def _task(self):
@@ -62,6 +68,8 @@ class AsyncTask(metaclass=ABCMeta):
         """
         if self.__running is not None:
             raise AsyncTaskDoubleExecutionError("Already started")
+        if self.__timeout is None:
+            raise Exception("Timeout must be set")
         self.__queue = Queue(1)
         self.__running = Thread(target=self.__runner, daemon=True)
         self.__running.start()
@@ -91,8 +99,8 @@ class AsyncTask(metaclass=ABCMeta):
         self._timeout_sentinel = timeout_sentinel
 
         bpy.app.timers.register(queue_sentinel)
-        if self.timeout > 0:
-            bpy.app.timers.register(timeout_sentinel, first_interval=self.timeout)
+        if self.__timeout > 0:
+            bpy.app.timers.register(timeout_sentinel, first_interval=self.__timeout)
 
     def cancel(self):
         """
@@ -149,9 +157,7 @@ class ExampleTask(AsyncTask):
 
 
 def _run_example_task():
-    task = ExampleTask()
-    # Set timeout for _task like this
-    task.timeout = 10
+    task = ExampleTask(timeout=10)
     # `start` must be called
     task.start()
 

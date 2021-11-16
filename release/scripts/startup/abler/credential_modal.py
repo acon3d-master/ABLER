@@ -189,6 +189,7 @@ class LoginTask(AsyncTask):
     cookies_final = None
 
     def __init__(self, username: str, password: str):
+        super().__init__(timeout=10)
         self.username = username
         self.password = password
         self.prop = bpy.data.meshes.get("ACON_userInfo").ACON_prop
@@ -287,7 +288,6 @@ def requestLogin():
         prop.password_shown = prop.password
 
     login_task = LoginTask(prop.username, prop.password)
-    login_task.timeout = 10
     login_task.start()
 
 
